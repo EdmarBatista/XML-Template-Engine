@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+/* Dark mode é ativado pela classe .dark no elemento <html>.
+   Para alternar: document.documentElement.classList.toggle('dark') */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Tokens semânticos de cor (Tema claro = :root, Tema escuro = .dark).
+ * Centralizar aqui facilita mudar/expandir o tema num só lugar.
+ * Uso no CSS: var(--surface);
+ * Uso em classes utilitárias (Tailwind v4): bg-(--surface) / text-(--foreground) etc.
+ * Também dá para gerar utilidades com @theme (ver seção @theme mais abaixo).
+ */
+:root {
+  /* Fundo geral da página / App */
+  --app-bg: #f1f5f9;
+  --app-fg: #1e293b;
+
+  /* Superfícies (painéis, cards) */
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --surface-subtle: #f1f5f9;
+  --surface-strong: #e2e8f0;
+
+  /* Texto */
+  --foreground: #0f172a;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --text-inverse: #f8fafc;
+
+  /* Bordas & divisores */
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  /* Campos de entrada */
+  --input-bg: #f8fafc;
+  --input-fg: #0f172a;
+  --input-border: #cbd5e1;
+
+  /* Acentos / estado */
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+  --accent-fg: #1d4ed8;
+  --success: #059669;
+  --success-soft: #ecfdf5;
+  --success-fg: #065f46;
+  --warning-soft: #fffbeb;
+  --warning-fg: #92400e;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+
+  /* Cabeçalho / barra escura (toolbar, topo) */
+  --header-bg: #0f172a;
+  --header-fg: #e2e8f0;
+  --header-surface: #1e293b;
+  --header-border: #334155;
+}
+
+.dark {
+  color-scheme: dark;
+  --app-bg: #0b1220;
+  --app-fg: #e2e8f0;
+
+  --surface: #0f172a;
+  --surface-muted: #131c2f;
+  --surface-subtle: #1e293b;
+  --surface-strong: #334155;
+
+  --foreground: #f1f5f9;
+  --text-primary: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --text-inverse: #0f172a;
+
+  --border-default: #1e293b;
+  --border-strong: #334155;
+
+  --input-bg: #0f172a;
+  --input-fg: #f1f5f9;
+  --input-border: #334155;
+
+  --accent: #3b82f6;
+  --accent-soft: #172554;
+  --accent-fg: #93c5fd;
+  --success: #34d399;
+  --success-soft: #052e2b;
+  --success-fg: #6ee7b7;
+  --warning-soft: #451a03;
+  --warning-fg: #fcd34d;
+  --danger: #f87171;
+  --danger-soft: #450a0a;
+
+  --header-bg: #0b1220;
+  --header-fg: #cbd5e1;
+  --header-surface: #131c2f;
+  --header-border: #1e293b;
+}
+
+/* Gera utilidades (ex.: bg-surface, text-foreground, border-default) a partir dos tokens */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-foreground: var(--foreground);
+  --color-app: var(--app-bg);
+  --color-border-app: var(--border-default);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--app-fg);
+    background-color: var(--app-bg);
+    transition: background-color 0.25s ease, color 0.25s ease;
+    overflow: hidden;
+  }
+}
+
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Scrollbar no modo escuro */
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155 !important;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569 !important;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b !important;
+}
+
+/* Animação para o campo focado no formulário:
+   - Duração total: 7s
+   - 0s a 0.9s (900ms): Halo azul expande e ilumina suavemente até o pico (animação contínua e suave)
+   - 0.9s a 1.8s (900ms): Halo e iluminação recolhem simetricamente a 0 (fade-out gradual)
+   - 1.8s a 6.0s: Borda azul nítida (#3b82f6) mantida estável com fundo nativo intacto (branco ou azul condicional)
+   - 6.0s a 7.0s (1 segundo inteiro): Transição suave da borda azul para a borda original (cinza ou azul condicional)
+*/
+@keyframes highlightFieldPulse {
+  0% {
+    box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), 0 0 0 0px rgba(59, 130, 246, 0), inset 0 0 0 9999px rgba(59, 130, 246, 0);
+    border-color: #3b82f6;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  12.86% { /* 900ms: halo expandido no pico e overlay azul sutil */
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.32), 0 4px 14px 2px rgba(59, 130, 246, 0.2), inset 0 0 0 9999px rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    transform: scale(1.012);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  25.71% { /* 1800ms (exatos 900ms depois): halo e overlay recolhem de forma 100% simétrica e suave */
+    box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), 0 0 0 0px rgba(59, 130, 246, 0), inset 0 0 0 9999px rgba(59, 130, 246, 0);
+    border-color: #3b82f6;
+    transform: scale(1);
+    animation-timing-function: linear;
+  }
+  85.71% { /* 6000ms: apenas a borda azul permanece até 6s */
+    box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), 0 0 0 0px rgba(59, 130, 246, 0), inset 0 0 0 9999px rgba(59, 130, 246, 0);
+    border-color: #3b82f6;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% { /* 7000ms: transição de 1 segundo (de 6s a 7s) da borda azul para a borda original */
+    box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), 0 0 0 0px rgba(59, 130, 246, 0), inset 0 0 0 9999px rgba(59, 130, 246, 0);
+    border-color: var(--campo-border-orig, #e2e8f0);
+    transform: scale(1);
+  }
+}
+
+.campo-foco-animado {
+  animation: highlightFieldPulse 7s linear forwards !important;
+  z-index: 10;
+}
+
+/* Print optimizations */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+  }
+  header, aside, .edm-resizer, button, .no-print, [data-no-print] {
+    display: none !important;
+  }
+  .print\:p-0 {
+    padding: 0 !important;
+  }
+  .print\:w-full {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+@layer components {
+  .btn-toolbar {
+    @apply w-7 h-7 flex items-center justify-center rounded-md bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-slate-400 shadow-sm transition-all shrink-0;
+  }
+  .active-toolbar {
+    @apply !bg-blue-900/50 !border-blue-500 !text-blue-300 hover:!bg-blue-800/50;
+  }
+  .active-toolbar-rose {
+    @apply !bg-rose-900/50 !border-rose-500 !text-rose-500 hover:!bg-rose-800/50;
+  }
+  .active-toolbar-emerald {
+    @apply !bg-emerald-900/50 !border-emerald-500 !text-emerald-300 hover:!bg-emerald-800/50;
+  }
+  .active-toolbar-purple {
+    @apply !bg-purple-900/50 !border-purple-500 !text-purple-300 hover:!bg-purple-800/50;
+  }
+}
+
+/* Impressão: o zoom da tela não deve afetar o papel (A4 sai no tamanho real) */
+@media print {
+  #documento-visualizado {
+    zoom: 1 !important;
+  }
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XML Template Engine · Editor Interativo</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%232563eb%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m18%2016%204-4-4-4%22%2F%3E%3Cpath%20d%3D%22m6%208-4%204%204%204%22%2F%3E%3Cpath%20d%3D%22m14.5%204-5%2016%22%2F%3E%3C%2Fsvg%3E" />
+    <meta name="description" content="Motor de templates XML com formulário reativo, editor em tempo real e exportação para Word." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <!--
+      =====================================================================
+      pdfmake + fontes via CDN (não ficam no bundle)
+      ---------------------------------------------------------------------
+      MOTIVO DA OTIMIZAÇÃO:
+      Antes, `pdfmake` e `vfs_fonts` eram importados via npm e embutiam
+      ~1,9 MB (incluindo as fontes base64) dentro do index.html gerado pelo
+      vite-plugin-singlefile.
+        - Antes: index.html ≈ 3,26 MB  (gzip ≈ 1,24 MB)
+        - Depois: index.html ≈ 1,39 MB (gzip ≈ 414 KB)  -> redução ~57%
+
+      Como o app é distribuído como UM único arquivo HTML autônomo,
+      carregar essas libs via CDN é a saída para não precisar de chunk
+      separado: o pdfmake é baixado pelo navegador só quando necessário.
+
+      OBS: isso exige INTERNET para exportar PDF (o app já usa APIS
+      online como ViaCEP/OpenCNPJ). Versão fixada em 0.3.11 para manter
+      o comportamento estável. Se precisar de modo 100% offline, restaure 
+      os imports npm do pdfExporter (src/utils/pdfExporter.ts).
+      =====================================================================
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/pdfmake.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/vfs_fonts.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

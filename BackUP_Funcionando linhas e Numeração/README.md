@@ -52,35 +52,19 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 │   ├── components/         # Componentes da interface
 │   │   ├── CodeMirrorEditor.tsx    # Wrapper reutilizável do CodeMirror
 │   │   ├── DocumentViewer.tsx      # Visualizador de documento com suporte A4/Fluido
-│   │   ├── DocumentViewer/         # Renderizadores do documento (AST, células, tabelas, variáveis)
 │   │   ├── ModelModal.tsx          # Inspetor de variáveis e modelo AST
-│   │   ├── ModelModal/VarsTabs.tsx # Abas de Variáveis (edição + resumo)
 │   │   ├── Sidebar.tsx             # Formulário dinâmico com grupos e campos
 │   │   ├── SidebarToolbar.tsx      # Barra de ferramentas e ações rápidas
-│   │   ├── TemplateSelector.tsx    # Seletor de templates (customizados/prontos)
 │   │   └── XmlEditorModal.tsx      # Modal de edição do código-fonte XML
-│   ├── hooks/              # Hooks de estado extraídos do App
-│   │   ├── usePreferencias.ts      # Preferências de interface + persistência
-│   │   ├── useCamposFoco.ts        # Foco/destaque bidirecional documento↔sidebar
-│   │   └── useToast.ts             # Toast simples
 │   ├── constants/
 │   │   └── documentTheme.ts        # Constantes centralizadas de tipografia, cores, bordas e tabelas
 │   ├── data/
-│   │   ├── defaultTemplates.ts     # Catálogo de modelos padrão (barrel)
-│   │   └── templates/              # Um arquivo por template (termoReferencia, bateriaTestes, contratoServicos)
-│   ├── services/           # Serviços desacoplados de persistência, empacotamento e API externa
-│   │   ├── apiService.ts           # Consultas CNPJ/CEP com cache/debounce
-│   │   ├── useCnpjCepLookup.ts     # Hook que consome apiService (loading/data/error)
+│   │   └── defaultTemplates.ts     # Catálogo de modelos padrão integrados
+│   ├── services/           # Serviços desacoplados de persistência e empacotamento
 │   │   ├── filePackageService.ts   # Empacotador/desempacotador ZIP, leitura e download de arquivos
 │   │   └── storageService.ts       # Gerenciamento unificado de LocalStorage (preferências e dados)
 │   ├── utils/              # Motores de conversão e utilitários
-│   │   ├── documentUtils.ts        # Barrel de formatacao/mascaras/validacao/listas/caminhos
-│   │   ├── formatacao.ts           # Moeda, datas, números por extenso, romano
-│   │   ├── mascaras.ts             # Máscaras de CPF/CNPJ/CEP/moeda e filtros de documento
-│   │   ├── validacao.ts            # Validações (email/CPF/CNPJ/CEP) e validarCampo
-│   │   ├── listas.ts               # CSV/foreach (formatarItemForeach, valoresDaLista)
-│   │   ├── caminhos.ts             # obterValorPorCaminho e obterTipoEfetivoColuna
-│   │   ├── paragraphs.ts           # Quebra de parágrafos por \\n / <br>
+│   │   ├── documentUtils.ts        # Máscaras, filtros e formatações por extenso
 │   │   ├── domDocumentExtractor.ts # Extrator semântico DOM para Word e PDF
 │   │   ├── expressionEvaluator.ts  # Avaliador de expressões lógicas (<if expr="...">)
 │   │   ├── pdfExporter.ts          # Exportador vetorial para PDF (via DOM) e impressão isolada
@@ -142,7 +126,6 @@ Campos são agrupados dentro de `<grupo titulo="...">`:
 | `<select>` | `id`, `label` + filhos `<option>` | Caixa de seleção suspensa |
 | `<radio>` | `id`, `label` + filhos `<option>` | Grupo de botões de opção exclusivos |
 | `<checkbox>` | `id`, `label` | Caixa de seleção booleana (`true`/`false`) |
-| `<tabela>` | `id`, `label` + filhos `<coluna>` | Grade dinâmica de linhas e colunas (adiciona, exclui e reordena linhas) |
 
 #### Condicionais no Formulário (`<if>`):
 ```xml
@@ -169,71 +152,11 @@ O documento suporta interpolação de variáveis e aplicação de filtros via si
     <p>Pelo presente instrumento, <b>{{nome_contratante}}</b>, inscrito no CPF sob o nº {{cpf_contratante | cpf}}...</p>
   </secao>
 
-  <secao titulo="2. DA PLANILHA DE ITENS E SERVIÇOS" numerar="true">
-    <!-- Renderização Automática e Direta da Tabela do Formulário -->
-    {{itens_orcamento}}
-  </secao>
-
-  <secao titulo="3. DO VALOR E PAGAMENTO" numerar="true">
+  <secao titulo="2. DO VALOR E PAGAMENTO" numerar="true">
     <p>O valor total acordado é de <b>R$ {{valor_servico | moeda}}</b> ({{valor_servico | moedaPorExtenso}}).</p>
   </secao>
 </conteudo>
 ```
-
-#### Modos de Usar Tabelas no Documento:
-
-1. **Renderização Direta e Automática (Apenas com a Variável):**
-   Basta colocar a variável da tabela definida no formulário:
-   ```xml
-   {{itens_orcamento}}
-   ```
-   *(ou `<tabela id="itens_orcamento" />`)*. O motor renderiza automaticamente uma tabela com os cabeçalhos das colunas definidos no formulário e todas as linhas preenchidas com as devidas máscaras e valores aplicados.
-
-2. **Acesso Direto e Individual a Células, Linhas ou Colunas da Tabela:**
-   Você pode interpolar qualquer célula pontual ou valor de linha diretamente no texto através do nome da coluna indexada ou índice da linha:
-   - **Célula Específica (Coluna Indexada - Recomendado):**
-     - `{{itens_orcamento.descricao[0]}}` -> Descrição da 1ª linha.
-     - `{{itens_orcamento.valor_unitario[0] | moeda}}` -> Valor da 1ª linha formatado com máscara de moeda.
-     - `{{itens_orcamento.prazo[1]}}` -> Prazo da 2ª linha.
-   - **Célula Específica (Linha Indexada):**
-     - `{{itens_orcamento[0].descricao}}` -> Descrição da 1ª linha.
-     - `{{itens_orcamento[1].valor_unitario | moeda}}` -> Valor da 2ª linha.
-   - **Coluna Inteira (Valores Concatenados):**
-     - `{{itens_orcamento.descricao}}` -> Relação de todos os itens cadastrados separados por vírgula.
-
-3. **Renderização Customizada com `<foreach>` dentro de `<tabela>`:**
-   ```xml
-   <tabela>
-     <cabecalho>
-       <celula>#</celula>
-       <celula>Especificação</celula>
-       <celula>Qtd</celula>
-       <celula>Preço Unit.</celula>
-     </cabecalho>
-     <foreach lista="itens_orcamento" var="item">
-       <linha>
-         <celula>{{item._indice}}</celula>
-         <celula>{{item.descricao}}</celula>
-         <celula>{{item.quantidade}}</celula>
-         <celula>{{item.valor_unitario | moeda}}</celula>
-       </linha>
-     </foreach>
-   </tabela>
-   ```
-
-4. **Tabela Estática Manual:**
-   ```xml
-   <tabela>
-     <cabecalho>
-       <celula>Campo</celula>
-       <celula>Valor</celula>
-     </cabecalho>
-     <linha>
-       <celula>Órgão</celula>
-       <celula>{{orgao}}</celula>
-     </linha>
-   </tabela>
-   ```
 
 #### Filtros de Formatação Disponíveis:
 
