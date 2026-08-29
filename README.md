@@ -180,26 +180,28 @@ Campos são agrupados dentro de `<grupo titulo="...">`:
 
 ### 2. `<conteudo>` (Estrutura do Documento)
 
-O documento suporta interpolação de variáveis e aplicação de filtros via sintaxe `{{campo | filtro}}`:
+O documento suporta interpolação de variáveis, aplicação de filtros via sintaxe `{{campo | filtro}}` e **numeração hierárquica automática de seções** (não é necessário prefixar números no título quando `numerar="true"` ou padrão):
 
 ```xml
 <conteudo>
   <titulo>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</titulo>
 
-  <secao titulo="1. DAS PARTES" numerar="true">
+  <secao titulo="DAS PARTES" numerar="true">
     <p>Pelo presente instrumento, <b>{{nome_contratante}}</b>, inscrito no CPF sob o nº {{cpf_contratante | cpf}}...</p>
   </secao>
 
-  <secao titulo="2. DA PLANILHA DE ITENS E SERVIÇOS" numerar="true">
+  <secao titulo="DA PLANILHA DE ITENS E SERVIÇOS" numerar="true">
     <!-- Renderização Automática e Direta da Tabela do Formulário -->
     {{itens_orcamento}}
   </secao>
 
-  <secao titulo="3. DO VALOR E PAGAMENTO" numerar="true">
+  <secao titulo="DO VALOR E PAGAMENTO" numerar="true">
     <p>O valor total acordado é de <b>R$ {{valor_servico | moeda}}</b> ({{valor_servico | moedaPorExtenso}}).</p>
   </secao>
 </conteudo>
 ```
+
+> **Nota sobre Numeração:** Ao utilizar `<secao titulo="DO VALOR E PAGAMENTO" numerar="true">` (ou simplesmente sem o atributo, já que a numeração é habilitada por padrão), o motor calcula e renderiza automaticamente o prefixo sequencial (ex.: `1.`, `2.`, `3.`, `3.1.`, etc.). Portanto, **não adicione números manuais** no atributo `titulo`. Para seções que não devem ser numeradas (como blocos de assinaturas ou anexos), use `numerar="false"`.
 
 #### Modos de Usar Tabelas no Documento:
 
