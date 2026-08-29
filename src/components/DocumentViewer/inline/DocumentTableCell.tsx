@@ -1,13 +1,13 @@
 import React from 'react';
-import { TableColumnMetadata } from '../../types';
+import { TableColumnMetadata } from '../../../types';
 import {
   aplicarMascaraCampo,
   converterFormatoData,
   normalizarValorCampo,
   obterTipoEfetivoColuna,
-} from '../../utils/documentUtils';
+} from '../../../utils/documentUtils';
 
-interface DocumentTableCellProps {
+export interface DocumentTableCellProps {
   valorBruto: any;
   filtro?: string;
   colMeta?: TableColumnMetadata;
@@ -147,7 +147,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     if (clickTimerRef.current) {
       clearTimeout(clickTimerRef.current);
     }
-    // Clique simples: Localiza e destaca o campo no painel lateral com animação azul de 7s
+    // Clique simples: Localiza e destaca o campo no painel lateral
     clickTimerRef.current = setTimeout(() => {
       const currentSel = window.getSelection();
       if (currentSel && currentSel.toString().trim().length > 0) return;
@@ -299,7 +299,6 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
                   e.preventDefault();
                   salvar();
                 } else if (e.key === 'Escape') {
-                  e.preventDefault();
                   cancelar();
                 }
               }}

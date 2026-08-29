@@ -2,7 +2,7 @@ import React from 'react';
 import {
   aplicarMascaraCampo,
   normalizarValorCampo,
-} from '../../utils/documentUtils';
+} from '../../../utils/documentUtils';
 
 export interface TabelaAcessoInfo {
   listaNome: string;
@@ -11,7 +11,7 @@ export interface TabelaAcessoInfo {
   listaAtual: any[];
 }
 
-interface DocumentInlineTableAccessProps {
+export interface DocumentInlineTableAccessProps {
   id: string; // id do campo da tabela (usado no foco/destaque)
   caminho: string; // caminho original no template (ex.: tabela_testes.descricao[0])
   valorBruto: any; // valor da célula ou lista concatenada da coluna
@@ -88,8 +88,6 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
       const itens = parseListaPreservandoVazios(val);
 
       // Preserva o número de linhas existentes, atribuindo cada item à linha correspondente.
-      // Posições vazias (item '') também são preservadas (a linha permanece com a coluna vazia),
-      // de modo que a última linha não é descartada. Só remove linhas totalmente vazias.
       const numLinhas = Math.max(listaAtual.length, itens.length);
       const novaLista: any[] = [];
       for (let i = 0; i < numLinhas; i++) {
@@ -120,7 +118,6 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
     if (!ehColunaInteira) {
       salvarAcesso(valFinal);
     } else {
-      // Coluna inteira: salva a string CSV bruta (parse preserva posições vazias)
       salvarAcesso(String(raw ?? ''));
     }
     setEditando(false);
@@ -159,17 +156,12 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
     }, 260);
   };
 
-  // Cita cada valor com aspas duplas (escapando aspas internas) para o parser
-  // valoresDaLista tratar itens com vírgula como um único item (ex.: "Servidor, Cloud").
-  // Valores vazios viram "" para preservar a posição/linha.
   const citarValor = (valor: any): string => {
     const str = String(valor ?? '').trim();
     if (str === '') return '""';
     return `"${str.replace(/"/g, '\\"')}"`;
   };
 
-  // Divide o texto do editor em itens, respeitando aspas duplas e preservando
-  // posições vazias (segmento vazio ou "" viram item '').
   const parseListaPreservandoVazios = (texto: string): string[] => {
     const itens: string[] = [];
     let atual = '';
@@ -225,7 +217,6 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
     let initialVal: string = '';
     if (ehColunaInteira) {
       const lista = Array.isArray(tabelaAcesso.listaAtual) ? tabelaAcesso.listaAtual : [];
-      // Preserva posições vazias (representadas como ""), sem filtrar linhas.
       initialVal = lista
         .map(linha => (linha && typeof linha === 'object' ? linha[tabelaAcesso.coluna] : ''))
         .map(citarValor)

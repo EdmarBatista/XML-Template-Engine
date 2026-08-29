@@ -1,18 +1,10 @@
 /**
  * ============================================================================
- * DocumentConditionalNode
+ * DocumentConditionalNode (logic)
  * ============================================================================
  *
- * Atribuições & Responsabilidades:
- * 1. Avaliar em tempo real a expressão lógica contida no atributo `expr`
- *    (ex.: `<if expr="tem_garantia == 'sim'">`) contra o escopo de dados.
- * 2. Suportar duas variantes de renderização:
- *    - DocumentInlineConditionalNode: Condicional no fluxo de texto/frases.
- *    - DocumentBlockConditionalNode: Condicional em nível de bloco estrutural.
- * 3. Identificar variáveis envolvidas na expressão para fornecer:
- *    - Feedback visual quando o campo correspondente estiver destacado no formulário.
- *    - Interatividade de clique para rolar e focar automaticamente no campo de origem.
- * 4. Omitir a renderização do nó (retornar `null`) caso a expressão seja avaliada como falsa.
+ * Avaliação e renderização de nós condicionais (<if expr="...">).
+ * Suporta modo inline (dentro de parágrafos) e modo bloco (múltiplos parágrafos).
  */
 
 import React from 'react';

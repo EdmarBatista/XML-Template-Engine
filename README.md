@@ -52,7 +52,28 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 │   ├── components/         # Componentes da interface
 │   │   ├── CodeMirrorEditor.tsx    # Wrapper reutilizável do CodeMirror
 │   │   ├── DocumentViewer.tsx      # Visualizador de documento com suporte A4/Fluido
-│   │   ├── DocumentViewer/         # Renderizadores do documento (AST, células, tabelas, variáveis)
+│   │   ├── DocumentViewer/         # Renderizadores modulares do documento (AST, blocos, inline, lógica)
+│   │   │   ├── DocumentA4Canvas.tsx        # Canvas e container de página física A4 e modo fluido
+│   │   │   ├── DocumentNodeRenderer.tsx    # Orquestrador raiz e ponto de entrada da AST
+│   │   │   ├── index.ts                    # Barrel de exportação do DocumentViewer
+│   │   │   ├── blocks/                     # Nós de nível estrutural/bloco
+│   │   │   │   ├── DocumentBlockDispatcher.tsx # Despachante e gerenciador de blocos e buffers
+│   │   │   │   ├── DocumentSectionNode.tsx     # Renderizador de seções (<secao>), títulos e numeração
+│   │   │   │   ├── DocumentParagraphNode.tsx   # Renderizador de parágrafos (<p>) e quebras de linha
+│   │   │   │   ├── DocumentListNode.tsx        # Renderizador de listas ordenadas e com marcadores
+│   │   │   │   ├── DocumentTableNode.tsx       # Renderizador de tabelas (<tabela>) com linhas e loops
+│   │   │   │   └── index.ts                    # Barrel de blocos estruturais
+│   │   │   ├── inline/                     # Nós e variáveis de nível inline
+│   │   │   │   ├── DocumentInlineRenderer.tsx  # Despachante e renderizador de nós inline
+│   │   │   │   ├── DocumentInlineVariable.tsx  # Variável interativa com foco e edição inline
+│   │   │   │   ├── DocumentInlineTableAccess.tsx # Acesso a células e colunas de tabelas
+│   │   │   │   ├── DocumentInlineAutoTable.tsx   # Grade dinâmica gerada automaticamente
+│   │   │   │   ├── DocumentTableCell.tsx         # Célula de tabela com edição inline unificada
+│   │   │   │   ├── textVariableProcessor.tsx     # Processador e interpolador de {{chave|filtro}}
+│   │   │   │   └── index.ts                    # Barrel de nós inline
+│   │   │   └── logic/                      # Avaliação e renderização condicional
+│   │   │       ├── DocumentConditionalNode.tsx # Avaliação interativa de <if expr="...">
+│   │   │       └── index.ts                    # Barrel de lógica condicional
 │   │   ├── ModelModal.tsx          # Inspetor de variáveis e modelo AST
 │   │   ├── ModelModal/VarsTabs.tsx # Abas de Variáveis (edição + resumo)
 │   │   ├── Sidebar.tsx             # Formulário dinâmico com grupos e campos

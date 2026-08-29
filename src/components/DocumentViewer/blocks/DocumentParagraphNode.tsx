@@ -1,21 +1,3 @@
-/**
- * ============================================================================
- * DocumentParagraphNode
- * ============================================================================
- *
- * Atribuições & Responsabilidades:
- * 1. Gerenciar a renderização de nós de parágrafo (<p>, <paragrafo>) e buffers
- *    de nós inline contíguos do documento.
- * 2. Dividir o conteúdo em linhas lógicas via utilitário `dividirEmLinhas`.
- * 3. Calcular e injetar os prefixos de numeração sequencial hierárquica
- *    (ex.: "1.", "1.1.", "2.3.1.") quando a numeração de blocos estiver ativa.
- * 4. Aplicar classes de alinhamento de texto (justify, center, right, left)
- *    e escalas dinâmicas de fonte (`fontScale`).
- * 5. Emitir metadados `data-word-*` (data-word-type="paragrafo", data-word-align,
- *    data-word-level, data-word-numerado) consumidos pelo extrator DOM para exportação
- *    Word (.docx) e PDF com paridade visual.
- */
-
 import React from 'react';
 import { AstNode, NumberingContext } from '../../../types';
 import { dividirEmLinhas } from '../../../utils/paragraphs';

@@ -1,11 +1,11 @@
 import React from 'react';
-import { FieldMetadata } from '../../types';
+import { FieldMetadata } from '../../../types';
 import {
   aplicarMascaraCampo,
   normalizarValorCampo,
-} from '../../utils/documentUtils';
+} from '../../../utils/documentUtils';
 
-interface DocumentInlineVariableProps {
+export interface DocumentInlineVariableProps {
   id: string;
   valorBruto: any;
   valorExibido: string;

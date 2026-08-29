@@ -1,5 +1,5 @@
 import React from 'react';
-import { AstNode, NumberingContext } from '../../types';
+import { AstNode, NumberingContext } from '../../../types';
 
 export interface DocumentSectionNodeProps {
   node: AstNode;
@@ -132,4 +132,3 @@ export const DocumentSectionNode: React.FC<DocumentSectionNodeProps> = (props) =
     props.contextoLocal
   )}</>;
 };
-

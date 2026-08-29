@@ -1,15 +1,15 @@
 import React from 'react';
-import { AstNode, FormStructure } from '../../types';
+import { AstNode, FormStructure } from '../../../types';
 import {
   formatarItemForeach,
   obterValorPorCaminho,
   valoresDaLista,
-} from '../../utils/documentUtils';
-import { avaliarExpressao } from '../../utils/expressionEvaluator';
-import { DocumentTableCell } from './DocumentTableCell';
+} from '../../../utils/documentUtils';
+import { avaliarExpressao } from '../../../utils/expressionEvaluator';
+import { DocumentTableCell } from '../inline/DocumentTableCell';
 import { Plus } from 'lucide-react';
 
-interface DocumentTableNodeProps {
+export interface DocumentTableNodeProps {
   node: AstNode;
   blockKey: string;
   fontScale: number;

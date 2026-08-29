@@ -1,20 +1,3 @@
-/**
- * ============================================================================
- * DocumentListNode
- * ============================================================================
- *
- * Atribuições & Responsabilidades:
- * 1. Renderizar listas ordenadas (<ol>, <lista tipo="numerada">) e não-ordenadas
- *    (<ul>, <lista>) com estilização tipográfica adaptativa.
- * 2. Processar recursivamente os itens de lista (<item>, <li>).
- * 3. Suportar blocos condicionais (<if>) aninhados dentro da estrutura de itens da lista.
- * 4. Suportar iterações dinâmicas (<foreach>) diretamente dentro da lista, permitindo
- *    a geração de itens a partir de arrays de dados e tabelas dinâmicas com injeção
- *    de índices auxiliares (_indice, index, numero).
- * 5. Emitir atributos semânticos `data-word-type="lista"` e `data-word-type="item-lista"`
- *    para exportação precisa no Word (.docx) e PDF.
- */
-
 import React from 'react';
 import { AstNode } from '../../../types';
 import { avaliarExpressao } from '../../../utils/expressionEvaluator';
