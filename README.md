@@ -84,6 +84,15 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 │   │   ├── usePreferencias.ts      # Preferências de interface + persistência
 │   │   ├── useCamposFoco.ts        # Foco/destaque bidirecional documento↔sidebar
 │   │   └── useToast.ts             # Toast simples
+│   ├── hooks_App/          # Hooks orquestradores de alto nível do App.tsx
+│   │   ├── index.ts                # Barrel de exportação de hooks_App
+│   │   ├── useDocumentEngine.ts    # Orquestração do template XML, AST e sincronização de dados
+│   │   ├── useDocumentExporters.ts # Camada unificada de exportações (Word, PDF, Impressão, JSON, ZIP)
+│   │   ├── useFilePackageActions.ts# Ações de upload/download de pacotes de arquivo
+│   │   ├── useFormHistory.ts       # Histórico de desfazer/refazer (Undo/Redo)
+│   │   ├── useKeyboardShortcuts.ts # Gerenciador de atalhos de teclado globais
+│   │   ├── useModalsManager.ts     # Gerenciamento de estado dos modais
+│   │   └── useSidebarResizer.ts    # Redimensionamento dinâmico da barra lateral
 │   ├── constants/
 │   │   └── documentTheme.ts        # Constantes centralizadas de tipografia, cores, bordas e tabelas
 │   ├── data/
