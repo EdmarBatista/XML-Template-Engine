@@ -44,12 +44,15 @@ export function useCamposFoco({ sidebarCollapsed, irParaCampoAtivo, setSidebarCo
     };
   }, []);
 
-  // Atualização de campos com emissão de destaque
+  // Atualização de campos com emissão de destaque e posicionamento
   const handleUpdateField = React.useCallback((id: string, value: any, origem = 'painel') => {
     setDados(prev => ({ ...prev, [id]: value }));
     setUltimoCampoAlterado(id);
     setOrigemCampoAlterado(origem);
     setVersaoCampoAlterado(v => v + 1);
+    if (origem === 'painel') {
+      setCampoFocadoDoc({ id, timestamp: Date.now(), origem: 'painel' });
+    }
   }, [setDados]);
 
   // Foco acionado ao clicar no campo do Sidebar -> rola para o documento se ativo

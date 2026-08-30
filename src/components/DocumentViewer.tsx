@@ -73,20 +73,33 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
 
     if (deslocarDocumento && campoFocadoDoc?.origem === 'painel' && docRef.current) {
       setTimeout(() => {
-        const el = docRef.current?.querySelector(`[data-vars*="${CSS.escape(targetField)}"]`);
+        const el = docRef.current?.querySelector(
+          `[data-vars~="${CSS.escape(targetField)}"], [data-vars*="${CSS.escape(targetField)}"], [data-field-id="${CSS.escape(targetField)}"]`
+        );
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 40);
+      }, 50);
     }
   }, [campoFocadoDoc, deslocarDocumento]);
 
-  // Efeito de destaque suave quando um campo é alterado
+  // Efeito de destaque suave e scroll quando um campo é alterado
   React.useEffect(() => {
     if (!ultimoCampoAlterado) return;
     const now = Date.now();
     setDestaquesAtivos(prev => ({ ...prev, [ultimoCampoAlterado]: now + 7000 }));
-  }, [ultimoCampoAlterado, versaoCampoAlterado]);
+
+    if (deslocarDocumento && origemCampoAlterado === 'painel' && docRef.current) {
+      setTimeout(() => {
+        const el = docRef.current?.querySelector(
+          `[data-vars~="${CSS.escape(ultimoCampoAlterado)}"], [data-vars*="${CSS.escape(ultimoCampoAlterado)}"], [data-field-id="${CSS.escape(ultimoCampoAlterado)}"]`
+        );
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    }
+  }, [ultimoCampoAlterado, versaoCampoAlterado, origemCampoAlterado, deslocarDocumento]);
 
   // Limpa timers de destaque antigos
   React.useEffect(() => {

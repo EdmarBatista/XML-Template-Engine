@@ -11,6 +11,7 @@ import {
   cmParaPt,
   extrairSegmentosDeDom,
   normalizarSegmentos,
+  paraHexCorComHash,
   SegmentoDom,
 } from './domDocumentExtractor';
 
@@ -52,15 +53,22 @@ const PDF_PADROES: Required<PdfExportOptions> = {
   ...DOCUMENT_THEME.pdf.defaultOptions,
 };
 
-function segmentosParaPdfText(segmentos: SegmentoDom[]): any[] {
-  return (segmentos || []).map(seg => ({
-    text: seg.texto,
-    fontSize: seg.tamanhoFonte,
-    bold: seg.bold,
-    italics: seg.italic,
-    decoration: seg.underline ? 'underline' : undefined,
-    color: seg.cor,
-  }));
+function segmentosParaPdfText(segmentos: SegmentoDom[], corPadrao?: string): any[] {
+  return (segmentos || []).map(seg => {
+    const decorations = [];
+    if (seg.underline) decorations.push('underline');
+    if (seg.strike) decorations.push('lineThrough');
+    const cor = seg.cor ? paraHexCorComHash(seg.cor) : (corPadrao ? paraHexCorComHash(corPadrao) : undefined);
+    return {
+      text: seg.texto,
+      fontSize: seg.tamanhoFonte,
+      bold: seg.bold,
+      italics: seg.italic,
+      decoration: decorations.length > 0 ? decorations : undefined,
+      background: seg.mark ? 'yellow' : undefined,
+      color: cor,
+    };
+  });
 }
 
 /**
@@ -76,7 +84,10 @@ function converterTabelaDomPdf(
   const cellTexts: string[][] = [];
 
   const body = trElements.map((tr, rIdx) => {
-    const cellElements = Array.from(tr.querySelectorAll('th, td'));
+    const cellElements = Array.from(tr.querySelectorAll('th, td')).filter(
+      c => c.getAttribute('data-ignore-export') !== 'true' &&
+           c.getAttribute('data-word-ignore') !== 'true'
+    );
     const isHeaderRow = tr.querySelector('th') !== null || rIdx === 0;
     const rowTexts: string[] = [];
 
@@ -92,7 +103,7 @@ function converterTabelaDomPdf(
           tamanhoFonte: isHeader ? DOCUMENT_THEME.typography.sizes.tableHeaderPt : DOCUMENT_THEME.typography.sizes.tableBodyPt,
           cor: isHeader ? DOCUMENT_THEME.colors.text : undefined,
         },
-        opcoes
+        isHeader ? { ...opcoes, variaveisVermelhas: false } : opcoes
       );
       const normalizados = normalizarSegmentos(segmentos);
       const textRuns = segmentosParaPdfText(normalizados);
@@ -108,9 +119,11 @@ function converterTabelaDomPdf(
 
     cellTexts.push(rowTexts);
     return cells;
-  });
+  }).filter(row => row.length > 0);
 
-  const maxCols = Math.max(...body.map(r => r.length), 1);
+  if (!body.length) return null;
+
+  const maxCols = Math.max(...body.map(r => r?.length || 0), 1);
   const widths = calcularLargurasColunasTabela(cellTexts, maxCols);
 
   return {
@@ -299,6 +312,58 @@ function converterElementosBlocoDomPdf(
     if (wordType === 'paragrafo' || tag === 'p') {
       const rawLevel = el.getAttribute('data-word-level');
       const levelPara = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
+
+      const tableInside = el.querySelector('table, [data-word-type="tabela-container"]');
+      if (tableInside) {
+        const childNodes = Array.from(el.childNodes);
+        let bufferNodes: Node[] = [];
+
+        const flushBufferAsPdfParagraph = () => {
+          if (bufferNodes.length === 0) return;
+          const tempDiv = document.createElement('div');
+          bufferNodes.forEach(n => tempDiv.appendChild(n.cloneNode(true)));
+          const segmentos = extrairSegmentosDeDom(tempDiv, {}, opcoes);
+          const normalizados = normalizarSegmentos(segmentos);
+          bufferNodes = [];
+
+          if (normalizados.length > 0) {
+            const recuoCalculadoCm = calcularRecuoHierarquicoCm(levelPara);
+            const recuoFinalCm = recuoSecaoCm > 0 ? recuoSecaoCm : recuoCalculadoCm;
+            const recuoFinalPt = cmParaPt(recuoFinalCm);
+
+            resultado.push({
+              text: segmentosParaPdfText(normalizados),
+              fontSize: opcoes.tamanhoFonte,
+              alignment: opcoes.alinhamento || 'justify',
+              margin: [recuoFinalPt, DOCUMENT_THEME.spacing.paragraph.beforePt, 0, DOCUMENT_THEME.spacing.paragraph.afterPt],
+              lineHeight: DOCUMENT_THEME.typography.lineHeights.body,
+              color: opcoes.corTexto,
+            });
+          }
+        };
+
+        for (const child of childNodes) {
+          if (child.nodeType === Node.ELEMENT_NODE) {
+            const childEl = child as HTMLElement;
+            if (
+              childEl.tagName === 'TABLE' ||
+              childEl.getAttribute('data-word-type') === 'tabela-container' ||
+              childEl.querySelector('table')
+            ) {
+              flushBufferAsPdfParagraph();
+              const actualTable = childEl.tagName === 'TABLE' ? childEl : childEl.querySelector('table');
+              if (actualTable) {
+                const tabela = converterTabelaDomPdf(actualTable as HTMLElement, opcoes);
+                if (tabela) resultado.push(tabela);
+              }
+              continue;
+            }
+          }
+          bufferNodes.push(child);
+        }
+        flushBufferAsPdfParagraph();
+        return;
+      }
 
       const segmentos = extrairSegmentosDeDom(el, {}, opcoes);
       const normalizados = normalizarSegmentos(segmentos);

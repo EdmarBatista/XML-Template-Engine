@@ -8,6 +8,8 @@ export interface SegmentoDom {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
+  strike?: boolean;
+  mark?: boolean;
   cor?: string;
   tamanhoFonte?: number;
   fonte?: string;
@@ -50,8 +52,61 @@ export function ptParaHalfPoint(pt: number): number {
 }
 
 export function paraHexCor(valor?: string, padrao = '000000'): string {
-  const texto = String(valor || '').replace('#', '').trim();
-  return /^[0-9a-fA-F]{6}$/.test(texto) ? texto.toUpperCase() : padrao;
+  if (!valor) return padrao;
+  const str = String(valor).trim();
+  if (!str) return padrao;
+
+  // Se já for hex de 6 dígitos (#0284c7 ou 0284c7)
+  const hex6Match = str.match(/^#?([0-9a-fA-F]{6})$/);
+  if (hex6Match) {
+    return hex6Match[1].toUpperCase();
+  }
+
+  // Se for hex de 3 dígitos (#08c -> 0088CC)
+  const hex3Match = str.match(/^#?([0-9a-fA-F]{3})$/);
+  if (hex3Match) {
+    const r = hex3Match[1][0];
+    const g = hex3Match[1][1];
+    const b = hex3Match[1][2];
+    return `${r}${r}${g}${g}${b}${b}`.toUpperCase();
+  }
+
+  // Se for rgb ou rgba: rgb(2, 132, 199) ou rgba(2, 132, 199, 1)
+  const rgbMatch = str.match(/rgba?\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/i);
+  if (rgbMatch) {
+    const r = Math.min(255, Math.max(0, parseInt(rgbMatch[1], 10))).toString(16).padStart(2, '0');
+    const g = Math.min(255, Math.max(0, parseInt(rgbMatch[2], 10))).toString(16).padStart(2, '0');
+    const b = Math.min(255, Math.max(0, parseInt(rgbMatch[3], 10))).toString(16).padStart(2, '0');
+    return `${r}${g}${b}`.toUpperCase();
+  }
+
+  // Nomes de cores CSS mais comuns
+  const CORES_NOME: Record<string, string> = {
+    black: '000000',
+    white: 'FFFFFF',
+    red: 'FF0000',
+    blue: '0000FF',
+    green: '008000',
+    gray: '808080',
+    grey: '808080',
+    yellow: 'FFFF00',
+    orange: 'FFA500',
+    purple: '800080',
+    cyan: '00FFFF',
+    magenta: 'FF00FF',
+  };
+  const nomeLower = str.toLowerCase();
+  if (CORES_NOME[nomeLower]) {
+    return CORES_NOME[nomeLower];
+  }
+
+  return padrao;
+}
+
+export function paraHexCorComHash(valor?: string, padrao = '#000000'): string {
+  if (!valor) return padrao;
+  const hex = paraHexCor(valor, padrao.replace('#', ''));
+  return `#${hex}`;
 }
 
 /**
@@ -96,8 +151,20 @@ export function extrairSegmentosDeDom(
 
   const el = node as HTMLElement;
 
-  if (el.getAttribute('data-ignore-export') === 'true') {
+  if (
+    el.getAttribute('data-ignore-export') === 'true' ||
+    el.getAttribute('data-word-ignore') === 'true' ||
+    el.tagName === 'BUTTON'
+  ) {
     return segmentos;
+  }
+
+  // Não extrair tabelas inteiras como texto corrido de parágrafo
+  if (
+    el.getAttribute('data-word-type') === 'tabela-container' ||
+    el.tagName === 'TABLE'
+  ) {
+    return [];
   }
 
   const isWordNum =
@@ -174,7 +241,34 @@ export function extrairSegmentosDeDom(
     novoEstilo.underline = true;
   }
 
-  const isVariavel = el.hasAttribute('data-vars') || el.classList.contains('variavel-doc');
+  if (
+    el.tagName === 'S' ||
+    el.classList.contains('line-through')
+  ) {
+    novoEstilo.strike = true;
+  }
+
+  if (
+    el.tagName === 'MARK' ||
+    el.classList.contains('bg-amber-200')
+  ) {
+    novoEstilo.mark = true;
+  }
+
+  const attrCor =
+    el.getAttribute('data-cor') ||
+    el.getAttribute('color') ||
+    el.style.color;
+  if (attrCor) {
+    novoEstilo.cor = attrCor;
+  }
+
+  const isTableStructure =
+    el.getAttribute('data-word-type') === 'tabela-container' ||
+    el.tagName === 'TABLE' ||
+    el.tagName === 'THEAD' ||
+    el.tagName === 'TH';
+  const isVariavel = !isTableStructure && (el.hasAttribute('data-vars') || el.classList.contains('variavel-doc'));
   if (isVariavel && opcoes.variaveisVermelhas) {
     novoEstilo.cor = opcoes.corVariavel || '#dc2626';
   }
@@ -222,6 +316,7 @@ export function calcularLargurasColunasTabela(
   if (maxCols <= 1) return ['*'];
 
   // Determinar o comprimento máximo e médio de caracteres em cada coluna
+  maxCols = Math.max(1, Math.floor(Number(maxCols) || 1));
   const maxLenPerCol: number[] = Array(maxCols).fill(0);
   const totalLenPerCol: number[] = Array(maxCols).fill(0);
   const rowCountsPerCol: number[] = Array(maxCols).fill(0);

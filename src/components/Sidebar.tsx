@@ -209,6 +209,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         id={`campo-container-${campo.id}`}
         data-field-id={campo.id}
         onPointerDown={() => onFieldFocus?.(campo.id)}
+        onClick={() => onFieldFocus?.(campo.id)}
+        onFocusCapture={() => onFieldFocus?.(campo.id)}
         style={{
           '--campo-border-orig': isCondicional ? 'rgba(191, 219, 254, 0.8)' : '#e2e8f0',
         } as React.CSSProperties}

@@ -1,3 +1,4 @@
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { viteSingleFile } from 'vite-plugin-singlefile';
@@ -22,7 +23,7 @@ function standaloneRootPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), viteSingleFile(), standaloneRootPlugin()],
+    plugins: [react(), tailwindcss(), nodePolyfills(), viteSingleFile(), standaloneRootPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

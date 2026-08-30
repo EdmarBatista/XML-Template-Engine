@@ -28,6 +28,12 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
   - Consulta automática de CEP via **ViaCEP** e CNPJ via **ReceitaWS/OpenCNPJ**.
   - Formatação de valores e datas por extenso em português.
 - 💾 **Persistência Local**: Todo o estado (modelos customizados, dados preenchidos, zoom, preferências de barra lateral e exibição) é persistido no `localStorage`.
+- 📥 **Arrastar e Soltar (Drag & Drop) e Carregamento Inteligente de Dados**:
+  - **Arrastar XML + JSON juntos**: Cria o modelo customizado e armazena o JSON como seu conjunto de dados de exemplo.
+  - **Arrastar `.json` isolado**: Preenche imediatamente os dados do formulário ativo.
+  - **Arrastar `.xml` isolado**: Importa o novo modelo de documento.
+  - **Botão `+` (Dados de Exemplo)**: Modelos que possuem um conjunto de dados de exemplo associado exibem um botão verde `+` no seletor de modelos. Clicar no botão restaura instantaneamente os dados de exemplo pré-configurados para o formulário.
+  - **Limpeza Segura do Formulário**: A ação de limpar formulário reseta apenas os dados preenchidos da sessão atual no `localStorage`, preservando o modelo e seu atalho `+` para recarregar dados de exemplo quando desejar.
 
 ---
 
@@ -288,9 +294,9 @@ O documento suporta interpolação de variáveis, aplicação de filtros via sin
 |---|---|
 | `<titulo>` / `<subtitulo>` | Títulos e subtítulos principais centralizados ou alinhados |
 | `<secao titulo="..." numerar="true">` | Seção com suporte a aninhamento e recuo automático de 0,5 cm por nível |
-| `<p>` / `<paragrafo>` | Parágrafo com alinhamento justificado e espaçamento ajustado |
-| `<b>`, `<i>`, `<u>` | Formatações inline de texto (negrito, itálico e sublinhado) |
-| `<lista numerada="true/false">` | Listas ordenadas ou com marcadores |
+| `<p>` / `<p>` | Parágrafo com alinhamento justificado e espaçamento ajustado |
+| `<b>`, `<i>`, `<u>`, `<s>`, `<mark>` | Formatações inline de texto (negrito, itálico e sublinhado) |
+| `<lista> ou <lista_numerada>` | Listas ordenadas ou com marcadores |
 | `<tabela>` | Tabelas com suporte a `<cabecalho>`, `<linha>` e `<celula>` |
 | `<if expr="...">` | Exibição condicional de parágrafos ou blocos inteiros |
 | `<foreach var="..." lista="...">` | Repetição dinâmica a partir de listas CSV ou quebras de linha |

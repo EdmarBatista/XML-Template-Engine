@@ -81,7 +81,7 @@ export const bateriaTestes: TemplateItem =
             Número inteiro por extenso: {{inteiro | numeroPorExtenso}}.
             Número inteiro com extenso: {{inteiro | numeroPorExtenso}}.
             Número inteiro em romano: {{inteiro | romano}}.
-            Valor monetário: <b>{{moeda | moeda}}</b>.
+            Valor monetário: <b>R$ {{moeda | moeda}}</b>.
             Valor por extenso: <i>{{moeda | moedaPorExtenso}}</i>.
         </secao>
 
@@ -147,13 +147,13 @@ export const bateriaTestes: TemplateItem =
         </secao>
 
         <secao titulo="Lista e foreach">
-            <lista numerada="true">
+            <lista>
                 <foreach var="item" lista="lista">
                     <item>Item dinâmico: <b>{{item}}</b>.</item>
                 </foreach>
             </lista>
 
-            <lista numerada="false">
+            <lista>
                 <item>Item estático 1.</item>
                 <item>Item estático 2.</item>
                 <item><i>Item estático 3 com estilo itálico.</i></item>
@@ -165,8 +165,8 @@ export const bateriaTestes: TemplateItem =
             {{tabela_testes}}
 
             <p><b>Acessos pontuais a linhas e células específicas da tabela:</b></p>
-            <p>• Primeiro item (via coluna indexada): <b>{{tabela_testes.descricao[0]}}</b> (Código: {{tabela_testes.codigo[0]}}, Valor: {{tabela_testes.valor_unitario[0] | moeda}})</p>
-            <p>• Segundo item (via linha indexada): <b>{{tabela_testes[1].descricao}}</b> (Valor: {{tabela_testes[1].valor_unitario | moeda}})</p>
+            <p>• Primeiro item (via coluna indexada): <b>{{tabela_testes.descricao[0]}}</b> (Código: {{tabela_testes.codigo[0]}}, Valor: R$ {{tabela_testes.valor_unitario[0] | moeda}})</p>
+            <p>• Segundo item (via linha indexada): <b>{{tabela_testes[1].descricao}}</b> (Valor: R$ {{tabela_testes[1].valor_unitario | moeda}})</p>
             <p>• Coluna inteira de descrições concatenadas: <i>{{tabela_testes.descricao}}</i></p>
         </secao>
 
@@ -186,7 +186,7 @@ export const bateriaTestes: TemplateItem =
                         <celula>{{item.codigo}}</celula>
                         <celula>{{item.descricao}}</celula>
                         <celula>{{item.quantidade}}</celula>
-                        <celula>{{item.valor_unitario | moeda}}</celula>
+                        <celula>R$ {{item.valor_unitario | moeda}}</celula>
                     </linha>
                 </foreach>
             </tabela>
@@ -222,7 +222,7 @@ export const bateriaTestes: TemplateItem =
                 <linha>
                     <celula>Moeda</celula>
                     <celula>{{moeda}}</celula>
-                    <celula>{{moeda | moeda}}</celula>
+                    <celula>R$ {{moeda | moeda}}</celula>
                 </linha>
                 <linha>
                     <celula>CNPJ</celula>
@@ -243,4 +243,25 @@ export const bateriaTestes: TemplateItem =
         </secao>
     </conteudo>
 </documento>`,
+    json: `{
+  "texto": "Contratação de Tecnologia e Soluções Digitais",
+  "texto_multilinha": "Linha 1 de descrição detalhada.\\nLinha 2 de especificações técnicas.\\nLinha 3 com requisitos adicionais.",
+  "email": "contato@empresa.com.br",
+  "data": "2026-08-29",
+  "cnpj": "12345678000199",
+  "cep": "30123456",
+  "numero": "42",
+  "inteiro": "10",
+  "moeda": "15450.75",
+  "selecao": "Opção B",
+  "radio": "Sim",
+  "checkbox": true,
+  "divisao_objeto": "varios",
+  "quantidade_itens": "5",
+  "tabela_testes": [
+    { "codigo": "COD-01", "descricao": "Servidor Cloud Enterprise", "quantidade": 2, "valor_unitario": "4.500,00" },
+    { "codigo": "COD-02", "descricao": "Licença Banco de Dados", "quantidade": 1, "valor_unitario": "8.200,00" }
+  ],
+  "lista": "Servidores Cloud, Banco de Dados, Segurança de Rede, Backup Diário"
+}`
   };

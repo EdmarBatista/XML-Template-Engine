@@ -74,6 +74,8 @@ export function extrairCampos(formularioNode: Element): FormStructure {
             colTipo = 'date';
           } else if (rawTipo === 'select' || rawTipo === 'selecao') {
             colTipo = 'select';
+          } else if (rawTipo === 'radio' || rawTipo === 'radiogroup' || rawTipo === 'opcao') {
+            colTipo = 'radio';
           } else if (rawTipo === 'textarea' || rawTipo === 'texto_longo' || rawTipo === 'textolongo') {
             colTipo = 'textarea';
           } else if (rawTipo === 'checkbox' || rawTipo === 'booleano') {

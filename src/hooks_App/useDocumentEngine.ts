@@ -81,12 +81,18 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         const novoEstado = construirEstadoInicial(novoModelo.formulario.campos);
         try {
           const savedForTemplate = StorageService.loadFormData(template.id);
-          if (savedForTemplate) {
+          if (savedForTemplate && Object.keys(savedForTemplate).length > 0) {
             Object.keys(novoEstado).forEach(k => {
               if (savedForTemplate[k] !== undefined) {
                 novoEstado[k] = savedForTemplate[k];
               }
             });
+          } else if (template.json) {
+            try {
+              const parsed = JSON.parse(template.json);
+              const payload = parsed.dados ? parsed.dados : parsed;
+              Object.assign(novoEstado, payload);
+            } catch {}
           }
         } catch {}
 
@@ -127,11 +133,13 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
 
           if (!isDefault) {
             const idx = nextList.findIndex(t => t.id === currentTemplate.id);
+            const jsonStr = novosDados && Object.keys(novosDados).length > 0 ? JSON.stringify(novosDados, null, 2) : undefined;
             if (idx >= 0) {
               const updated: TemplateItem = {
                 ...nextList[idx],
                 nome: nomeFinal,
                 xml: novoXml,
+                json: jsonStr ?? nextList[idx].json,
               };
               nextList[idx] = updated;
               targetId = updated.id;
@@ -144,12 +152,14 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
                 descricao: 'Modelo personalizado',
                 categoria: 'Personalizados',
                 xml: novoXml,
+                json: jsonStr,
               };
               nextList.unshift(newTpl);
               targetId = newId;
               setCurrentTemplate(newTpl);
             }
           } else {
+            const jsonStr = novosDados && Object.keys(novosDados).length > 0 ? JSON.stringify(novosDados, null, 2) : currentTemplate.json;
             const newId = 'custom-' + Date.now();
             const newTpl: TemplateItem = {
               id: newId,
@@ -157,6 +167,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
               descricao: `Cópia personalizada de ${currentTemplate.nome}`,
               categoria: 'Personalizados',
               xml: novoXml,
+              json: jsonStr,
             };
             nextList.unshift(newTpl);
             targetId = newId;
@@ -198,12 +209,14 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         }
         const novoModelo = criarModeloIntermediario(doc, nomeLimpo);
 
+        const jsonPayloadStr = jsonPayload ? JSON.stringify(jsonPayload.dados ? jsonPayload.dados : jsonPayload, null, 2) : undefined;
         let targetTemplate: TemplateItem = {
           id: 'custom-' + Date.now(),
           nome: nomeLimpo,
           descricao: 'Modelo personalizado importado',
           categoria: 'Personalizados',
           xml: novoXml,
+          json: jsonPayloadStr,
         };
 
         setCustomTemplates(prev => {
@@ -214,6 +227,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
               ...prev[idx],
               xml: novoXml,
               nome: nomeLimpo,
+              json: jsonPayloadStr ?? prev[idx].json,
             };
             nextList[idx] = targetTemplate;
           } else {

@@ -201,7 +201,7 @@ export const termoReferencia: TemplateItem =
 
         <if expr="necessidade_material == 'Com fornecimento de materiais'">
             A contratação compreenderá também o fornecimento dos materiais, insumos e demais componentes necessários à adequada execução dos serviços, observadas as especificações e padrões de qualidade estabelecidos pela Administração.
-            O valor unitário de referência é de <b>{{valor_unitario | moeda}}</b>.
+            O valor unitário de referência é de <b>R$ {{valor_unitario | moeda}}</b>.
         </if>
 
         <if expr="necessidade_material == 'Sem fornecimento de materiais'">
@@ -326,7 +326,7 @@ export const termoReferencia: TemplateItem =
         </secao>
 
         <secao titulo="Relação dos Serviços">
-        <lista numerada="true">
+        <lista>
             <foreach var="item" lista="itens_csv">
                 <item><b>{{item}}</b></item>
             </foreach>
@@ -338,7 +338,7 @@ export const termoReferencia: TemplateItem =
 
         <secao titulo="OBRIGAÇÕES DA CONTRATADA">
         Constituem obrigações da contratada:
-        <lista numerada="true">
+        <lista>
             <item>Executar os serviços de acordo com as especificações estabelecidas neste Termo de Referência.</item>
             <item>Disponibilizar profissionais capacitados e em quantidade suficiente para a execução dos serviços.</item>
             <item>Fornecer os equipamentos e ferramentas necessários à execução das atividades, quando aplicável.</item>
@@ -353,7 +353,7 @@ export const termoReferencia: TemplateItem =
 
         <secao titulo="OBRIGAÇÕES DA CONTRATANTE">
         Constituem obrigações da contratante:
-        <lista numerada="true">
+        <lista>
             <item>Fornecer as informações necessárias à adequada execução dos serviços.</item>
             <item>Permitir o acesso dos profissionais autorizados às áreas necessárias à execução das atividades.</item>
             <item>Acompanhar e fiscalizar a execução contratual.</item>
@@ -394,9 +394,9 @@ export const termoReferencia: TemplateItem =
         </secao>
 
         <secao titulo="ESTIMATIVA DO VALOR DA CONTRATAÇÃO">
-        O valor estimado da contratação é de <b>{{valor_estimado | moeda}}</b>.
+        O valor estimado da contratação é de <b>R$ {{valor_estimado | moeda}}</b>.
         Valor estimado por extenso: <b>{{valor_estimado | moedaPorExtenso}}</b>.
-        Valor unitário de referência: <b>{{valor_unitario | moeda}}</b>.
+        Valor unitário de referência: <b>R$ {{valor_unitario | moeda}}</b>.
         <if expr="valor_estimado > 0">
             A contratação possui valor estimado informado e superior a zero.
         </if>
@@ -435,7 +435,7 @@ export const termoReferencia: TemplateItem =
             </linha>
             <linha>
                 <celula>Valor estimado</celula>
-                <celula>{{valor_estimado | moeda}}</celula>
+                <celula>R$ {{valor_estimado | moeda}}</celula>
             </linha>
             <linha>
                 <celula>Valor por extenso</celula>
@@ -485,7 +485,7 @@ export const termoReferencia: TemplateItem =
         Variável com negrito: <b>{{objeto}}</b>.
         Variável com itálico: <i>{{objeto}}</i>.
         Variável sublinhada: <u>{{objeto}}</u>.
-        Variável monetária: <b>{{valor_estimado | moeda}}</b>.
+        Variável monetária: <b>R$ {{valor_estimado | moeda}}</b>.
         Data curta: <b>{{data | data}}</b>.
         Data extensa: <b>{{data | dataPorExtenso}}</b>.
         Número por extenso: <b>{{quantidade_total | numeroPorExtenso}}</b>.
@@ -531,10 +531,10 @@ export const termoReferencia: TemplateItem =
         </if>
 
         <secao titulo="Variáveis dentro de listas">
-        <lista numerada="false">
+        <lista>
             <item>Órgão: <b>{{orgao}}</b></item>
             <item>Unidade: <i>{{unidade}}</i></item>
-            <item>Valor: <b>{{valor_estimado | moeda}}</b></item>
+            <item>Valor: <b>R$ {{valor_estimado | moeda}}</b></item>
             <item>Data: <u>{{data | dataPorExtenso}}</u></item>
         </lista>
         </secao>
@@ -549,7 +549,7 @@ export const termoReferencia: TemplateItem =
             <linha>
                 <celula>Valor</celula>
                 <celula>{{valor_estimado}}</celula>
-                <celula>{{valor_estimado | moeda}}</celula>
+                <celula>R$ {{valor_estimado | moeda}}</celula>
             </linha>
             <linha>
                 <celula>Data</celula>
@@ -574,7 +574,7 @@ export const termoReferencia: TemplateItem =
             <b>Condição 1:</b> há fornecimento de materiais.
             <if expr="qualificacao == 'Sim'">
                 <b>Combinação 1:</b> fornecimento de materiais e exigência de qualificação técnica.
-                Valor da contratação: <b>{{valor_estimado | moeda}}</b>.
+                Valor da contratação: <b>R$ {{valor_estimado | moeda}}</b>.
             </if>
             <if expr="qualificacao == 'Não'">
                 <b>Combinação 2:</b> fornecimento de materiais sem exigência específica de qualificação técnica.
@@ -607,9 +607,9 @@ export const termoReferencia: TemplateItem =
         </secao>
 
         <secao titulo="Foreach com formatação e texto combinado">
-        <lista numerada="true">
+        <lista>
             <foreach var="item" lista="itens_csv">
-                <item>Serviço selecionado: <b>{{item}}</b>. Unidade: <i>{{unidade}}</i>. Valor estimado: <u>{{valor_estimado | moeda}}</u>.</item>
+                <item>Serviço selecionado: <b>{{item}}</b>. Unidade: <i>{{unidade}}</i>. Valor estimado: <u>R$ {{valor_estimado | moeda}}</u>.</item>
             </foreach>
         </lista>
         </secao>
@@ -633,4 +633,65 @@ export const termoReferencia: TemplateItem =
         Este bloco reúne exemplos de variáveis simples, variáveis com filtros, formatação monetária, datas, números por extenso, números romanos, e-mail, CNPJ, CEP, listas, foreach, tabelas, condições booleanas, comparações numéricas, condições aninhadas e combinações entre diferentes campos.
     </secao></conteudo>
 </documento>`,
+    json: `{
+  "orgao": "Ministério do Planejamento e Tecnologia",
+  "unidade": "Secretaria de Governança Digital",
+  "responsavel": "Dr. Carlos Eduardo Ferreira",
+  "processo": "23000.012345/2026-99",
+  "data": "2026-08-29",
+  "descricao_unidade": "Unidade responsável pela gestão e normatização de recursos tecnológicos e contratos estratégicos.",
+  "email_responsavel": "carlos.ferreira@orgao.gov.br",
+  "cnpj": "12345678000199",
+  "cep": "70040010",
+  "objeto": "Contratação de Solução Integrada de Software e Inteligência Documental",
+  "tipo_contratacao": "Serviço",
+  "forma_execucao": "Execução indireta",
+  "modalidade": "Pregão Eletrônico",
+  "urgente": false,
+  "justificativa_urgencia": "",
+  "divisao_objeto": "unico",
+  "quantidade_itens": "1",
+  "observacao_item_unico": "Item indivisível em lote único para garantir interoperabilidade total.",
+  "manutencao": "Preventiva e corretiva",
+  "descricao_preventiva_corretiva": "Manutenção preventiva com rotinas semanais de backup e revisões de segurança, além de suporte corretivo com SLA de 4 horas.",
+  "periodicidade_preventiva": "Semanal e mensal conforme plano de trabalho",
+  "condicoes_corretiva": "Atendimento emergencial remoto e presencial para incidentes críticos.",
+  "continuidade": "Contínuo",
+  "justificativa_continuidade": "Serviço de natureza contínua indispensável para a manutenção operacional dos sistemas corporativos.",
+  "necessidade_material": "Com fornecimento de materiais",
+  "descricao_materiais": "Fornecimento de infraestrutura de nuvem, licenças de banco de dados e certificados SSL corporativos.",
+  "servicos": "Desenvolvimento sob demanda, sustentação de ambientes e treinamento de equipes técnicas.",
+  "prazo_execucao_dias": 365,
+  "prazo_execucao": "12 (doze) meses a partir da ordem de serviço",
+  "vigencia": "12 (doze) meses prorrogáveis na forma da Lei",
+  "inicio_execucao": "2026-09-01",
+  "fim_execucao": "2027-08-31",
+  "valor_estimado": 120000.00,
+  "valor_unitario": 10000.00,
+  "fonte_recurso": "Recursos Próprios - Fonte 100",
+  "dotacao": "Programa de Gestão e Tecnologia 04.122.2000.2000.0001",
+  "criterio_julgamento": "Menor preço",
+  "regime_execucao": "Empreitada por preço global",
+  "qualificacao": "Sim",
+  "tabela_servicos": [
+    {
+      "item": "Sustentação de Sistemas e Nuvem",
+      "unidade": "Mês",
+      "quantidade": 12,
+      "valor_unitario": "7.500,00"
+    },
+    {
+      "item": "Consultoria e Arquitetura de Software",
+      "unidade": "Horas",
+      "quantidade": 100,
+      "valor_unitario": "300,00"
+    }
+  ],
+  "itens_csv": "Sustentação de Nuvem, Segurança de Dados, Backup Contínuo, Suporte Nível 3",
+  "quantidade_total": 12,
+  "justificativa_quantidade": "Quantidade dimensionada com base na média histórica de consumo de horas e suporte técnico.",
+  "fiscal": "Eng. Roberto de Souza",
+  "gestor": "Dra. Mariana Albuquerque",
+  "local_fiscalizacao": "Edifício Sede - Bloco C, Sala 402 - Brasília/DF"
+}`
   };

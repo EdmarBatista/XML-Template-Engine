@@ -41,11 +41,11 @@ export function renderDocumentParagraphNodes({
   const linhas = dividirEmLinhas(nos);
   const paragrafos: React.ReactNode[] = [];
   const alignClass =
-    alinhamentoPadrao === 'center'
+    alinhamentoPadrao === 'centro'
       ? 'text-center'
-      : alinhamentoPadrao === 'right'
+      : alinhamentoPadrao === 'direita'
       ? 'text-right'
-      : alinhamentoPadrao === 'left'
+      : alinhamentoPadrao === 'esquerda'
       ? 'text-left'
       : 'text-justify';
 

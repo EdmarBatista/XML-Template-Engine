@@ -27,6 +27,7 @@
  */
 
 import React from 'react';
+import { AlertTriangle, RotateCcw, X } from 'lucide-react';
 import { DocumentViewer } from './components/DocumentViewer';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ModelModal } from './components/ModelModal';
@@ -45,12 +46,39 @@ import {
   useFilePackageActions,
   useSidebarResizer,
 } from './hooks_App';
+import { DEFAULT_TEMPLATES } from './data/defaultTemplates';
 import { StorageService } from './services/storageService';
 import { construirEstadoInicial } from './utils/xmlParser';
 
 export default function App() {
   // Notificações visuais
   const { toastMessage, showToast } = useToast();
+
+  // Estado inicial derivado do LocalStorage para o template atual
+  const initialFormState = React.useMemo(() => {
+    const defaultTemplateId = (() => {
+      try {
+        const savedId = StorageService.getLastTemplateId();
+        if (savedId) return savedId;
+        const customList = StorageService.loadCustomTemplates();
+        if (customList.length > 0) return customList[0].id;
+      } catch {}
+      return DEFAULT_TEMPLATES[0].id;
+    })();
+
+    const saved = StorageService.loadFormData(defaultTemplateId);
+    if (saved && Object.keys(saved).length > 0) {
+      return saved;
+    }
+    const tpl = DEFAULT_TEMPLATES.find(t => t.id === defaultTemplateId);
+    if (tpl?.json) {
+      try {
+        const parsed = JSON.parse(tpl.json);
+        return parsed.dados ? parsed.dados : parsed;
+      } catch {}
+    }
+    return {};
+  }, []);
 
   // A. Hook de Histórico e Estado dos Dados do Formulário
   const {
@@ -66,7 +94,7 @@ export default function App() {
     ultimoCampoAlterado,
     versaoCampoAlterado,
     origemCampoAlterado,
-  } = useFormHistory();
+  } = useFormHistory({ initialData: initialFormState });
 
   // B. Hook de Ciclo de Vida do Modelo, Templates e Engine XML
   const {
@@ -86,20 +114,31 @@ export default function App() {
     onNovoEstadoGerado: resetFormState,
   });
 
-  // Inicializa e persiste dados do template ativo no LocalStorage
+  // Inicializa e sincroniza dados do template ativo no LocalStorage
   React.useEffect(() => {
     if (modelo) {
       const saved = StorageService.loadFormData(currentTemplate.id);
       if (saved && Object.keys(saved).length > 0) {
         resetFormState(saved);
+      } else if (currentTemplate.json) {
+        try {
+          const parsed = JSON.parse(currentTemplate.json);
+          const payload = parsed.dados ? parsed.dados : parsed;
+          resetFormState(payload);
+        } catch {
+          const initial = construirEstadoInicial(modelo.formulario.campos);
+          resetFormState(initial);
+        }
       } else {
-        resetFormState(construirEstadoInicial(modelo.formulario.campos));
+        const initial = construirEstadoInicial(modelo.formulario.campos);
+        resetFormState(initial);
       }
     }
   }, [currentTemplate.id]);
 
+  // Persiste dados no LocalStorage em tempo real quando alterados
   React.useEffect(() => {
-    if (currentTemplate?.id && dados) {
+    if (currentTemplate?.id && dados && Object.keys(dados).length > 0) {
       StorageService.saveFormDataForTemplate(currentTemplate.id, dados);
     }
   }, [dados, currentTemplate?.id]);
@@ -217,14 +256,46 @@ export default function App() {
     setSidebarWidth,
   });
 
-  // Limpeza de formulário com confirmação
+  // Carregar string JSON pré-preenchida de um template
+  const handleLoadJsonString = React.useCallback(
+    (jsonStr: string) => {
+      try {
+        const parsed = JSON.parse(jsonStr);
+        if (parsed && typeof parsed === 'object') {
+          const payload = parsed.dados ? parsed.dados : parsed;
+          resetFormState(payload);
+          if (currentTemplate?.id) {
+            StorageService.saveFormDataForTemplate(currentTemplate.id, payload);
+          }
+          showToast('Preenchimento do template carregado com sucesso!');
+        }
+      } catch (err: any) {
+        showToast('Erro ao carregar dados do template: ' + err.message);
+      }
+    },
+    [resetFormState, currentTemplate?.id, showToast]
+  );
+
+  // Estado do modal de confirmação de limpeza
+  const [showClearConfirmModal, setShowClearConfirmModal] = React.useState(false);
+
+  // Solicitar limpeza de formulário
   const handleClearForm = React.useCallback(() => {
     if (!modelo) return;
-    if (confirm(`Deseja limpar todos os dados preenchidos no documento "${xmlName}"?`)) {
-      resetFormState(construirEstadoInicial(modelo.formulario.campos));
-      showToast('Formulário limpo com sucesso.');
+    setShowClearConfirmModal(true);
+  }, [modelo]);
+
+  // Executar a limpeza confirmada
+  const handleConfirmClear = React.useCallback(() => {
+    if (!modelo) return;
+    const initial = construirEstadoInicial(modelo.formulario.campos);
+    resetFormState(initial);
+    if (currentTemplate?.id) {
+      StorageService.saveFormDataForTemplate(currentTemplate.id, initial);
     }
-  }, [modelo, xmlName, resetFormState, showToast]);
+    setShowClearConfirmModal(false);
+    showToast('Formulário limpo com sucesso.');
+  }, [modelo, resetFormState, currentTemplate?.id, showToast]);
 
   // Handlers de controle do menu lateral
   const isTelaPequena = () => typeof window !== 'undefined' && window.innerWidth < 768;
@@ -302,6 +373,7 @@ export default function App() {
                     onRemoveCustomTemplate={handleRemoveCustomTemplate}
                     currentXmlName={xmlName}
                     onSelectTemplate={handleSelectTemplate}
+                    onLoadJson={handleLoadJsonString}
                     onToggleSidebar={handleToggleSidebar}
                     onDoubleToggleSidebar={handleDoubleToggleSidebar}
                     onUploadXml={handleUploadXml}
@@ -461,6 +533,56 @@ export default function App() {
         onApply={aplicarNovoXmlEJson}
         xmlName={xmlName}
       />
+
+      {/* Modal de Confirmação para Limpar Formulário */}
+      {showClearConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 text-slate-800 dark:text-slate-100 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-lg shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                  Limpar Formulário
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  Tem certeza que deseja limpar todos os campos preenchidos do documento{' '}
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">
+                    "{xmlName}"
+                  </span>
+                  ? Essa ação irá resetar os valores salvos.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowClearConfirmModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowClearConfirmModal(false)}
+                className="px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmClear}
+                className="px-3.5 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 rounded-lg transition flex items-center gap-1.5 shadow-sm"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Limpar Formulário
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

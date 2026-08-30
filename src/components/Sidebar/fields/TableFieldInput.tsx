@@ -144,6 +144,22 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
                             </option>
                           ))}
                         </select>
+                      ) : colTipo === 'radio' ? (
+                        <div className="flex flex-wrap gap-2 pt-0.5">
+                          {col.opcoes?.map(opt => (
+                            <label key={opt} className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                              <input
+                                type="radio"
+                                name={`table_radio_${campo.id}_${lIdx}_${col.id}`}
+                                value={opt}
+                                checked={String(valorCelula) === opt}
+                                onChange={() => handleCellChange(lIdx, col.id, opt, colTipo)}
+                                className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                              />
+                              <span>{opt}</span>
+                            </label>
+                          ))}
+                        </div>
                       ) : colTipo === 'date' ? (
                         <input
                           type="date"

@@ -154,4 +154,17 @@ export const StorageService = {
       console.warn('Erro ao salvar dados do formulário:', e);
     }
   },
+
+  /**
+   * Limpa os dados de preenchimento salvos para um template específico.
+   */
+  clearFormDataForTemplate(templateId: string): void {
+    try {
+      const allData = this.loadFormData();
+      delete allData[templateId];
+      localStorage.setItem(STORAGE_KEYS.SAVED_FORM_DATA, JSON.stringify(allData));
+    } catch (e) {
+      console.warn('Erro ao limpar dados do formulário no LocalStorage:', e);
+    }
+  },
 };

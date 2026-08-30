@@ -53,7 +53,7 @@ export function useDocumentExporters({
       });
       showToast('Documento Word (.docx) gerado com sucesso!');
     } catch (err: any) {
-      console.error(err);
+      console.error('EXPORT WORD ERROR STACK:', err?.stack || err);
       alert('Erro ao gerar documento Word: ' + err.message);
     }
   }, [xmlName, numeracaoAtiva, variaveisVermelhasWord, showToast]);

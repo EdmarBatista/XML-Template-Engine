@@ -8,6 +8,7 @@ import { DocumentListNode } from './DocumentListNode';
 import { renderDocumentParagraphNodes } from './DocumentParagraphNode';
 import { InlineRenderContext, renderInlineAstNodes } from '../inline/DocumentInlineRenderer';
 import { processarTextoComVariaveis } from '../inline/textVariableProcessor';
+import { DocumentInlineAutoTable } from '../inline/DocumentInlineAutoTable';
 
 export interface BlockDispatcherContext extends InlineRenderContext {
   contextoNumeracao?: NumberingContext;
@@ -71,25 +72,60 @@ export function renderDocumentAstBlocks(
   blocos.forEach((node, idx) => {
     const blockKey = `${prefix}_${idx}`;
 
+    if (node.tipo === 'texto') {
+      const trimmed = (node.texto || '').trim();
+      const match = trimmed.match(/^\{\{\s*([a-zA-Z0-9_]+)(?:\|[^}]+)?\s*\}\}$/);
+      if (match) {
+        const varName = match[1];
+        const valorVar = escopo[varName];
+        const isTable =
+          estrutura?.campos?.[varName]?.tipo === 'tabela' ||
+          (Array.isArray(valorVar) && valorVar.some(it => typeof it === 'object' && it !== null));
+        if (isTable) {
+          flushInlineBuffer(idx);
+          const colunasSet = new Set<string>();
+          if (Array.isArray(valorVar)) {
+            valorVar.forEach(row => {
+              if (typeof row === 'object' && row !== null) {
+                Object.keys(row).forEach(k => {
+                  if (k !== '_index' && k !== '_indice') colunasSet.add(k);
+                });
+              }
+            });
+          }
+          const colunasMeta = estrutura?.campos?.[varName]?.colunas;
+          const colunas = colunasMeta && colunasMeta.length > 0 ? colunasMeta.map(c => c.id) : Array.from(colunasSet);
+          if (colunas.length > 0) {
+            elementos.push(
+              <DocumentInlineAutoTable
+                key={`${blockKey}_standalone_table_${varName}`}
+                chaveReal={varName}
+                colunas={colunas}
+                valorFormatado={valorVar}
+                dados={dados}
+                estrutura={estrutura}
+                destaquesAtivos={destaquesAtivos}
+                edicaoInline={edicaoInline}
+                variaveisVermelhasWord={variaveisVermelhasWord}
+                fontScale={fontScale}
+                onFocusField={onFocusField}
+                onUpdateField={onUpdateField}
+              />
+            );
+            return;
+          }
+        }
+      }
+    }
+
     if (
       node.tipo === 'texto' ||
-      node.tipo === 'var' ||
-      node.tipo === 'negrito' ||
       node.tipo === 'b' ||
-      node.tipo === 'strong' ||
-      node.tipo === 'italico' ||
       node.tipo === 'i' ||
-      node.tipo === 'em' ||
-      node.tipo === 'sublinhado' ||
       node.tipo === 'u' ||
-      node.tipo === 'tachado' ||
       node.tipo === 's' ||
-      node.tipo === 'strike' ||
-      node.tipo === 'destaque' ||
       node.tipo === 'mark' ||
       node.tipo === 'cor' ||
-      node.tipo === 'span' ||
-      node.tipo === 'link' ||
       node.tipo === 'a' ||
       node.tipo === 'br'
     ) {
@@ -126,11 +162,7 @@ export function renderDocumentAstBlocks(
           const itemFormatado =
             typeof it === 'object' && it !== null
               ? {
-                  _indice: idxLoop + 1,
                   _index: idxLoop + 1,
-                  _idx: idxLoop + 1,
-                  index: idxLoop + 1,
-                  numero: idxLoop + 1,
                   ...it,
                 }
               : formatarItemForeach(it);
@@ -159,7 +191,7 @@ export function renderDocumentAstBlocks(
           );
         });
       }
-    } else if (node.tipo === 'secao' || node.tipo === 'section') {
+    } else if (node.tipo === 'secao') {
       elementos.push(
         renderDocumentSectionNode(
           node,
@@ -187,9 +219,9 @@ export function renderDocumentAstBlocks(
       );
     } else if (node.tipo === 'titulo' || node.tipo === 'h1' || node.tipo === 'h2' || node.tipo === 'h3') {
       const tag = node.tipo === 'titulo' ? 'h1' : node.tipo;
-      const alinhamento = node.atributos?.alinhamento || node.atributos?.align || 'center';
+      const alinhamento = node.atributos?.alinhamento || 'centro';
       const alignClass =
-        alinhamento === 'center' ? 'text-center' : alinhamento === 'right' ? 'text-right' : 'text-left';
+        alinhamento === 'centro' ? 'text-center' : alinhamento === 'direita' ? 'text-right' : 'text-left';
 
       const HeadingTag = tag as 'h1' | 'h2' | 'h3';
       const fontSize =
@@ -207,8 +239,8 @@ export function renderDocumentAstBlocks(
           {selfRenderInline(node.filhos || [], blockKey, ctxLocal)}
         </HeadingTag>
       );
-    } else if (node.tipo === 'paragrafo' || node.tipo === 'p') {
-      const alinhamento = node.atributos?.alinhamento || node.atributos?.align || 'justify';
+    } else if (node.tipo === 'p') {
+      const alinhamento = node.atributos?.alinhamento || 'justificar';
       elementos.push(
         ...renderDocumentParagraphNodes({
           nos: node.filhos || [],
@@ -221,39 +253,7 @@ export function renderDocumentAstBlocks(
           contextoLocal: ctxLocal,
         })
       );
-    } else if (node.tipo === 'citacao' || node.tipo === 'blockquote') {
-      elementos.push(
-        <blockquote
-          key={blockKey}
-          data-word-type="citacao"
-          className="border-l-4 border-slate-400 pl-4 py-1.5 my-3 italic text-slate-700 dark:text-slate-300 bg-slate-50/70 dark:bg-slate-800/60 select-text"
-          style={{ fontSize: `${13 * fontScale}px`, lineHeight: 1.5 }}
-        >
-          {selfRenderInline(node.filhos || [], blockKey, ctxLocal)}
-        </blockquote>
-      );
-    } else if (node.tipo === 'caixa' || node.tipo === 'alerta' || node.tipo === 'box') {
-      const variante = node.atributos?.tipo || 'info';
-      const estilosPorTipo: Record<string, string> = {
-        info: 'bg-blue-50 dark:bg-blue-950 border-blue-200 text-blue-900 dark:text-blue-100',
-        aviso: 'bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100',
-        sucesso: 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100',
-        erro: 'bg-rose-50 dark:bg-rose-950 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-100',
-      };
-      const estilo = estilosPorTipo[variante] || estilosPorTipo.info;
-
-      elementos.push(
-        <div
-          key={blockKey}
-          data-word-type="caixa"
-          data-word-box-tipo={variante}
-          className={`border rounded-lg p-3.5 my-3 select-text ${estilo}`}
-          style={{ fontSize: `${13 * fontScale}px`, lineHeight: 1.5 }}
-        >
-          {selfRenderBlocks(node.filhos || [], ctxNum, `${blockKey}_box`, ctxLocal, nivel)}
-        </div>
-      );
-    } else if (node.tipo === 'hr' || node.tipo === 'divisor' || node.tipo === 'separador') {
+    } else if (node.tipo === 'hr') {
       elementos.push(
         <hr
           key={blockKey}
@@ -261,7 +261,7 @@ export function renderDocumentAstBlocks(
           className="border-t border-slate-300 dark:border-slate-600 my-4"
         />
       );
-    } else if (node.tipo === 'lista' || node.tipo === 'ul' || node.tipo === 'ol') {
+    } else if (node.tipo === 'lista' || node.tipo === 'lista_numerada') {
       elementos.push(
         <DocumentListNode
           key={blockKey}
@@ -271,6 +271,8 @@ export function renderDocumentAstBlocks(
           escopo={escopo}
           renderInlineNodes={selfRenderInline}
           contextoLocal={ctxLocal}
+          destaquesAtivos={destaquesAtivos}
+          onFocusField={onFocusField}
         />
       );
     } else if (node.tipo === 'tabela') {
@@ -287,6 +289,7 @@ export function renderDocumentAstBlocks(
           destaquesAtivos={destaquesAtivos}
           onFocusField={onFocusField}
           edicaoInline={edicaoInline}
+          variaveisVermelhasWord={variaveisVermelhasWord}
           onUpdateField={onUpdateField}
         />
       );

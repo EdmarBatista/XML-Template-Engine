@@ -44,19 +44,21 @@ function segmentosParaRuns(segmentos: SegmentoDom[], opcoes: Required<WordExport
       bold: Boolean(segmento.bold),
       italics: Boolean(segmento.italic),
       underline: segmento.underline ? {} : undefined,
+      strike: Boolean(segmento.strike),
+      highlight: segmento.mark ? 'yellow' : undefined,
     });
   });
 }
 
 function alinhamentoWord(valor?: string): (typeof AlignmentType)[keyof typeof AlignmentType] {
   const nome = String(valor || '').toLowerCase();
-  if (nome === 'centro' || nome === 'center' || nome === 'centralizado') {
+  if (nome === 'centro') {
     return AlignmentType.CENTER;
   }
-  if (nome === 'direita' || nome === 'right') {
+  if (nome === 'direita') {
     return AlignmentType.RIGHT;
   }
-  if (nome === 'esquerda' || nome === 'left') {
+  if (nome === 'esquerda') {
     return AlignmentType.LEFT;
   }
   return AlignmentType.JUSTIFIED;
@@ -103,12 +105,15 @@ function criarParagrafo(
 function converterTabelaDom(
   tabelaEl: HTMLElement,
   opcoes: Required<WordExportOptions>
-): Table {
+): Table | Paragraph {
   const rows: TableRow[] = [];
   const trElements = Array.from(tabelaEl.querySelectorAll('tr'));
 
   trElements.forEach((tr, rIdx) => {
-    const cellElements = Array.from(tr.querySelectorAll('th, td'));
+    const cellElements = Array.from(tr.querySelectorAll('th, td')).filter(
+      c => c.getAttribute('data-ignore-export') !== 'true' &&
+           c.getAttribute('data-word-ignore') !== 'true'
+    );
     const isHeaderRow = tr.querySelector('th') !== null || rIdx === 0;
     const cells: TableCell[] = [];
 
@@ -121,7 +126,7 @@ function converterTabelaDom(
           tamanhoFonte: isHeader ? DOCUMENT_THEME.typography.sizes.tableHeaderPt : DOCUMENT_THEME.typography.sizes.tableBodyPt,
           cor: isHeader ? DOCUMENT_THEME.colors.textHex : undefined,
         },
-        opcoes,
+        isHeader ? { ...opcoes, variaveisVermelhas: false } : opcoes,
         false
       );
       const runs = segmentosParaRuns(normalizarSegmentos(segmentos), opcoes);
@@ -151,17 +156,31 @@ function converterTabelaDom(
     }
   });
 
+  if (rows.length === 0) {
+    return new Paragraph({
+      children: [new TextRun({ text: '' })],
+      spacing: { before: 0, after: 0 },
+    });
+  }
+
   const borderConfig = {
     color: DOCUMENT_THEME.borders.tableBorderColorHex,
     size: DOCUMENT_THEME.borders.tableBorderWidthWord,
     style: BorderStyle.SINGLE,
   };
 
+  const maxCells = Math.max(
+    1,
+    ...rows.map(r => ((r as any).root || []).filter((c: any) => c && c.constructor?.name === 'TableCell').length || 1)
+  );
+  const columnWidths = Array(Math.max(1, maxCells)).fill(Math.floor(100 / Math.max(1, maxCells)));
+
   return new Table({
     width: {
       size: 100,
       type: WidthType.PERCENTAGE,
     },
+    columnWidths,
     borders: {
       top: borderConfig,
       bottom: borderConfig,
@@ -417,6 +436,74 @@ function converterElementosBlocoDom(
       const alignAttr = el.getAttribute('data-word-align') || el.style.textAlign;
       const alinhamentoFinal = alignAttr === 'center' ? 'centro' : alignAttr === 'right' ? 'direita' : alignAttr === 'left' ? 'esquerda' : opcoes.alinhamento || 'justificado';
 
+      const tableInside = el.querySelector('table, [data-word-type="tabela-container"]');
+      if (tableInside) {
+        const childNodes = Array.from(el.childNodes);
+        let bufferNodes: Node[] = [];
+
+        const flushBufferAsParagraph = (isFirst: boolean) => {
+          if (bufferNodes.length === 0) return;
+          const tempDiv = document.createElement('div');
+          bufferNodes.forEach(n => tempDiv.appendChild(n.cloneNode(true)));
+          const deveUsarNumeracao = Boolean(numbering && isNumerado && isFirst);
+          const segmentos = extrairSegmentosDeDom(tempDiv, {}, opcoes, deveUsarNumeracao);
+          const normalizados = normalizarSegmentos(segmentos);
+          bufferNodes = [];
+
+          if (normalizados.length > 0) {
+            const recuoCalculado = calcularRecuoHierarquicoCm(levelPara);
+            const recuoFinal = recuoSecao > 0 ? recuoSecao : recuoCalculado;
+
+            if (deveUsarNumeracao) {
+              resultado.push(
+                criarParagrafo(segmentosParaRuns(normalizados, opcoes), opcoes, {
+                  alinhamento: alinhamentoFinal,
+                  recuoEsquerdo: recuoFinal,
+                  numbering: {
+                    reference: numbering!.reference,
+                    level: Math.min(levelPara, (opcoes.nivelMaximoNumeracao || 9) - 1),
+                  },
+                  espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
+                  espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
+                })
+              );
+            } else {
+              resultado.push(
+                criarParagrafo(segmentosParaRuns(normalizados, opcoes), opcoes, {
+                  recuoEsquerdo: recuoFinal,
+                  alinhamento: alinhamentoFinal,
+                  espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
+                  espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
+                })
+              );
+            }
+          }
+        };
+
+        let isFirstPart = true;
+        for (const child of childNodes) {
+          if (child.nodeType === Node.ELEMENT_NODE) {
+            const childEl = child as HTMLElement;
+            if (
+              childEl.tagName === 'TABLE' ||
+              childEl.getAttribute('data-word-type') === 'tabela-container' ||
+              childEl.querySelector('table')
+            ) {
+              flushBufferAsParagraph(isFirstPart);
+              isFirstPart = false;
+              const actualTable = childEl.tagName === 'TABLE' ? childEl : childEl.querySelector('table');
+              if (actualTable) {
+                resultado.push(converterTabelaDom(actualTable as HTMLElement, opcoes));
+              }
+              continue;
+            }
+          }
+          bufferNodes.push(child);
+        }
+        flushBufferAsParagraph(isFirstPart);
+        return;
+      }
+
       const deveUsarNumeracaoNativa = Boolean(numbering && isNumerado);
       const segmentos = extrairSegmentosDeDom(el, {}, opcoes, deveUsarNumeracaoNativa);
       const normalizados = normalizarSegmentos(segmentos);
@@ -645,14 +732,9 @@ export async function exportarParaWord(
 
   const blob = await Packer.toBlob(doc);
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = String(nomeArquivo || 'documento.docx').replace(/\.docx$/i, '') + '.docx';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-
+  const { saveAs } = await import('file-saver');
+  saveAs(blob, String(nomeArquivo || 'documento.docx').replace(/\.docx$/i, '') + '.docx');
   return blob;
+
+
 }

@@ -1,7 +1,10 @@
 import React from 'react';
+import { TableColumnMetadata } from '../../../types';
 import {
   aplicarMascaraCampo,
   normalizarValorCampo,
+  obterTipoEfetivoColuna,
+  converterFormatoData,
 } from '../../../utils/documentUtils';
 
 export interface TabelaAcessoInfo {
@@ -25,13 +28,14 @@ export interface DocumentInlineTableAccessProps {
   onUpdateField: (fieldId: string, value: any, origem?: string) => void;
   fontScale?: number;
   tabelaAcesso: TabelaAcessoInfo;
+  colMeta?: TableColumnMetadata;
 }
 
 /**
  * Variável interativa para acessos a células/colunas de tabela:
- * {{tabela.coluna[indice]}}, {{tabela[indice].coluna}} e {{tabela.coluna}}.
+ * {{tabela.coluna[indice]}}, {{tabela[indice].coluna}}, {{tabela.coluna}} ou foreach.
  * - Clique: foca/destaca o campo da tabela.
- * - Duplo clique: edita a célula ou a coluna inteira (como lista_csv).
+ * - Duplo clique: edita a célula (select/radio/checkbox/date/moeda/text) ou a coluna inteira (como lista_csv).
  * - Quando vazio, mostra o placeholder {{caminho}}.
  */
 export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps> = ({
@@ -48,18 +52,28 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
   onUpdateField,
   fontScale = 1,
   tabelaAcesso,
+  colMeta,
 }) => {
   const [editando, setEditando] = React.useState(false);
-  const [valorTemp, setValorTemp] = React.useState('');
+  const [valorTemp, setValorTemp] = React.useState<any>('');
   const containerRef = React.useRef<HTMLSpanElement>(null);
   const valorTempRef = React.useRef(valorTemp);
   valorTempRef.current = valorTemp;
   const clickTimerRef = React.useRef<any>(null);
 
   const ehColunaInteira = tabelaAcesso.indice === null;
-  const tipoMascara = (filtro || '').toLowerCase();
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cpfcnpj', 'cep'].includes(tipoMascara);
-  const isNumberField = ['number', 'numero', 'inteiro', 'decimal'].includes(tipoMascara);
+  const colTipo = colMeta
+    ? obterTipoEfetivoColuna(colMeta.tipo, colMeta.validar)
+    : (filtro || '').toLowerCase();
+  const isSelect = colTipo === 'select';
+  const isRadio = colTipo === 'radio';
+  const isCheckbox = colTipo === 'checkbox' || colTipo === 'booleano';
+  const isDate = colTipo === 'date' || colTipo === 'data';
+  const isTextArea = colTipo === 'textarea' || colTipo === 'texto_longo';
+  const isCurrency = colTipo === 'moeda' || colTipo === 'dinheiro';
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cpfcnpj', 'cep'].includes(colTipo) || isCurrency;
+  const maskName = isCurrency ? 'moeda' : colTipo;
+  const isNumberField = ['number', 'numero', 'inteiro', 'decimal'].includes(colTipo);
 
   React.useEffect(() => {
     if (!editando) {
@@ -79,10 +93,18 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
 
     if (!ehColunaInteira) {
       const indice = tabelaAcesso.indice ?? 0;
-      while (listaAtual.length <= indice) listaAtual.push({});
-      const item = { ...(listaAtual[indice] || {}) };
-      item[tabelaAcesso.coluna] = val;
-      listaAtual[indice] = item;
+      while (listaAtual.length <= indice) {
+        listaAtual.push(tabelaAcesso.coluna ? {} : '');
+      }
+      if (tabelaAcesso.coluna) {
+        const item = typeof listaAtual[indice] === 'object' && listaAtual[indice] !== null
+          ? { ...listaAtual[indice] }
+          : {};
+        item[tabelaAcesso.coluna] = val;
+        listaAtual[indice] = item;
+      } else {
+        listaAtual[indice] = val;
+      }
       onUpdateField(tabelaAcesso.listaNome, listaAtual, 'inline');
     } else {
       const itens = parseListaPreservandoVazios(val);
@@ -94,7 +116,9 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
         const linhaPrev = listaAtual[i] && typeof listaAtual[i] === 'object' ? listaAtual[i] : {};
         const linha = { ...linhaPrev };
         const valorItem = i < itens.length ? itens[i] : '';
-        linha[tabelaAcesso.coluna] = valorItem;
+        if (tabelaAcesso.coluna) {
+          linha[tabelaAcesso.coluna] = valorItem;
+        }
         novaLista.push(linha);
       }
 
@@ -110,8 +134,10 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
   const salvar = () => {
     const raw = valorTempRef.current;
     let valFinal: any = raw;
-    if (isMasked) {
-      valFinal = normalizarValorCampo(raw, tipoMascara);
+    if (isCheckbox) {
+      valFinal = Boolean(raw);
+    } else if (isMasked) {
+      valFinal = normalizarValorCampo(raw, maskName);
     } else if (isNumberField && !ehColunaInteira) {
       valFinal = raw === '' || raw === null ? '' : Number(String(raw).replace(/[^\d.-]/g, ''));
     }
@@ -214,7 +240,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
     }
     if (!edicaoInline) return;
 
-    let initialVal: string = '';
+    let initialVal: any = '';
     if (ehColunaInteira) {
       const lista = Array.isArray(tabelaAcesso.listaAtual) ? tabelaAcesso.listaAtual : [];
       initialVal = lista
@@ -222,8 +248,12 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
         .map(citarValor)
         .join(', ');
     } else {
-      initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
-      if (isMasked) initialVal = aplicarMascaraCampo(initialVal, tipoMascara);
+      if (isCheckbox) {
+        initialVal = Boolean(valorBruto);
+      } else {
+        initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
+        if (isMasked) initialVal = aplicarMascaraCampo(initialVal, maskName);
+      }
     }
     setValorTemp(initialVal);
     setEditando(true);
@@ -242,6 +272,153 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
             autoFocus
             rows={3}
             placeholder='Valores separados por vírgula ou quebra de linha ("a, b", c)'
+            onChange={e => setValorTemp(e.target.value)}
+            onBlur={salvar}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) salvar();
+              if (e.key === 'Escape') cancelar();
+            }}
+            className="w-full bg-white dark:bg-slate-900 dark:text-slate-100 border-2 border-blue-500 rounded p-2 text-xs text-slate-900 font-sans outline-none shadow-md"
+            style={{ fontSize: `${12 * fontScale}px` }}
+          />
+        </span>
+      );
+    }
+
+    if (isRadio && colMeta?.opcoes && colMeta.opcoes.length > 0) {
+      return (
+        <span
+          ref={containerRef}
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          className="inline-flex items-center gap-1.5 flex-wrap bg-white dark:bg-slate-800 border-2 border-blue-500 rounded-md px-2 py-0.5 shadow-md z-20 relative my-0.5 align-middle"
+        >
+          {colMeta.opcoes.map((opt, i) => {
+            const isChecked = String(valorTemp) === String(opt);
+            return (
+              <label
+                key={i}
+                className={`inline-flex items-center gap-1 text-xs cursor-pointer px-1.5 py-0.5 rounded transition ${
+                  isChecked
+                    ? 'bg-blue-100 text-blue-900 font-semibold ring-1 ring-blue-300'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name={`inline-table-radio-${tabelaAcesso.listaNome}-${tabelaAcesso.indice}-${tabelaAcesso.coluna}`}
+                  value={opt}
+                  checked={isChecked}
+                  onChange={() => {
+                    setValorTemp(opt);
+                    salvarAcesso(opt);
+                  }}
+                  className="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span className="select-none">{opt}</span>
+              </label>
+            );
+          })}
+        </span>
+      );
+    }
+
+    if (isSelect && colMeta?.opcoes && colMeta.opcoes.length > 0) {
+      return (
+        <span
+          ref={containerRef}
+          onClick={e => e.stopPropagation()}
+          className="inline-block align-middle my-0.5 z-20 relative max-w-full"
+        >
+          <select
+            value={String(valorTemp)}
+            autoFocus
+            onChange={e => {
+              const val = e.target.value;
+              setValorTemp(val);
+              salvarAcesso(val);
+              setEditando(false);
+            }}
+            onBlur={salvar}
+            onKeyDown={e => {
+              if (e.key === 'Enter') salvar();
+              if (e.key === 'Escape') cancelar();
+            }}
+            className="bg-white dark:bg-slate-900 dark:text-slate-100 border-2 border-blue-500 rounded px-2.5 py-1 text-xs text-slate-900 font-sans outline-none shadow-md font-medium cursor-pointer"
+            style={{ fontSize: `${12 * fontScale}px` }}
+          >
+            <option value="">Selecione...</option>
+            {colMeta.opcoes.map(opt => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </span>
+      );
+    }
+
+    if (isCheckbox) {
+      const isChecked = Boolean(valorTemp);
+      return (
+        <span
+          ref={containerRef}
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          className="inline-flex items-center gap-1.5 bg-white dark:bg-slate-800 border-2 border-blue-500 rounded-md px-2 py-0.5 shadow-md z-20 relative my-0.5 align-middle"
+        >
+          <label className="inline-flex items-center gap-1.5 text-xs cursor-pointer text-slate-800 dark:text-slate-200 font-medium">
+            <input
+              type="checkbox"
+              checked={isChecked}
+              onChange={e => {
+                const checked = e.target.checked;
+                setValorTemp(checked);
+                salvarAcesso(checked);
+              }}
+              className="w-3.5 h-3.5 text-blue-600 rounded cursor-pointer"
+            />
+            <span className="select-none">{isChecked ? 'Sim' : 'Não'} ({colMeta?.label || tabelaAcesso.coluna})</span>
+          </label>
+        </span>
+      );
+    }
+
+    if (isDate) {
+      return (
+        <span
+          ref={containerRef}
+          onClick={e => e.stopPropagation()}
+          className="inline-block align-middle my-0.5 z-20 relative max-w-full"
+        >
+          <input
+            type="date"
+            autoFocus
+            value={converterFormatoData(valorTemp, 'ISO')}
+            onChange={e => setValorTemp(e.target.value)}
+            onBlur={salvar}
+            onKeyDown={e => {
+              if (e.key === 'Enter') salvar();
+              if (e.key === 'Escape') cancelar();
+            }}
+            className="bg-white dark:bg-slate-900 dark:text-slate-100 border-2 border-blue-500 rounded px-2 py-1 text-xs text-slate-900 font-sans outline-none shadow-md font-medium cursor-pointer"
+            style={{ fontSize: `${12 * fontScale}px` }}
+          />
+        </span>
+      );
+    }
+
+    if (isTextArea) {
+      return (
+        <span
+          ref={containerRef}
+          onClick={e => e.stopPropagation()}
+          className="inline-block w-full my-1 z-20 relative"
+        >
+          <textarea
+            rows={2}
+            autoFocus
+            value={String(valorTemp)}
             onChange={e => setValorTemp(e.target.value)}
             onBlur={salvar}
             onKeyDown={e => {
@@ -275,7 +452,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
           }}
           onChange={e => {
             if (isMasked) {
-              setValorTemp(aplicarMascaraCampo(e.target.value, tipoMascara));
+              setValorTemp(aplicarMascaraCampo(e.target.value, maskName));
             } else {
               setValorTemp(e.target.value);
             }

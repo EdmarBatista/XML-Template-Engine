@@ -6,6 +6,7 @@ export type ColumnType =
   | 'moeda'
   | 'date'
   | 'select'
+  | 'radio'
   | 'textarea'
   | 'checkbox'
   | 'cpf'
@@ -134,3 +135,5 @@ export interface WordExportOptions {
   rodapeDistancia?: number;
   recuoLista?: number;
 }
+
+export type { TemplateItem } from './data/defaultTemplates';

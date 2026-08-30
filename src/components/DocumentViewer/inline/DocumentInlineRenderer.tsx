@@ -2,6 +2,8 @@ import React from 'react';
 import { AstNode, FormStructure } from '../../../types';
 import { aplicarFiltroDocumento, formatarItemForeach, obterValorPorCaminho, valoresDaLista } from '../../../utils/documentUtils';
 import { DocumentInlineVariable } from './DocumentInlineVariable';
+import { DocumentInlineTableAccess } from './DocumentInlineTableAccess';
+import { DocumentInlineAutoTable } from './DocumentInlineAutoTable';
 import { DocumentInlineConditionalNode } from '../logic/DocumentConditionalNode';
 import { extrairTooltip, processarTextoComVariaveis } from './textVariableProcessor';
 
@@ -62,143 +64,61 @@ export function renderInlineAstNodes(
           fontScale,
         })
       );
-    } else if (node.tipo === 'var') {
-      const varId = node.atributos?.id || node.atributos?.nome || '';
-      const filtro = node.atributos?.filtro;
-      const isLocalVar = ctxLocal && Object.prototype.hasOwnProperty.call(ctxLocal, varId);
-      let valorBruto = escopo[varId] !== undefined ? escopo[varId] : obterValorPorCaminho(escopo, varId);
-      const valorFormatado = filtro ? aplicarFiltroDocumento(valorBruto, filtro) : valorBruto;
-
-      const primeiroSegmentoCaminho = varId.includes('.') ? varId.split('.')[0] : varId;
-      const ehCelulaForeachPorPonto =
-        varId.includes('.') &&
-        !ctxLocal?.__edmListaOrigem?.[varId] &&
-        !!ctxLocal?.__edmListaOrigem?.[primeiroSegmentoCaminho];
-      const origemLista =
-        ctxLocal?.__edmListaOrigem?.[varId] ||
-        (ehCelulaForeachPorPonto ? ctxLocal?.__edmListaOrigem?.[primeiroSegmentoCaminho] : undefined);
-      const isForeachVar = !!origemLista;
-      const chaveReal = origemLista || varId;
-      const ehCelulaForeach = isForeachVar && ehCelulaForeachPorPonto;
-      const valorBrutoReal = isForeachVar
-        ? ehCelulaForeach
-          ? valorBruto
-          : escopo[chaveReal]
-        : valorBruto;
-      const listaForeachEstaVar = isForeachVar && !ehCelulaForeach;
-
-      // Para acesso dot/index (ex.: tabela.descricao[0]), o foco/destaque aponta para a tabela
-      const baseVarKey = varId.split(/[.[]/)[0];
-      const varFoco =
-        !isForeachVar &&
-        (varId.includes('.') || varId.includes('[')) &&
-        (estrutura?.campos?.[baseVarKey] || ctxLocal?.__edmListaOrigem?.[baseVarKey])
-          ? ctxLocal?.__edmListaOrigem?.[baseVarKey] || baseVarKey
-          : chaveReal;
-
-      let textoExibicao = '';
-      if (valorFormatado !== null && valorFormatado !== undefined) {
-        if (typeof valorFormatado === 'object') {
-          if (Array.isArray(valorFormatado)) {
-            textoExibicao = valorFormatado
-              .map(item =>
-                typeof item === 'object' && item !== null
-                  ? Object.values(item)
-                      .filter(v => v !== '' && v !== null && v !== undefined)
-                      .join(' - ')
-                  : String(item)
-              )
-              .filter(Boolean)
-              .join(', ');
-          } else {
-            const vals = Object.values(valorFormatado).filter(
-              v => v !== '' && v !== null && v !== undefined
-            );
-            textoExibicao = vals.length > 0 ? vals.join(' - ') : '';
-          }
-        } else if (typeof valorFormatado === 'boolean') {
-          textoExibicao = valorFormatado ? 'Sim' : 'Não';
-        } else {
-          textoExibicao = String(valorFormatado);
-        }
-      }
-
-      if (isLocalVar && !origemLista) {
-        items.push(
-          <span key={key} className="text-slate-900 dark:text-slate-100">
-            {textoExibicao || `{{${varId}}}`}
-          </span>
-        );
-      } else {
-        items.push(
-          <DocumentInlineVariable
-            key={key}
-            id={varFoco}
-            valorBruto={valorBrutoReal}
-            valorExibido={textoExibicao}
-            filtro={filtro}
-            listaForeach={listaForeachEstaVar}
-            campo={estrutura.campos[varFoco]}
-            tooltip={extrairTooltip(varFoco, estrutura)}
-            isHighlighted={Boolean(destaquesAtivos[varFoco])}
-            edicaoInline={edicaoInline}
-            variaveisVermelhasWord={variaveisVermelhasWord}
-            onFocusField={onFocusField}
-            onUpdateField={onUpdateField}
-            fontScale={fontScale}
-          />
-        );
-      }
-    } else if (node.tipo === 'negrito' || node.tipo === 'b' || node.tipo === 'strong') {
+    } else if (node.tipo === 'b') {
       items.push(
         <strong key={key} className="font-bold text-slate-900 dark:text-slate-100 select-text">
           {selfRenderInline(node.filhos || [], `${key}_b`, ctxLocal)}
         </strong>
       );
-    } else if (node.tipo === 'italico' || node.tipo === 'i' || node.tipo === 'em') {
+    } else if (node.tipo === 'i') {
       items.push(
         <em key={key} className="italic text-slate-900 dark:text-slate-100 select-text">
           {selfRenderInline(node.filhos || [], `${key}_i`, ctxLocal)}
         </em>
       );
-    } else if (node.tipo === 'sublinhado' || node.tipo === 'u') {
+    } else if (node.tipo === 'u') {
       items.push(
         <u key={key} className="underline text-slate-900 dark:text-slate-100 select-text">
           {selfRenderInline(node.filhos || [], `${key}_u`, ctxLocal)}
         </u>
       );
-    } else if (node.tipo === 'tachado' || node.tipo === 's' || node.tipo === 'strike') {
+    } else if (node.tipo === 's') {
       items.push(
         <s key={key} className="line-through text-slate-700 select-text">
           {selfRenderInline(node.filhos || [], `${key}_s`, ctxLocal)}
         </s>
       );
-    } else if (node.tipo === 'destaque' || node.tipo === 'mark') {
+    } else if (node.tipo === 'mark') {
       items.push(
         <mark key={key} className="bg-amber-200/80 text-amber-950 px-1 py-0.5 rounded select-text">
           {selfRenderInline(node.filhos || [], `${key}_mark`, ctxLocal)}
         </mark>
       );
-    } else if (node.tipo === 'cor' || node.tipo === 'span') {
-      const cor = node.atributos?.hex || node.atributos?.cor || node.atributos?.style;
+    } else if (node.tipo === 'cor') {
+      const cor = node.atributos?.cor || node.atributos?.hex || node.atributos?.valor || node.atributos?.value;
       items.push(
-        <span key={key} style={cor ? { color: cor } : undefined} className="select-text">
-          {selfRenderInline(node.filhos || [], `${key}_span`, ctxLocal)}
+        <span
+          key={key}
+          data-cor={cor}
+          style={cor ? { color: cor } : undefined}
+          className="select-text"
+        >
+          {selfRenderInline(node.filhos || [], `${key}_cor`, ctxLocal)}
         </span>
       );
     } else if (node.tipo === 'br') {
       items.push(<br key={key} />);
-    } else if (node.tipo === 'link' || node.tipo === 'a') {
-      const href = node.atributos?.href || node.atributos?.url || '#';
+    } else if (node.tipo === 'a') {
+      const href = node.atributos?.href;
       items.push(
         <a
           key={key}
-          href={href}
+          href={href || '#'}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:text-blue-800 underline select-text"
         >
-          {selfRenderInline(node.filhos || [], `${key}_link`, ctxLocal)}
+          {selfRenderInline(node.filhos || [], `${key}_a`, ctxLocal)}
         </a>
       );
     } else if (node.tipo === 'if') {
@@ -225,11 +145,7 @@ export function renderInlineAstNodes(
           const itemFormatado =
             typeof it === 'object' && it !== null
               ? {
-                  _indice: idxLoop + 1,
                   _index: idxLoop + 1,
-                  _idx: idxLoop + 1,
-                  index: idxLoop + 1,
-                  numero: idxLoop + 1,
                   ...it,
                 }
               : formatarItemForeach(it);

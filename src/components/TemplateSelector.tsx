@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, Plus, X } from 'lucide-react';
 import { DEFAULT_TEMPLATES, TemplateItem } from '../data/defaultTemplates';
 
 interface TemplateSelectorProps {
@@ -7,6 +7,7 @@ interface TemplateSelectorProps {
   customTemplates: TemplateItem[];
   onSelectTemplate: (t: TemplateItem) => void;
   onRemoveCustomTemplate: (id: string) => void;
+  onLoadJson?: (jsonStr: string) => void;
 }
 
 /**
@@ -18,6 +19,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   customTemplates,
   onSelectTemplate,
   onRemoveCustomTemplate,
+  onLoadJson,
 }) => {
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -75,17 +77,32 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   }}
                 >
                   <span className="truncate pr-2 flex-1">{t.nome}</span>
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
-                    onClick={e => {
-                      e.stopPropagation();
-                      onRemoveCustomTemplate(t.id);
-                    }}
-                    title="Remover template"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {t.json && onLoadJson && currentXmlName === t.nome && (
+                      <button
+                        type="button"
+                        className="p-1 rounded hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                        onClick={e => {
+                          e.stopPropagation();
+                          onLoadJson(t.json!);
+                        }}
+                        title="Carregar dados pré-preenchidos deste template"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="p-1 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                      onClick={e => {
+                        e.stopPropagation();
+                        onRemoveCustomTemplate(t.id);
+                      }}
+                      title="Remover template"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -97,7 +114,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             {DEFAULT_TEMPLATES.map(t => (
               <div
                 key={t.id}
-                className={`px-2 py-1.5 text-xs hover:bg-slate-700 cursor-pointer ${
+                className={`group flex items-center justify-between px-2 py-1.5 text-xs hover:bg-slate-700 cursor-pointer ${
                   currentXmlName === t.nome ? 'bg-blue-900/40 text-blue-300 font-medium' : 'text-slate-200'
                 }`}
                 onClick={() => {
@@ -105,7 +122,20 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   setDropdownOpen(false);
                 }}
               >
-                <span className="truncate">{t.nome}</span>
+                <span className="truncate pr-2 flex-1">{t.nome}</span>
+                {t.json && onLoadJson && currentXmlName === t.nome && (
+                  <button
+                    type="button"
+                    className="p-1 rounded hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                    onClick={e => {
+                      e.stopPropagation();
+                      onLoadJson(t.json!);
+                    }}
+                    title="Carregar dados pré-preenchidos deste modelo"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             ))}
           </div>

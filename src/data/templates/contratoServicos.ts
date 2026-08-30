@@ -62,12 +62,12 @@ export const contratoServicos: TemplateItem =
         {{cronograma_entregas}}
 
         <p><b>Destaques e Acessos Diretos às Células da Tabela:</b></p>
-        <p>• Primeira Entrega: <b>{{cronograma_entregas.etapa[0]}}</b> (Prazo: {{cronograma_entregas.prazo[0]}}) no valor de <b>{{cronograma_entregas.valor[0] | moeda}}</b>.</p>
+        <p>• Primeira Entrega: <b>{{cronograma_entregas.etapa[0]}}</b> (Prazo: {{cronograma_entregas.prazo[0]}}) no valor de <b>R$ {{cronograma_entregas.valor[0] | moeda}}</b>.</p>
         <p>• Relação de todos os prazos cadastrados: {{cronograma_entregas.prazo}}.</p>
         </secao>
 
         <secao titulo="DO PREÇO E DAS CONDIÇÕES DE PAGAMENTO">
-        Pelos serviços prestados, a CONTRATANTE pagará à CONTRATADA o valor total de <b>{{valor_total | moeda}}</b> (<i>{{valor_total | moedaPorExtenso}}</i>).
+        Pelos serviços prestados, a CONTRATANTE pagará à CONTRATADA o valor total de <b>R$ {{valor_total | moeda}}</b> (<i>{{valor_total | moedaPorExtenso}}</i>).
         A condição de pagamento acordada entre as partes será: <b>{{forma_pagamento}}</b>.
         </secao>
 
@@ -89,4 +89,24 @@ export const contratoServicos: TemplateItem =
         </secao>
     </conteudo>
 </documento>`,
+    json: `{
+  "contratante_nome": "Empresa Alpha Soluções Tecnológicas Ltda",
+  "contratante_cnpj": "12345678000199",
+  "contratante_endereco": "Av. Paulista, 1000 - Bela Vista, São Paulo/SP",
+  "contratante_representante": "Ana Beatriz Mendes",
+  "contratada_nome": "Beta Soluções Digitais ME",
+  "contratada_cnpj": "98765432000188",
+  "contratada_endereco": "Rua das Inovações, 500 - Centro, Curitiba/PR",
+  "contratada_email": "contato@betasolucoes.com.br",
+  "descricao_servico": "Desenvolvimento e sustentação de sistema web sob demanda, incluindo arquitetura em nuvem e suporte técnico especializado.",
+  "cronograma_entregas": [
+    { "etapa": "Fase 1 - Arquitetura e Protótipo", "prazo": "30 dias", "valor": "15.000,00" },
+    { "etapa": "Fase 2 - Implementação do Core", "prazo": "60 dias", "valor": "25.000,00" },
+    { "etapa": "Fase 3 - Homologação e Deploy", "prazo": "90 dias", "valor": "10.000,00" }
+  ],
+  "valor_total": "50000.00",
+  "forma_pagamento": "Parcelado conforme cronograma de entregas",
+  "prazo_vigencia": "12 (doze) meses",
+  "cidade_foro": "São Paulo / SP"
+}`
   };

@@ -55,6 +55,8 @@ export const DocumentInlineConditionalNode: React.FC<DocumentInlineConditionalNo
   return (
     <span
       key={nodeKey}
+      data-vars={variaveisUsadas.join(' ')}
+      data-word-conditional="true"
       onClick={primeiroId ? (e) => { e.stopPropagation(); onFocusField(primeiroId); } : undefined}
       className={`transition-all rounded select-text ${
         estaDestacado
@@ -120,6 +122,8 @@ export const DocumentBlockConditionalNode: React.FC<DocumentBlockConditionalNode
   return (
     <div
       key={blockKey}
+      data-vars={variaveisUsadas.join(' ')}
+      data-word-conditional="true"
       onClick={primeiroId ? (e) => { e.stopPropagation(); onFocusField(primeiroId); } : undefined}
       className={`transition-all rounded select-text ${
         estaDestacado

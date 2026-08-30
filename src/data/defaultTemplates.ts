@@ -1,6 +1,7 @@
 import { termoReferencia } from './templates/termoReferencia';
 import { bateriaTestes } from './templates/bateriaTestes';
 import { contratoServicos } from './templates/contratoServicos';
+import { catalogoCompletoTags } from './templates/catalogoCompletoTags';
 
 export interface TemplateItem {
   id: string;
@@ -8,6 +9,7 @@ export interface TemplateItem {
   descricao: string;
   categoria: string;
   xml: string;
+  json?: string;
 }
 
 /**
@@ -16,6 +18,7 @@ export interface TemplateItem {
  */
 export const DEFAULT_TEMPLATES: TemplateItem[] = [
   termoReferencia,
-  bateriaTestes,
   contratoServicos,
+  catalogoCompletoTags,
+  bateriaTestes,
 ];

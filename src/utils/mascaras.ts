@@ -62,6 +62,21 @@ export function formatarCEP(valor: any): string {
   return cep;
 }
 
+export function formatarTelefone(valor: any): string {
+  if (valor === null || valor === undefined) return '';
+  const digits = String(valor).replace(/\D/g, '').substring(0, 11);
+  if (digits.length > 10) {
+    return digits.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  }
+  if (digits.length > 6) {
+    return digits.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+  }
+  if (digits.length > 2) {
+    return digits.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+  }
+  return digits;
+}
+
 
 export function aplicarMascaraCampo(valor: any, tipo: string): string {
   if (!tipo) return valor ?? '';
@@ -77,6 +92,9 @@ export function aplicarMascaraCampo(valor: any, tipo: string): string {
       return formatarCPFOuCNPJ(valor);
     case 'cep':
       return formatarCEP(valor);
+    case 'tel':
+    case 'telefone':
+      return formatarTelefone(valor);
     default:
       return valor ?? '';
   }
@@ -132,8 +150,7 @@ export function aplicarFiltroDocumento(valor: any, filtro: string): string {
   switch (filtro) {
     case 'moeda': {
       const bruto = normalizarValorCampo(valor, 'moeda');
-      const formatado = formatarMoeda(bruto);
-      return formatado === '' ? '' : `R$ ${formatado}`;
+      return formatarMoeda(bruto);
     }
     case 'data':
       return converterFormatoData(valor, 'BR');
@@ -153,6 +170,9 @@ export function aplicarFiltroDocumento(valor: any, filtro: string): string {
       return formatarCPFOuCNPJ(normalizarValorCampo(valor, 'cpfcnpj'));
     case 'cep':
       return formatarCEP(normalizarValorCampo(valor, 'cep'));
+    case 'tel':
+    case 'telefone':
+      return formatarTelefone(valor);
     case 'email':
       return String(valor);
     default:

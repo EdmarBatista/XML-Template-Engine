@@ -8,6 +8,7 @@ interface SidebarToolbarProps {
   customTemplates: TemplateItem[];
   onRemoveCustomTemplate: (id: string) => void;
   onSelectTemplate: (t: TemplateItem) => void;
+  onLoadJson?: (jsonStr: string) => void;
   onUploadXml: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onUploadJson: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onUploadZip?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -45,7 +46,7 @@ interface SidebarToolbarProps {
 }
 
 export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
-  currentXmlName, customTemplates, onRemoveCustomTemplate, onSelectTemplate, onUploadXml, onUploadJson, onUploadZip, onSaveJson, onSaveZip,
+  currentXmlName, customTemplates, onRemoveCustomTemplate, onSelectTemplate, onLoadJson, onUploadXml, onUploadJson, onUploadZip, onSaveJson, onSaveZip,
   onExportWord, onExportPdf, onPrint, onOpenXmlEditor, onOpenModelModal, onClearForm,
   variaveisVermelhasWord, onToggleVariaveisVermelhas, numeracaoAtiva, onToggleNumeracao,
   edicaoInline, onToggleEdicaoInline, irParaCampoAtivo, onToggleIrParaCampo,
@@ -241,6 +242,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
             customTemplates={customTemplates}
             onSelectTemplate={onSelectTemplate}
             onRemoveCustomTemplate={onRemoveCustomTemplate}
+            onLoadJson={onLoadJson}
           />
 
           {onToggleSidebar && (

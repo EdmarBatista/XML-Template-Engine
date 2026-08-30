@@ -18,6 +18,11 @@ export interface DocumentTableCellProps {
   placeholder?: string;
   isHighlighted?: boolean;
   edicaoInline?: boolean;
+  variaveisVermelhasWord?: boolean;
+  isConditional?: boolean;
+  conditionalExpr?: string;
+  conditionalHighlight?: boolean;
+  conditionalFocusVar?: string;
   onFocusField?: (fieldId: string) => void;
   onUpdateField?: (fieldId: string, value: any, origem?: string) => void;
   dadosTabela?: any[];
@@ -42,6 +47,11 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   placeholder,
   isHighlighted = false,
   edicaoInline = true,
+  variaveisVermelhasWord = false,
+  isConditional = false,
+  conditionalExpr,
+  conditionalHighlight = false,
+  conditionalFocusVar,
   onFocusField,
   onUpdateField,
   dadosTabela,
@@ -73,6 +83,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   // Identificação unificada do tipo (considera também o `validar` da coluna)
   const tipoColuna = obterTipoEfetivoColuna(colMeta?.tipo, colMeta?.validar) || filtro || 'input';
   const isSelect = tipoColuna === 'select';
+  const isRadio = tipoColuna === 'radio';
   const isDate = tipoColuna === 'date' || tipoColuna === 'data';
   const isCheckbox = tipoColuna === 'checkbox' || tipoColuna === 'booleano';
   const isTextArea = tipoColuna === 'textarea' || tipoColuna === 'texto_longo';
@@ -126,6 +137,21 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     setEditando(false);
   }, [isEditable, isCurrency, isNumber, isCheckbox, isMasked, maskName, aplicarValorNaTabela]);
 
+  React.useEffect(() => {
+    if (!editando) return;
+    const handleOutside = (e: MouseEvent | TouchEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        salvar();
+      }
+    };
+    document.addEventListener('mousedown', handleOutside, true);
+    document.addEventListener('touchstart', handleOutside, true);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside, true);
+      document.removeEventListener('touchstart', handleOutside, true);
+    };
+  }, [editando, salvar]);
+
   const salvarValorDireto = (val: any) => {
     aplicarValorNaTabela(val);
     setEditando(false);
@@ -136,6 +162,8 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   };
 
   const clickTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const focoId = listaNome || conditionalFocusVar;
 
   const handleClick = (e: React.MouseEvent) => {
     if (editando) return;
@@ -151,8 +179,8 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     clickTimerRef.current = setTimeout(() => {
       const currentSel = window.getSelection();
       if (currentSel && currentSel.toString().trim().length > 0) return;
-      if (listaNome && onFocusField) {
-        onFocusField(listaNome);
+      if (focoId && onFocusField) {
+        onFocusField(focoId);
       }
     }, 250);
   };
@@ -165,15 +193,14 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     }
 
     if (isEditable) {
+      let initialVal: any = '';
       if (isCheckbox) {
-        const novoCheck = !valorBruto;
-        salvarValorDireto(novoCheck);
-        return;
-      }
-
-      let initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
-      if (isMasked) {
-        initialVal = aplicarMascaraCampo(initialVal, maskName);
+        initialVal = Boolean(valorBruto);
+      } else {
+        initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
+        if (isMasked) {
+          initialVal = aplicarMascaraCampo(initialVal, maskName);
+        }
       }
       setValorTemp(initialVal);
       setEditando(true);
@@ -194,37 +221,112 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   const hasValue = valorBruto !== undefined && valorBruto !== null && String(valorBruto).trim() !== '';
   const placeholderText = placeholder || colMeta?.label || (colKey ? `[${colKey.replace(/_/g, ' ')}]` : '...');
 
+  const estaDestacadoEfetivo = isHighlighted || Boolean(conditionalHighlight);
+
+  let bgTextClasses = '';
+  if (isHeader) {
+    if (isConditional) {
+      bgTextClasses = estaDestacadoEfetivo
+        ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-200 font-semibold border-b-2 border-emerald-500'
+        : 'bg-blue-50 dark:bg-slate-800 text-blue-950 dark:text-blue-200 font-semibold border-b-2 border-blue-400 dark:border-blue-500';
+    } else {
+      bgTextClasses = 'bg-slate-100 dark:bg-slate-800 font-semibold text-slate-800 dark:text-slate-200 uppercase text-xs tracking-wider';
+    }
+  } else {
+    if (estaDestacadoEfetivo) {
+      bgTextClasses = 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-200 font-medium border-emerald-400 dark:border-emerald-500';
+    } else if (isConditional) {
+      bgTextClasses = `bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-200 border-l-2 border-blue-400 dark:border-blue-500 ${
+        variaveisVermelhasWord && hasValue ? 'text-red-600 dark:text-rose-400 font-medium' : ''
+      }`;
+    } else if (variaveisVermelhasWord && hasValue) {
+      bgTextClasses = 'text-red-600 dark:text-rose-400 bg-red-50/30 dark:bg-rose-950/20 font-medium hover:bg-red-100/50 dark:hover:bg-rose-900/40';
+    } else if (isEditable) {
+      bgTextClasses = 'cursor-pointer hover:bg-blue-50/70 dark:hover:bg-blue-950 text-slate-800 dark:text-slate-200';
+    } else {
+      bgTextClasses = 'text-slate-700 dark:text-slate-300';
+    }
+  }
+
+  let tooltipTitulo: string | undefined = undefined;
+  if (isConditional) {
+    tooltipTitulo = `Célula Condicional IF: ${conditionalExpr || ''}${conditionalFocusVar ? ' (Clique para localizar no formulário)' : ''}`;
+  } else if (!isHeader && isEditable && !editando) {
+    tooltipTitulo = `Clique duplo para editar célula ou clique para localizar no formulário (${colKey || 'célula'})`;
+  }
+
   return (
     <CellTag
       ref={containerRef}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
-      data-vars={listaNome ? `${listaNome} ${listaNome}.${colKey || ''}` : undefined}
-      className={`border border-slate-300 dark:border-slate-600 px-3 py-2 text-left select-text relative transition-all duration-300 ${
-        isHeader
-          ? 'bg-slate-100 dark:bg-slate-800 font-semibold text-slate-800 dark:text-slate-200 uppercase text-xs tracking-wider'
-          : isHighlighted
-          ? 'bg-emerald-100 text-emerald-950 font-medium'
-          : isEditable
-          ? 'cursor-pointer hover:bg-blue-50/70 dark:hover:bg-blue-950 text-slate-800 dark:text-slate-200'
-          : 'text-slate-700 dark:text-slate-300'
-      } ${editando ? 'p-0.5 bg-white dark:bg-slate-800 ring-2 ring-blue-500 z-30 shadow-md' : ''} ${className}`}
+      data-vars={!isHeader && listaNome && hasValue ? `${listaNome} ${listaNome}.${colKey || ''}` : (conditionalFocusVar || undefined)}
+      className={`border border-slate-300 dark:border-slate-600 px-3 py-2 text-left select-text relative transition-all duration-300 ${bgTextClasses} ${
+        editando ? 'p-0.5 bg-white dark:bg-slate-800 ring-2 ring-blue-500 z-30 shadow-md' : ''
+      } ${className}`}
       style={{
         fontSize: `${(isHeader ? 12 : 13) * fontScale}px`,
         lineHeight: 1.3,
         ...style,
       }}
-      title={
-        isHeader
-          ? undefined
-          : isEditable && !editando
-          ? `Clique duplo para editar célula ou clique para localizar no formulário (${colKey || 'célula'})`
-          : undefined
-      }
+      title={tooltipTitulo}
     >
       {editando ? (
         <div className="flex items-center w-full min-w-[80px]">
-          {isSelect ? (
+          {isRadio && colMeta?.opcoes && colMeta.opcoes.length > 0 ? (
+            <div
+              className="inline-flex items-center gap-1.5 flex-wrap bg-white dark:bg-slate-800 p-0.5"
+              onClick={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+            >
+              {colMeta.opcoes.map((opt, i) => {
+                const isChecked = String(valorTemp) === String(opt);
+                return (
+                  <label
+                    key={i}
+                    className={`inline-flex items-center gap-1 text-xs cursor-pointer px-1.5 py-0.5 rounded transition ${
+                      isChecked
+                        ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/60 dark:text-blue-200 font-semibold ring-1 ring-blue-300'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`table-cell-radio-${listaNome}-${rowIndex}-${colKey}`}
+                      value={opt}
+                      checked={isChecked}
+                      onChange={() => {
+                        setValorTemp(opt);
+                        aplicarValorNaTabela(opt);
+                      }}
+                      className="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="select-none">{opt}</span>
+                  </label>
+                );
+              })}
+            </div>
+          ) : isCheckbox ? (
+            <div
+              className="inline-flex items-center bg-white dark:bg-slate-800 p-0.5"
+              onClick={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+            >
+              <label className="inline-flex items-center gap-1.5 text-xs cursor-pointer text-slate-800 dark:text-slate-200 font-medium px-1 py-0.5">
+                <input
+                  type="checkbox"
+                  checked={Boolean(valorTemp)}
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    setValorTemp(checked);
+                    aplicarValorNaTabela(checked);
+                  }}
+                  className="w-3.5 h-3.5 text-blue-600 rounded cursor-pointer"
+                />
+                <span className="select-none">{Boolean(valorTemp) ? 'Sim' : 'Não'}</span>
+              </label>
+            </div>
+          ) : isSelect ? (
             <select
               value={String(valorTemp)}
               autoFocus
