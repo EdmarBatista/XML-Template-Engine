@@ -17,10 +17,12 @@ import React from 'react';
 import { exportarParaPdf, imprimirDocumentoIsolado } from '../utils/pdfExporter';
 import { exportarParaWord } from '../utils/wordExporter';
 import { FilePackageService } from '../services/filePackageService';
+import { XmlPart } from '../types';
 
 interface UseDocumentExportersProps {
   xmlName: string;
   rawXml: string;
+  xmlParts?: XmlPart[] | null;
   dados: Record<string, any>;
   numeracaoAtiva: boolean;
   variaveisVermelhasWord: boolean;
@@ -30,6 +32,7 @@ interface UseDocumentExportersProps {
 export function useDocumentExporters({
   xmlName,
   rawXml,
+  xmlParts,
   dados,
   numeracaoAtiva,
   variaveisVermelhasWord,
@@ -104,13 +107,13 @@ export function useDocumentExporters({
   const handleSaveZip = React.useCallback(async () => {
     try {
       showToast('Empacotando modelo XML e preenchimento JSON...');
-      await FilePackageService.exportZipPackage(xmlName, rawXml, dados);
+      await FilePackageService.exportZipPackage(xmlName, rawXml, dados, xmlParts);
       showToast('Pacote ZIP (XML + JSON) baixado com sucesso!');
     } catch (err: any) {
       console.error(err);
       alert('Erro ao gerar pacote ZIP: ' + err.message);
     }
-  }, [xmlName, rawXml, dados, showToast]);
+  }, [xmlName, rawXml, dados, xmlParts, showToast]);
 
   // Copiar todo o texto gerado
   const handleCopiarTexto = React.useCallback(async () => {

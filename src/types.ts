@@ -82,6 +82,12 @@ export interface FormStructure {
   campos: Record<string, FieldMetadata>;
 }
 
+export interface XmlPart {
+  nome: string;
+  xml: string;
+  index: number;
+}
+
 export interface AstNode {
   tipo: string;
   texto?: string;
@@ -95,6 +101,7 @@ export interface IntermediateModel {
   formulario: FormStructure;
   dados: Record<string, any>;
   conteudo: AstNode;
+  xmlParts?: XmlPart[];
 }
 
 export interface NumberingContext {

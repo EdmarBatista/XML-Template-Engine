@@ -1,0 +1,25 @@
+<documento>
+    <formulario>
+        <grupo titulo="1. Identificação das Partes e Objeto">
+            <input id="numero_contrato" label="Número do Contrato" />
+            <input id="contratante_razao" label="Razão Social do Contratante" />
+            <input id="contratante_cnpj" label="CNPJ do Contratante" />
+            <input id="contratada_razao" label="Razão Social da Contratada" />
+            <input id="contratada_cnpj" label="CNPJ da Contratada" />
+            <textarea id="objeto_resumo" label="Descrição do Objeto Contratual" />
+        </grupo>
+    </formulario>
+
+    <conteudo>
+        <titulo>CONTRATO DE PRESTAÇÃO DE SERVIÇOS TÉCNICOS Nº {{numero_contrato}}</titulo>
+        
+        <secao titulo="IDENTIFICAÇÃO DAS PARTES">
+            <p>Pelo presente instrumento particular, de um lado <b>{{contratante_razao}}</b>, inscrita no CNPJ sob o nº {{contratante_cnpj}}, doravante denominada simplesmente <b>CONTRATANTE</b>, e de outro lado <b>{{contratada_razao}}</b>, inscrita no CNPJ sob o nº {{contratada_cnpj}}, doravante denominada simplesmente <b>CONTRATADA</b>, têm entre si justo e avençado o quanto segue:</p>
+        </secao>
+        
+        <secao titulo="DO OBJETO DO CONTRATO">
+            <p>O presente instrumento tem por objeto a prestação de serviços especializados consistindo em: {{objeto_resumo}}.</p>
+            <p>Os serviços serão prestados em estrita observância às normas técnicas vigentes e às especificações constantes nos anexos deste instrumento.</p>
+        </secao>
+    </conteudo>
+</documento>

@@ -151,12 +151,12 @@ Um template XML é estruturado em dois blocos principais:
 
 ### 1. `<formulario>` (Campos e Grupos)
 
-Campos são agrupados dentro de `<grupo titulo="...">`:
+Campos são organizados dentro de `<grupo titulo="...">`:
 
 ```xml
 <formulario>
   <grupo titulo="Identificação das Partes">
-    <input id="nome_contratante" label="Nome do Contratante" />
+    <input id="nome_contratante" label="Nome do Contratante" placeholder="Digite o nome completo" />
     <input id="cpf_contratante" label="CPF" tipo="cpf" />
     <input id="cep_imovel" label="CEP do Imóvel" tipo="cep" />
     <select id="tipo_pessoa" label="Tipo de Pessoa">
@@ -167,26 +167,38 @@ Campos são agrupados dentro de `<grupo titulo="...">`:
 </formulario>
 ```
 
-#### Tipos de Controles Suportados:
+#### Controles Suportados no `<formulario>`:
 
 > **Nomenclatura padronizada:** cada conceito de tipo/atributo tem **um único nome canônico** (sem aliases). Ex.: use `number` (não `numero`/`inteiro`/`decimal`), `moeda` (não `dinheiro`), `date` (não `data`), `select` (não `selecao`), `checkbox` (não `booleano`), `textarea` (não `texto_longo`), `texto` (não `text`). O mesmo vale para atributos: `validar` (não `validacao`), `tipo` (não `tag`), `var`/`lista` no `<foreach>` (não `item`/`de`/`items`), e `cor` (não `hex`/`valor`/`value`). Tags de título: `<titulo>` (nível 1) e `<subtitulo>` (nível 2).
 
-| Tag | Atributos Principais | Descrição |
+| Tag | Atributos Principais | Descrição e Tipos Válidos |
 |---|---|---|
-| `<input>` | `id`, `label`, `tipo`, `placeholder`, `descricao` | Campo de texto/e-mail/lista (`texto`, `email`, `lista_csv`) |
-| `<textarea>` | `id`, `label`, `rows` | Texto com múltiplas linhas |
-| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step` | Campo numérico/mascarado: `tipo="number"`, `moeda`, `cpf`, `cnpj`, `cep` |
-| `<date>` | `id`, `label` | Seletor nativo de data (formato ISO / BR) |
-| `<select>` | `id`, `label` + filhos `<option>` | Caixa de seleção suspensa |
-| `<radio>` | `id`, `label` + filhos `<option>` | Grupo de botões de opção exclusivos |
-| `<checkbox>` | `id`, `label` | Caixa de seleção booleana (`true`/`false`) |
-| `<tabela>` | `id`, `label` + filhos `<coluna>` | Grade dinâmica de linhas e colunas (adiciona, exclui e reordena linhas) |
+| `<input>` | `id`, `label`, `tipo`, `validar`, `placeholder`, `descricao`, `exemplo` | Campo de entrada. Atributo `tipo`: `texto` (padrão), `email`, `tel`, `cpf`, `cnpj`, `cep`, `moeda`, `number`, `lista_csv`. |
+| `<textarea>` | `id`, `label`, `rows`, `placeholder`, `descricao`, `exemplo` | Campo de texto multilinha (padrão de 4 linhas ou configurável via `rows="N"`). |
+| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step`, `placeholder`, `descricao` | Campo numérico com validação e limites de valor. |
+| `<date>` | `id`, `label`, `placeholder`, `descricao` | Seletor nativo de data (formato ISO YYYY-MM-DD / exibição BR DD/MM/AAAA). |
+| `<select>` | `id`, `label` + filhos `<option>` | Caixa de seleção suspensa. Cada `<option>` aceita texto e atributo opcional `valor="..."`. |
+| `<radio>` | `id`, `label` + filhos `<option>` | Grupo de botões de opção exclusivos. Cada `<option>` aceita texto e atributo `valor="..."`. |
+| `<checkbox>` | `id`, `label` | Caixa de seleção booleana (`true` / `false`). |
+| `<tabela>` | `id`, `label` + filhos `<coluna>` | Grade dinâmica de linhas e colunas com adição, remoção e reordenação de linhas. |
+
+#### Configuração de `<coluna>` dentro de `<tabela>` (Formulário):
+```xml
+<tabela id="itens_orcamento" label="Planilha de Itens">
+  <coluna id="descricao" label="Descrição" tipo="texto" placeholder="Ex: Licença de software" />
+  <coluna id="quantidade" label="Qtd" tipo="number" min="1" step="1" />
+  <coluna id="valor_unitario" label="Valor Unitário" tipo="moeda" />
+  <coluna id="tipo_item" label="Categoria" tipo="select" opcoes="Hardware, Software, Serviço" />
+</tabela>
+```
+- **Atributos de `<coluna>`**: `id` (obrigatório), `label`, `tipo` (`texto`, `number`, `moeda`, `date`, `select`, `radio`, `textarea`, `checkbox`, `cpf`, `cnpj`, `cep`, `email`, `tel`), `placeholder`, `min`, `max`, `step`, `validar`, `opcoes` (valores separados por vírgula ou tags `<option>` filhas).
 
 #### Condicionais no Formulário (`<if>`):
+Permite exibir ou ocultar campos ou opções dinamicamente no formulário com base em valores preenchidos:
 ```xml
 <grupo titulo="Dados Adicionais">
   <checkbox id="tem_fiador" label="Possui Fiador?" />
-  <if expr="tem_fiador == 'true'">
+  <if expr="tem_fiador == true">
     <input id="nome_fiador" label="Nome do Fiador" />
     <input id="cpf_fiador" label="CPF do Fiador" tipo="cpf" />
   </if>
@@ -197,14 +209,14 @@ Campos são agrupados dentro de `<grupo titulo="...">`:
 
 ### 2. `<conteudo>` (Estrutura do Documento)
 
-O documento suporta interpolação de variáveis, aplicação de filtros via sintaxe `{{campo | filtro}}` e **numeração hierárquica automática de seções** (não é necessário prefixar números no título quando `numerar="true"` ou padrão):
+O documento suporta interpolação de variáveis, aplicação de filtros via sintaxe `{{campo | filtro}}` e **numeração hierárquica automática de seções**:
 
 ```xml
 <conteudo>
-  <titulo>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</titulo>
+  <titulo alinhamento="centro">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</titulo>
 
   <secao titulo="DAS PARTES" numerar="true">
-    <p>Pelo presente instrumento, <b>{{nome_contratante}}</b>, inscrito no CPF sob o nº {{cpf_contratante | cpf}}...</p>
+    <p alinhamento="justificar">Pelo presente instrumento, <b>{{nome_contratante}}</b>, inscrito no CPF sob o nº {{cpf_contratante | cpf}}...</p>
   </secao>
 
   <secao titulo="DA PLANILHA DE ITENS E SERVIÇOS" numerar="true">
@@ -217,6 +229,44 @@ O documento suporta interpolação de variáveis, aplicação de filtros via sin
   </secao>
 </conteudo>
 ```
+
+#### Todas as Tags Aceitas no `<conteudo>`:
+
+| Categoria | Tag XML | Atributos Aceitos | Descrição |
+|---|---|---|---|
+| **Títulos** | `<titulo>` | `alinhamento="centro\|esquerda\|direita"` | Título principal do documento (Nível 1 / H1). |
+| | `<subtitulo>` | `alinhamento="centro\|esquerda\|direita"` | Subtítulo do documento (Nível 2 / H2). |
+| **Seções** | `<secao>` | `titulo="..."`, `numerar="true\|false"` | Seção com aninhamento ilimitado, numeração sequencial (1., 1.1, 1.1.1...) e recuo progressivo de 0,5 cm por nível. |
+| **Parágrafos** | `<p>` | `alinhamento="justificar\|esquerda\|centro\|direita"` | Bloco de parágrafo de texto com alinhamento configurável e quebra inteligente. |
+| **Divisores** | `<hr>` / `<hr/>` | — | Linha horizontal divisória entre blocos. |
+| **Listas** | `<lista>` | — | Lista com marcadores (bullet points). Contém tags `<item>`. |
+| | `<lista_numerada>` | — | Lista numerada sequencial (1, 2, 3...). Contém tags `<item>`. |
+| | `<item>` | — | Item individual de lista. Suporta formatação inline e `<if expr="...">`. |
+| **Formatação Inline** | `<b>` / `<strong>` | — | Texto em **negrito**. |
+| | `<i>` / `<em>` | — | Texto em *itálico*. |
+| | `<u>` | — | Texto <u>sublinhado</u>. |
+| | `<s>` | — | Texto <s>tachado / riscado</s>. |
+| | `<mark>` | — | Texto com destaque de marca-texto amarelo. |
+| | `<cor>` | `cor="#HEX\|rgb\|nome"` | Texto colorido (ex.: `<cor cor="#dc2626">Alerta</cor>` ou `<cor cor="blue">Info</cor>`). |
+| | `<a>` | `href="..."` | Link / hiperlink clicável. |
+| | `<br>` / `<br/>` | — | Quebra de linha manual dentro de parágrafos. |
+| **Lógica** | `<if>` | `expr="..."` | Exibição condicional de blocos, parágrafos, células de tabela ou itens de lista. |
+| | `<foreach>` | `lista="..."`, `var="..."` | Repetição dinâmica de conteúdo iterando sobre tabelas, listas CSV ou linhas. Disponibiliza `{{var.coluna}}`, `{{var._index}}` e `{{var._indice}}`. |
+| **Tabelas** | `<tabela>` | `id="..."` | Tabela estruturada. Aceita `<cabecalho>`, `<linha>`, `<celula>` e `<foreach>`. |
+| | `<cabecalho>` | — | Linha de cabeçalho da tabela com repetição em quebra de página. |
+| | `<linha>` | — | Linha regular de dados da tabela. |
+| | `<celula>` | — | Célula individual da tabela. Suporta tags inline e variáveis. |
+
+---
+
+### 3. Flexibilidade de Modelos e Particionamento
+
+- **XML com apenas `<formulario>`**: Carrega todos os campos no painel lateral; o visualizador central exibe aviso claro de que o modelo não possui `<conteudo>`.
+- **XML com apenas `<conteudo>`**: Renderiza o texto e estrutura no visualizador; o painel lateral exibe aviso informativo de que não há campos no documento.
+- **XML Vazio**: Inicializa graciosamente sem erros, permitindo edição imediata no modal de XML (`Ctrl + S`).
+- **Arquivos Particionados (`[1]`, `[01]`)**:
+  - Arquivos nomeados com índice no final (ex.: `Minuta [1].xml`, `Minuta [2].xml` ou `Contrato [01].xml`, `Contrato [02].xml`) são automaticamente ordenados e concatenados em um único documento unificado.
+  - Arquivos sem o padrão de colchetes numéricos no final são tratados como documentos independentes e não sofrem fusão acidental.
 
 > **Nota sobre Numeração:** Ao utilizar `<secao titulo="DO VALOR E PAGAMENTO" numerar="true">` (ou simplesmente sem o atributo, já que a numeração é habilitada por padrão), o motor calcula e renderiza automaticamente o prefixo sequencial (ex.: `1.`, `2.`, `3.`, `3.1.`, etc.). Portanto, **não adicione números manuais** no atributo `titulo`. Para seções que não devem ser numeradas (como blocos de assinaturas ou anexos), use `numerar="false"`.
 

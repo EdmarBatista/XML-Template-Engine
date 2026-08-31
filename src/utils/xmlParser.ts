@@ -1,4 +1,4 @@
-import { AstNode, FieldMetadata, FieldOption, FormGroup, FormItem, FormStructure, IntermediateModel, TableColumnMetadata } from '../types';
+import { AstNode, FieldMetadata, FieldOption, FormGroup, FormItem, FormStructure, IntermediateModel, TableColumnMetadata, XmlPart } from '../types';
 
 export function sanitizarXmlParaParser(xmlString: string): string {
   // Converte temporariamente caracteres como < e > dentro de expr="..." para &lt; e &gt;
@@ -12,7 +12,22 @@ export function sanitizarXmlParaParser(xmlString: string): string {
 }
 
 export function parseXmlDocument(xmlString: string): Document {
-  const xmlSeguro = sanitizarXmlParaParser(xmlString);
+  let xmlTratado = (xmlString || '').trim();
+
+  // Se o XML estiver totalmente vazio, inicializa como documento vazio
+  if (!xmlTratado) {
+    xmlTratado = '<documento></documento>';
+  } else if (!xmlTratado.startsWith('<documento>') && !xmlTratado.startsWith('<?xml')) {
+    // Se o XML não começa com <documento>, mas possui tags ou conteúdo solto, envolve automaticamente
+    if (xmlTratado.includes('<formulario>') || xmlTratado.includes('<conteudo>')) {
+      xmlTratado = `<documento>\n${xmlTratado}\n</documento>`;
+    } else {
+      // É um fragmento de seções, parágrafos ou conteúdo puro
+      xmlTratado = `<documento>\n  <conteudo>\n${xmlTratado}\n  </conteudo>\n</documento>`;
+    }
+  }
+
+  const xmlSeguro = sanitizarXmlParaParser(xmlTratado);
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlSeguro, 'text/xml');
 
@@ -310,17 +325,63 @@ export function construirEstadoInicial(campos: Record<string, FieldMetadata>): R
   return estado;
 }
 
-export function criarModeloIntermediario(xmlDoc: Document, xmlName = 'documento.xml'): IntermediateModel {
+export function criarModeloIntermediario(
+  xmlDoc: Document,
+  xmlName = 'documento.xml',
+  xmlParts?: XmlPart[]
+): IntermediateModel {
   const formularioNode = xmlDoc.querySelector('formulario');
-  const conteudoNode = xmlDoc.querySelector('conteudo');
+  let conteudoNode = xmlDoc.querySelector('conteudo');
 
-  if (!formularioNode || !conteudoNode) {
-    throw new Error('XML inválido: As tags <formulario> e <conteudo> são obrigatórias.');
+  // Se não tem tag <conteudo>, mas o documento tem nós que não são o formulário
+  if (!conteudoNode) {
+    const docElement = xmlDoc.documentElement;
+    if (docElement && docElement.tagName.toLowerCase() !== 'conteudo') {
+      // Se a própria raiz for outra tag (ou <documento> contendo seções diretamente)
+      conteudoNode = docElement;
+    }
   }
 
-  const formulario = extrairCampos(formularioNode);
+  const formulario: FormStructure = formularioNode
+    ? extrairCampos(formularioNode)
+    : { grupos: [], campos: {} };
+
   const dados = construirEstadoInicial(formulario.campos);
-  const conteudo = converterConteudoParaAst(conteudoNode);
+
+  let conteudo: AstNode;
+  if (conteudoNode && conteudoNode.tagName.toLowerCase() === 'conteudo') {
+    const rawAst = converterConteudoParaAst(conteudoNode);
+    // Remove nós de texto puramente em branco na raiz do conteúdo
+    const filhosFiltrados = (rawAst.filhos || []).filter(
+      n => n.tipo !== 'texto' || (n.texto || '').trim().length > 0
+    );
+    conteudo = {
+      tipo: 'conteudo',
+      atributos: rawAst.atributos || {},
+      filhos: filhosFiltrados,
+    };
+  } else if (conteudoNode) {
+    const filhosFiltrados = Array.from(conteudoNode.childNodes)
+      .filter(n => {
+        if (n.nodeType === Node.ELEMENT_NODE) {
+          return (n as Element).tagName.toLowerCase() !== 'formulario';
+        }
+        if (n.nodeType === Node.TEXT_NODE) {
+          return (n.textContent || '').trim().length > 0;
+        }
+        return false;
+      })
+      .map(converterNoParaAst)
+      .filter((n): n is AstNode => n !== null);
+
+    conteudo = {
+      tipo: 'conteudo',
+      atributos: {},
+      filhos: filhosFiltrados,
+    };
+  } else {
+    conteudo = { tipo: 'conteudo', atributos: {}, filhos: [] };
+  }
 
   return {
     tipo: 'documento',
@@ -328,5 +389,113 @@ export function criarModeloIntermediario(xmlDoc: Document, xmlName = 'documento.
     formulario,
     dados,
     conteudo,
+    xmlParts: xmlParts && xmlParts.length > 0 ? xmlParts : undefined,
   };
 }
+
+/**
+ * Analisa o nome do arquivo para extrair o nome base e o índice de partição [XX].
+ * Exemplos:
+ *   "Contrato [01].xml" -> { baseNome: "Contrato", indice: 1, isPart: true }
+ *   "Documento [2].xml"  -> { baseNome: "Documento", indice: 2, isPart: true }
+ *   "Modelo.xml"         -> { baseNome: "Modelo", indice: null, isPart: false }
+ */
+export function extrairIndiceParteXml(nomeArquivo: string): {
+  baseNome: string;
+  indice: number | null;
+  isPart: boolean;
+} {
+  const limpo = nomeArquivo.trim();
+  // Busca estritamente o padrão [1] ou [01] no final do nome antes da extensão .xml
+  // Exemplo válido: "Contrato [1].xml", "Exemplo [01].xml", "Minuta [2]"
+  // Não aceita: "[01] Contrato.xml", "[Parte 1].xml", etc.
+  const matchFim = limpo.match(/^(.*?)(?:\s*\[(\d+)\])(?:\.xml)?$/i);
+  if (matchFim) {
+    const baseNome = matchFim[1].trim() || 'Documento';
+    const indice = parseInt(matchFim[2], 10);
+    return { baseNome, indice, isPart: true };
+  }
+  const baseSemExt = limpo.replace(/\.xml$/i, '');
+  return { baseNome: baseSemExt, indice: null, isPart: false };
+}
+
+/**
+ * Concatena múltiplos arquivos XML particionados em um único documento XML válido.
+ * 
+ * Regra de Mesclagem:
+ * 1. Ordena as partes pelo índice numérico crescente.
+ * 2. Unifica todos os <grupo> dentro de uma única tag <formulario>.
+ * 3. Unifica todos os nós/seções/títulos dentro de uma única tag <conteudo>.
+ * 4. Retorna a string XML concatenada e formatada.
+ */
+export function concatenarXmlsParticionados(
+  partes: { nome: string; xml: string; index?: number }[]
+): string {
+  if (!partes || partes.length === 0) return '';
+  if (partes.length === 1) return partes[0].xml;
+
+  // Ordena pelo índice ou nome
+  const partesOrdenadas = [...partes].sort((a, b) => {
+    const idxA = a.index !== undefined ? a.index : extrairIndiceParteXml(a.nome).indice ?? 999;
+    const idxB = b.index !== undefined ? b.index : extrairIndiceParteXml(b.nome).indice ?? 999;
+    if (idxA !== idxB) return idxA - idxB;
+    return a.nome.localeCompare(b.nome);
+  });
+
+  const gruposXml: string[] = [];
+  const conteudosXml: string[] = [];
+
+  partesOrdenadas.forEach((parte, idx) => {
+    try {
+      const doc = parseXmlDocument(parte.xml);
+      const formNode = doc.querySelector('formulario');
+      const contNode = doc.querySelector('conteudo');
+
+      if (formNode) {
+        // Pega todos os grupos ou nós internos do formulário
+        Array.from(formNode.children).forEach(filho => {
+          gruposXml.push(filho.outerHTML);
+        });
+      }
+
+      if (contNode) {
+        // Pega todo o conteúdo interno
+        let innerHtml = contNode.innerHTML;
+        if (!innerHtml) {
+          // Fallback caso innerHTML não esteja disponível no parser XML
+          innerHtml = Array.from(contNode.childNodes)
+            .map(n => (n.nodeType === Node.ELEMENT_NODE ? (n as Element).outerHTML : n.textContent || ''))
+            .join('\n');
+        }
+        conteudosXml.push(innerHtml.trim());
+      } else {
+        // Se a parte não tem <conteudo>, verifica se é um fragmento de seções ou documento
+        const docElement = doc.documentElement;
+        if (docElement && docElement.tagName.toLowerCase() !== 'documento') {
+          conteudosXml.push(docElement.outerHTML);
+        }
+      }
+    } catch {
+      // Fallback regex se houver erro estrito de parser
+      const matchForm = parte.xml.match(/<formulario>([\s\S]*?)<\/formulario>/i);
+      if (matchForm) {
+        gruposXml.push(matchForm[1].trim());
+      }
+      const matchCont = parte.xml.match(/<conteudo>([\s\S]*?)<\/conteudo>/i);
+      if (matchCont) {
+        conteudosXml.push(matchCont[1].trim());
+      }
+    }
+  });
+
+  const formularioUnificado = gruposXml.length > 0 
+    ? `    <formulario>\n${gruposXml.map(g => `        ${g.trim()}`).join('\n\n')}\n    </formulario>`
+    : '    <formulario>\n    </formulario>';
+
+  const conteudoUnificado = conteudosXml.length > 0
+    ? `    <conteudo>\n${conteudosXml.map(c => `        ${c.trim()}`).join('\n\n')}\n    </conteudo>`
+    : '    <conteudo>\n    </conteudo>';
+
+  return `<documento>\n${formularioUnificado}\n\n${conteudoUnificado}\n</documento>`;
+}
+

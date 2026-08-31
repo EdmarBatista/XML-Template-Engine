@@ -102,6 +102,7 @@ export default function App() {
     currentTemplate,
     rawXml,
     xmlName,
+    xmlParts,
     modelo,
     xmlError,
     aplicarNovoXmlEJson,
@@ -198,6 +199,7 @@ export default function App() {
   } = useDocumentExporters({
     xmlName,
     rawXml,
+    xmlParts,
     dados,
     numeracaoAtiva,
     variaveisVermelhasWord,
@@ -242,6 +244,7 @@ export default function App() {
   } = useFilePackageActions({
     xmlName,
     rawXml,
+    xmlParts,
     dados,
     setDados,
     carregarXmlEJson,
@@ -454,12 +457,21 @@ export default function App() {
                   setSidebarWidth(Math.max(280, Math.min(defaultWidth, 800)));
                   showToast('Largura do formulário restaurada para 33%');
                 }}
-                className={`w-[2px] hover:w-[4px] bg-slate-300 hover:bg-blue-500 cursor-col-resize shrink-0 transition-all z-20 relative group ${
-                  isResizing ? 'bg-blue-600 w-[4px]' : ''
+                className={`w-[4px] -ml-[2px] -mr-[2px] bg-transparent hover:bg-blue-500/20 cursor-col-resize shrink-0 transition-colors z-20 relative group ${
+                  isResizing ? 'bg-blue-500/30' : ''
                 }`}
                 title="Arraste para redimensionar (Duplo clique para restaurar 33%)"
               >
-                <div className="absolute inset-y-0 -left-1 -right-1" />
+                {/* Linha visual central estática sem alterar largura de layout */}
+                <div
+                  className={`w-[2px] h-full mx-auto transition-colors ${
+                    isResizing
+                      ? 'bg-blue-600'
+                      : 'bg-slate-300 dark:bg-slate-700 group-hover:bg-blue-500'
+                  }`}
+                />
+                {/* Área de clique estendida invisível */}
+                <div className="absolute inset-y-0 -left-1.5 -right-1.5" />
               </div>
             )}
 
@@ -510,6 +522,7 @@ export default function App() {
           onClose={closeModelModal}
           modelo={{ ...modelo, dados }}
           rawXml={rawXml}
+          xmlParts={xmlParts}
           xmlName={xmlName}
           onUpdateField={updateField}
           onUpdateMultipleFields={novosDados => {
@@ -529,6 +542,7 @@ export default function App() {
         isOpen={isXmlEditorOpen}
         onClose={closeXmlEditor}
         xmlContent={rawXml}
+        xmlParts={xmlParts}
         dadosContent={dados}
         onApply={aplicarNovoXmlEJson}
         xmlName={xmlName}

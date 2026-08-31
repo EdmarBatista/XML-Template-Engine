@@ -92,7 +92,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
 
   const actionButtons = (
     <>
-      <input ref={xmlInputRef} type="file" accept=".xml,text/xml,application/xml,.zip,application/zip" onChange={(e) => {
+      <input ref={xmlInputRef} type="file" multiple accept=".xml,text/xml,application/xml,.zip,application/zip" onChange={(e) => {
         const f = e.target.files?.[0];
         if (f && (f.name.toLowerCase().endsWith('.zip') || f.type.includes('zip')) && onUploadZip) {
           onUploadZip(e);
@@ -177,7 +177,13 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
          A4
       </button>
 
-      <button type="button" onClick={onOpenModelModal} className="btn-toolbar" title="Variáveis e Modelo">
+      {onOpenXmlEditor && (
+        <button type="button" onClick={onOpenXmlEditor} className="btn-toolbar" title="Editar Modelo (XML & JSON)">
+          <Code className="w-4 h-4 text-purple-400" />
+        </button>
+      )}
+
+      <button type="button" onClick={onOpenModelModal} className="btn-toolbar" title="Painel de Variáveis">
         <Sliders className="w-4 h-4 text-cyan-400" />
       </button>
 

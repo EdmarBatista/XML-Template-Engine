@@ -1,0 +1,27 @@
+<documento>
+    <formulario>
+        <grupo titulo="3. Valores, Preços e Tabela de Itens">
+            <input id="valor_total_contrato" label="Valor Total Global do Contrato (R$)" />
+            <input id="condicao_faturamento" label="Condição de Pagamento" />
+            <tabela id="itens_orcamentarios" label="Detalhamento dos Itens do Contrato">
+                <coluna id="item" label="Item" tipo="number" />
+                <coluna id="descricao" label="Descrição do Serviço" tipo="input" />
+                <coluna id="qtd" label="Qtd" tipo="number" />
+                <coluna id="valor_unit" label="Valor Unitário" tipo="input" />
+                <coluna id="valor_total" label="Subtotal" tipo="input" />
+            </tabela>
+        </grupo>
+    </formulario>
+
+    <conteudo>
+        <secao titulo="DO PREÇO E DAS CONDIÇÕES DE PAGAMENTO">
+            <p>Pela execução dos serviços descritos neste Contrato, a CONTRATANTE pagará à CONTRATADA o valor global estimado de <b>R$ {{valor_total_contrato}}</b>.</p>
+            <p>O faturamento será processado sob as seguintes condições: <b>{{condicao_faturamento}}</b>, mediante apresentação de nota fiscal devidamente atestada pelo gestor do contrato.</p>
+        </secao>
+        
+        <secao titulo="DO DETALHAMENTO ORÇAMENTÁRIO">
+            <p>O detalhamento dos serviços, quantidades estimadas e custos unitários compreendem:</p>
+            {{itens_orcamentarios}}
+        </secao>
+    </conteudo>
+</documento>

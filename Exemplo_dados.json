@@ -1,0 +1,60 @@
+{
+  "xml": "Exemplo.xml",
+  "data_geracao": "2026-08-31T10:00:00.000Z",
+  "dados": {
+    "numero_contrato": "042/2026",
+    "contratante_razao": "SECRETARIA MUNICIPAL DE TECNOLOGIA E INOVAÇÃO",
+    "contratante_cnpj": "12.345.678/0001-90",
+    "contratada_razao": "NEXUS SISTEMAS E ENGENHARIA DE SOFTWARE LTDA",
+    "contratada_cnpj": "98.765.432/0001-10",
+    "objeto_resumo": "Desenvolvimento, sustentação e implantação de plataforma integrada de gestão documental com geração dinâmica de relatórios em XML e exportação automatizada",
+    "prazo_meses": 12,
+    "data_inicio": "01/09/2026",
+    "local_execucao": "Sede Administrativa Municipal e Nuvem Governamental",
+    "modalidade_garantia": "seguro",
+    "valor_total_contrato": "480.000,00",
+    "condicao_faturamento": "Pagamentos mensais mediante medição de entregáveis e emissão de NF",
+    "itens_orcamentarios": [
+      {
+        "item": 1,
+        "descricao": "Módulo de Parsing XML e AST com Validação Estrutural",
+        "qtd": 1,
+        "valor_unit": "120.000,00",
+        "valor_total": "120.000,00"
+      },
+      {
+        "item": 2,
+        "descricao": "Módulo de Renderização Split-Screen e Foco Bidirecional",
+        "qtd": 1,
+        "valor_unit": "140.000,00",
+        "valor_total": "140.000,00"
+      },
+      {
+        "item": 3,
+        "descricao": "Módulo de Particionamento e Concatenação Multi-Part XML",
+        "qtd": 1,
+        "valor_unit": "110.000,00",
+        "valor_total": "110.000,00"
+      },
+      {
+        "item": 4,
+        "descricao": "Suporte Técnico Especializado e Exportadores (Word/PDF/ZIP)",
+        "qtd": 12,
+        "valor_unit": "9.166,67",
+        "valor_total": "110.000,00"
+      }
+    ],
+    "cidade_foro": "São Paulo",
+    "estado_foro": "SP",
+    "cidade_assinatura": "São Paulo",
+    "data_assinatura": "2026-08-31",
+    "rep_contratante": "Dr. Fernando Henrique Silveira",
+    "cargo_rep_contratante": "Secretário Municipal de Tecnologia",
+    "rep_contratada": "Engª. Beatriz Mendes de Oliveira",
+    "cargo_rep_contratada": "Diretora de Operações",
+    "testemunha_1": "Carlos Eduardo Lima",
+    "cpf_testemunha_1": "111.222.333-44",
+    "testemunha_2": "Mariana Souza Santos",
+    "cpf_testemunha_2": "555.666.777-88"
+  }
+}

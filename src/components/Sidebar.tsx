@@ -24,8 +24,9 @@ import {
   ChevronUp,
   Loader2,
   MapPin,
+  Sliders,
 } from 'lucide-react';
-import { FieldMetadata, FormItem, FormStructure } from '../types';
+import { FieldMetadata, FormItem, FormStructure, XmlPart } from '../types';
 import {
   normalizarDigitos,
   validarCampo,
@@ -478,20 +479,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Accordion Groups List */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {estrutura.grupos.map((grupo, idx) => {
-          if (!grupoPossuiCamposVisiveis(grupo.itens)) return null;
-          const isOpen = Boolean(secoesAbertas[idx]);
-          return (
-            <SidebarGroupAccordion
-              key={idx}
-              grupo={grupo}
-              idx={idx}
-              isOpen={isOpen}
-              onToggle={() => toggleGrupo(idx)}
-              renderItens={renderItens}
-            />
-          );
-        })}
+        {estrutura.grupos.length === 0 || totalCampos === 0 ? (
+          <div className="p-4 text-center text-slate-500 dark:text-slate-400 text-xs flex flex-col items-center justify-center gap-2 mt-8">
+            <Sliders className="w-8 h-8 text-slate-400 dark:text-slate-500 opacity-60" />
+            <p className="font-semibold text-slate-600 dark:text-slate-300">Nenhum campo configurado</p>
+            <p className="text-[11px] leading-relaxed text-slate-400 dark:text-slate-500 max-w-[220px]">
+              Este documento não possui a tag <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded">&lt;formulario&gt;</code> ou não contém campos de preenchimento.
+            </p>
+          </div>
+        ) : (
+          estrutura.grupos.map((grupo, idx) => {
+            if (!grupoPossuiCamposVisiveis(grupo.itens)) return null;
+            const isOpen = Boolean(secoesAbertas[idx]);
+            return (
+              <SidebarGroupAccordion
+                key={idx}
+                grupo={grupo}
+                idx={idx}
+                isOpen={isOpen}
+                onToggle={() => toggleGrupo(idx)}
+                renderItens={renderItens}
+              />
+            );
+          })
+        )}
       </div>
     </>
   );
@@ -563,22 +574,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       />
 
       {/* Accordion Groups List */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {estrutura.grupos.map((grupo, idx) => {
-          if (!grupoPossuiCamposVisiveis(grupo.itens)) return null;
-          const isOpen = Boolean(secoesAbertas[idx]);
-          return (
-            <SidebarGroupAccordion
-              key={idx}
-              grupo={grupo}
-              idx={idx}
-              isOpen={isOpen}
-              onToggle={() => toggleGrupo(idx)}
-              renderItens={renderItens}
-            />
-          );
-        })}
-      </div>
+      {gruposLista}
     </aside>
   );
 };

@@ -15,8 +15,8 @@
 import React from 'react';
 import { DEFAULT_TEMPLATES, TemplateItem } from '../data/defaultTemplates';
 import { StorageService } from '../services/storageService';
-import { IntermediateModel } from '../types';
-import { construirEstadoInicial, criarModeloIntermediario, parseXmlDocument } from '../utils/xmlParser';
+import { IntermediateModel, XmlPart } from '../types';
+import { construirEstadoInicial, criarModeloIntermediario, parseXmlDocument, concatenarXmlsParticionados } from '../utils/xmlParser';
 
 interface UseDocumentEngineProps {
   showToast: (msg: string) => void;
@@ -52,13 +52,14 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
 
   const [rawXml, setRawXml] = React.useState<string>(() => currentTemplate.xml);
   const [xmlName, setXmlName] = React.useState<string>(() => currentTemplate.nome);
+  const [xmlParts, setXmlParts] = React.useState<XmlPart[] | null>(() => currentTemplate.xmlParts || null);
   const [xmlError, setXmlError] = React.useState<string | null>(null);
 
   // Modelo intermediário compilado (AST + Estrutura de Formulário)
   const [modelo, setModelo] = React.useState<IntermediateModel | null>(() => {
     try {
       const doc = parseXmlDocument(currentTemplate.xml);
-      return criarModeloIntermediario(doc, currentTemplate.nome);
+      return criarModeloIntermediario(doc, currentTemplate.nome, currentTemplate.xmlParts);
     } catch (e: any) {
       console.error(e);
       return null;
@@ -70,11 +71,12 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
     (template: TemplateItem) => {
       try {
         const doc = parseXmlDocument(template.xml);
-        const novoModelo = criarModeloIntermediario(doc, template.nome);
+        const novoModelo = criarModeloIntermediario(doc, template.nome, template.xmlParts);
 
         setCurrentTemplate(template);
         setRawXml(template.xml);
         setXmlName(template.nome);
+        setXmlParts(template.xmlParts || null);
         setModelo(novoModelo);
         setXmlError(null);
 
@@ -111,17 +113,24 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
 
   // Aplica novo XML e dados vindos do editor de código
   const aplicarNovoXmlEJson = React.useCallback(
-    (novoXml: string, novosDados: Record<string, any>, novoNome?: string) => {
+    (
+      novoXml: string,
+      novosDados: Record<string, any>,
+      novoNome?: string,
+      novasXmlParts?: XmlPart[]
+    ) => {
       try {
         let nomeFinal = novoNome && novoNome.trim() ? novoNome.trim() : xmlName;
         if (!nomeFinal.toLowerCase().endsWith('.xml')) {
           nomeFinal += '.xml';
         }
 
+        const partsFinal = novasXmlParts !== undefined ? novasXmlParts : xmlParts;
         const doc = parseXmlDocument(novoXml);
-        const novoModelo = criarModeloIntermediario(doc, nomeFinal);
+        const novoModelo = criarModeloIntermediario(doc, nomeFinal, partsFinal || undefined);
         setRawXml(novoXml);
         setXmlName(nomeFinal);
+        setXmlParts(partsFinal || null);
         setModelo(novoModelo);
         setXmlError(null);
 
@@ -140,6 +149,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
                 nome: nomeFinal,
                 xml: novoXml,
                 json: jsonStr ?? nextList[idx].json,
+                xmlParts: partsFinal && partsFinal.length > 0 ? partsFinal : undefined,
               };
               nextList[idx] = updated;
               targetId = updated.id;
@@ -153,6 +163,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
                 categoria: 'Personalizados',
                 xml: novoXml,
                 json: jsonStr,
+                xmlParts: partsFinal && partsFinal.length > 0 ? partsFinal : undefined,
               };
               nextList.unshift(newTpl);
               targetId = newId;
@@ -168,6 +179,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
               categoria: 'Personalizados',
               xml: novoXml,
               json: jsonStr,
+              xmlParts: partsFinal && partsFinal.length > 0 ? partsFinal : undefined,
             };
             nextList.unshift(newTpl);
             targetId = newId;
@@ -195,28 +207,30 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         alert(`Erro ao compilar: ${err.message}`);
       }
     },
-    [currentTemplate, xmlName, onNovoEstadoGerado, showToast]
+    [currentTemplate, xmlName, xmlParts, onNovoEstadoGerado, showToast]
   );
 
-  // Carrega arquivo XML e opcionalmente preenchimento JSON
+  // Carrega arquivo XML e opcionalmente preenchimento JSON e partes XML
   const carregarXmlEJson = React.useCallback(
-    (novoXml: string, nomeArquivoXml: string, jsonPayload?: any) => {
+    (novoXml: string, nomeArquivoXml: string, jsonPayload?: any, partesCarregadas?: XmlPart[]) => {
       try {
-        const doc = parseXmlDocument(novoXml);
         let nomeLimpo = nomeArquivoXml.trim() || 'Modelo Personalizado.xml';
         if (!nomeLimpo.toLowerCase().endsWith('.xml')) {
           nomeLimpo += '.xml';
         }
-        const novoModelo = criarModeloIntermediario(doc, nomeLimpo);
+
+        const doc = parseXmlDocument(novoXml);
+        const novoModelo = criarModeloIntermediario(doc, nomeLimpo, partesCarregadas);
 
         const jsonPayloadStr = jsonPayload ? JSON.stringify(jsonPayload.dados ? jsonPayload.dados : jsonPayload, null, 2) : undefined;
         let targetTemplate: TemplateItem = {
           id: 'custom-' + Date.now(),
           nome: nomeLimpo,
-          descricao: 'Modelo personalizado importado',
+          descricao: partesCarregadas && partesCarregadas.length > 0 ? `Modelo particionado em ${partesCarregadas.length} seções` : 'Modelo personalizado importado',
           categoria: 'Personalizados',
           xml: novoXml,
           json: jsonPayloadStr,
+          xmlParts: partesCarregadas && partesCarregadas.length > 0 ? partesCarregadas : undefined,
         };
 
         setCustomTemplates(prev => {
@@ -228,6 +242,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
               xml: novoXml,
               nome: nomeLimpo,
               json: jsonPayloadStr ?? prev[idx].json,
+              xmlParts: partesCarregadas && partesCarregadas.length > 0 ? partesCarregadas : prev[idx].xmlParts,
             };
             nextList[idx] = targetTemplate;
           } else {
@@ -240,6 +255,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         setCurrentTemplate(targetTemplate);
         setRawXml(novoXml);
         setXmlName(nomeLimpo);
+        setXmlParts(partesCarregadas && partesCarregadas.length > 0 ? partesCarregadas : null);
         setModelo(novoModelo);
         setXmlError(null);
 
@@ -270,7 +286,9 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         StorageService.setLastTemplateId(targetTemplate.id);
         StorageService.saveFormDataForTemplate(targetTemplate.id, novoEstado);
 
-        if (jsonPayload) {
+        if (partesCarregadas && partesCarregadas.length > 0) {
+          showToast(`Documento particionado em ${partesCarregadas.length} partes ("${nomeLimpo}") carregado com sucesso!`);
+        } else if (jsonPayload) {
           showToast(`Modelo "${nomeLimpo}" e dados JSON carregados juntos com sucesso!`);
         } else {
           showToast(`Modelo "${nomeLimpo}" carregado com sucesso!`);
@@ -339,6 +357,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
     currentTemplate,
     rawXml,
     xmlName,
+    xmlParts,
     modelo,
     xmlError,
     aplicarNovoXmlEJson,

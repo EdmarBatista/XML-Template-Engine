@@ -29,7 +29,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
       {headerActions}
 
       {/* Barra de Progresso */}
-      {!esconderProgresso && (
+      {!esconderProgresso && totalCampos > 0 && (
         <div className="px-3 pt-3 pb-3 bg-slate-900 border-b border-slate-700 shrink-0">
           <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium">
             <span>
@@ -47,29 +47,31 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
       )}
 
       {/* Campo de Busca e Ação Expandir/Recolher */}
-      <div className="p-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Filtrar campos ou variáveis..."
-              value={busca}
-              onChange={e => onBuscaChange(e.target.value)}
-              className="w-full text-xs pl-8 pr-2.5 py-1.5 bg-white dark:bg-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-md focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 placeholder-slate-400 shadow-xs"
-            />
+      {totalCampos > 0 && (
+        <div className="p-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Filtrar campos ou variáveis..."
+                value={busca}
+                onChange={e => onBuscaChange(e.target.value)}
+                className="w-full text-xs pl-8 pr-2.5 py-1.5 bg-white dark:bg-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-md focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 placeholder-slate-400 shadow-xs"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={onExpandirRecolherTudo}
+              className="p-1.5 rounded-md text-slate-500 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs shrink-0 cursor-pointer"
+              title="Expandir ou recolher todos os grupos"
+            >
+              <ChevronsUpDown className="w-4 h-4" />
+            </button>
+            {progressoExtra}
           </div>
-          <button
-            type="button"
-            onClick={onExpandirRecolherTudo}
-            className="p-1.5 rounded-md text-slate-500 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs shrink-0 cursor-pointer"
-            title="Expandir ou recolher todos os grupos"
-          >
-            <ChevronsUpDown className="w-4 h-4" />
-          </button>
-          {progressoExtra}
         </div>
-      </div>
+      )}
     </>
   );
 };

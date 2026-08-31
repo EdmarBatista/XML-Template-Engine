@@ -1,0 +1,39 @@
+<documento>
+    <formulario>
+        <grupo titulo="4. Foro, Disposições Finais e Assinaturas">
+            <input id="cidade_foro" label="Comarca do Foro de Eleição" />
+            <input id="estado_foro" label="UF do Foro" />
+            <input id="cidade_assinatura" label="Cidade de Assinatura" />
+            <date id="data_assinatura" label="Data de Assinatura" />
+            <input id="rep_contratante" label="Nome do Representante da Contratante" />
+            <input id="cargo_rep_contratante" label="Cargo do Rep. Contratante" />
+            <input id="rep_contratada" label="Nome do Representante da Contratada" />
+            <input id="cargo_rep_contratada" label="Cargo do Rep. Contratada" />
+            <input id="testemunha_1" label="Nome da 1ª Testemunha" />
+            <input id="cpf_testemunha_1" label="CPF da 1ª Testemunha" />
+            <input id="testemunha_2" label="Nome da 2ª Testemunha" />
+            <input id="cpf_testemunha_2" label="CPF da 2ª Testemunha" />
+        </grupo>
+    </formulario>
+
+    <conteudo>
+        <secao titulo="DO FORO DE ELEIÇÃO">
+            <p>Para dirimir quaisquer dúvidas oriundas da interpretação ou execução deste Contrato, as partes elegem expressamente o Foro da Comarca de <b>{{cidade_foro}}/{{estado_foro}}</b>, com renúncia irrevogável a qualquer outro, por mais privilegiado que seja.</p>
+        </secao>
+
+        <secao titulo="FORMALIZAÇÃO E ASSINATURAS" numerar="false">
+            <p>E, por estarem assim justas e contratadas, as partes assinam o presente instrumento perante as testemunhas qualificadas.</p>
+            <p>Local e data: {{cidade_assinatura}}, {{data_assinatura}}.</p>
+            <br />
+            <p><b>CONTRATANTE:</b> {{contratante_razao}}</p>
+            <p>Representante: {{rep_contratante}} - {{cargo_rep_contratante}}</p>
+            <br />
+            <p><b>CONTRATADA:</b> {{contratada_razao}}</p>
+            <p>Representante: {{rep_contratada}} - {{cargo_rep_contratada}}</p>
+            <br />
+            <p><b>Testemunhas:</b></p>
+            <p>1. {{testemunha_1}} (CPF: {{cpf_testemunha_1}})</p>
+            <p>2. {{testemunha_2}} (CPF: {{cpf_testemunha_2}})</p>
+        </secao>
+    </conteudo>
+</documento>

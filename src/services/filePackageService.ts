@@ -5,46 +5,87 @@
  */
 
 import JSZip from 'jszip';
+import { XmlPart } from '../types';
+import { concatenarXmlsParticionados, extrairIndiceParteXml } from '../utils/xmlParser';
 
 export interface ZipPackageContent {
   xmlText: string | null;
   xmlFileName: string;
   jsonData: any | null;
+  xmlParts?: XmlPart[];
 }
 
 export const FilePackageService = {
   /**
-   * Lê e extrai os conteúdos de um pacote .zip contendo .xml e/ou .json.
+   * Lê e extrai os conteúdos de um pacote .zip contendo .xml (único ou particionado) e/ou .json.
    */
   async parseZipPackage(file: File): Promise<ZipPackageContent> {
     const zip = new JSZip();
     const zipContent = await zip.loadAsync(file);
 
-    let xmlFileEntry: JSZip.JSZipObject | null = null;
+    const xmlEntries: { name: string; entry: JSZip.JSZipObject }[] = [];
     let jsonFileEntry: JSZip.JSZipObject | null = null;
 
     zipContent.forEach((relativePath, fileEntry) => {
       if (fileEntry.dir || relativePath.startsWith('__MACOSX') || relativePath.startsWith('.')) return;
       const lower = relativePath.toLowerCase();
-      if (lower.endsWith('.xml') && !xmlFileEntry) {
-        xmlFileEntry = fileEntry;
+      if (lower.endsWith('.xml')) {
+        const parts = relativePath.split('/');
+        const simpleName = parts[parts.length - 1];
+        xmlEntries.push({ name: simpleName, entry: fileEntry });
       } else if (lower.endsWith('.json') && !jsonFileEntry) {
         jsonFileEntry = fileEntry;
       }
     });
 
-    if (!xmlFileEntry && !jsonFileEntry) {
+    if (xmlEntries.length === 0 && !jsonFileEntry) {
       throw new Error('Nenhum arquivo .xml ou .json foi encontrado dentro do arquivo ZIP.');
     }
 
     let xmlText: string | null = null;
     let xmlFileName: string = file.name.replace(/\.zip$/i, '.xml');
+    let xmlParts: XmlPart[] | undefined = undefined;
     let jsonData: any = null;
 
-    if (xmlFileEntry) {
-      xmlText = await (xmlFileEntry as JSZip.JSZipObject).async('string');
-      const parts = (xmlFileEntry as JSZip.JSZipObject).name.split('/');
-      xmlFileName = parts[parts.length - 1];
+    if (xmlEntries.length > 0) {
+      // Lê todos os arquivos XML
+      const xmlContents = await Promise.all(
+        xmlEntries.map(async item => {
+          const content = await item.entry.async('string');
+          const info = extrairIndiceParteXml(item.name);
+          return {
+            nome: item.name,
+            xml: content,
+            index: info.indice ?? 999,
+            baseNome: info.baseNome,
+            isPart: info.isPart,
+          };
+        })
+      );
+
+      // Somente considera particionado se houver partes explícitas com [XX]
+      const partEntries = xmlContents.filter(item => item.isPart);
+
+      if (partEntries.length >= 2 || (xmlContents.length === 1 && xmlContents[0].isPart)) {
+        const targetList = partEntries.length >= 2 ? partEntries : xmlContents;
+        targetList.sort((a, b) => {
+          if (a.index !== b.index) return a.index - b.index;
+          return a.nome.localeCompare(b.nome);
+        });
+
+        xmlParts = targetList.map((item, idx) => ({
+          nome: item.nome,
+          xml: item.xml,
+          index: item.index !== 999 ? item.index : idx + 1,
+        }));
+
+        xmlText = concatenarXmlsParticionados(xmlParts);
+        const baseName = targetList[0].baseNome || file.name.replace(/\.zip$/i, '');
+        xmlFileName = `${baseName}.xml`;
+      } else {
+        xmlText = xmlContents[0].xml;
+        xmlFileName = xmlContents[0].nome;
+      }
     }
 
     if (jsonFileEntry) {
@@ -60,21 +101,36 @@ export const FilePackageService = {
       xmlText,
       xmlFileName,
       jsonData,
+      xmlParts,
     };
   },
 
   /**
-   * Gera e dispara o download de um pacote ZIP contendo o modelo XML e o preenchimento JSON.
+   * Gera e dispara o download de um pacote ZIP.
+   * Se houver partes separadas (xmlParts), elas vêm salvas separadamente no ZIP (ex: Nome [01].xml, Nome [02].xml).
    */
-  async exportZipPackage(xmlName: string, rawXml: string, dados: Record<string, any>): Promise<void> {
+  async exportZipPackage(
+    xmlName: string,
+    rawXml: string,
+    dados: Record<string, any>,
+    xmlParts?: XmlPart[] | null
+  ): Promise<void> {
     const zip = new JSZip();
     const baseName = xmlName.replace(/\.xml$/i, '');
 
-    // 1. Arquivo XML do modelo
-    const xmlFilename = xmlName.endsWith('.xml') ? xmlName : `${baseName}.xml`;
-    zip.file(xmlFilename, rawXml);
+    if (xmlParts && xmlParts.length > 0) {
+      // 1. Exporta cada arquivo XML particionado individualmente
+      xmlParts.forEach(part => {
+        const pName = part.nome.endsWith('.xml') ? part.nome : `${part.nome}.xml`;
+        zip.file(pName, part.xml);
+      });
+    } else {
+      // 1. Arquivo XML único do modelo
+      const xmlFilename = xmlName.endsWith('.xml') ? xmlName : `${baseName}.xml`;
+      zip.file(xmlFilename, rawXml);
+    }
 
-    // 2. Arquivo JSON com preenchimento
+    // 2. Arquivo JSON com preenchimento unificado
     const jsonPayload = {
       xml: xmlName,
       data_geracao: new Date().toISOString(),

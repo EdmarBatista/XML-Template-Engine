@@ -8,24 +8,33 @@ import {
   Download,
   FileCode,
   FileJson,
+  Layers,
   Play,
   RotateCcw,
   Sparkles,
   X,
 } from 'lucide-react';
-import { parseXmlDocument } from '../utils/xmlParser';
+import { XmlPart } from '../types';
+import { concatenarXmlsParticionados, parseXmlDocument } from '../utils/xmlParser';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 
 export interface XmlEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
   xmlContent: string;
+  xmlParts?: XmlPart[] | null;
   dadosContent?: Record<string, any>;
-  onApply?: (newXml: string, newDados: Record<string, any>, newXmlName?: string) => void;
+  onApply?: (
+    newXml: string,
+    newDados: Record<string, any>,
+    newXmlName?: string,
+    newXmlParts?: XmlPart[]
+  ) => void;
   /** Compatibilidade retroativa com assinatura anterior */
   onApplyXml?: (newXml: string, newName?: string) => void;
   xmlName: string;
   initialTab?: 'xml' | 'json';
+  initialPartIndex?: number;
 }
 
 function formatarXml(xmlStr: string): string {
@@ -38,7 +47,14 @@ function formatarXml(xmlStr: string): string {
         indent = indent.substring(tab.length);
       }
       formatted += indent + '<' + node + '>\r\n';
-      if (node.match(/^<?\w[^>]*[^\/]$/) && !node.startsWith('input') && !node.startsWith('number') && !node.startsWith('hr') && !node.startsWith('br') && !node.startsWith('meta')) {
+      if (
+        node.match(/^<?\w[^>]*[^\/]$/) &&
+        !node.startsWith('input') &&
+        !node.startsWith('number') &&
+        !node.startsWith('hr') &&
+        !node.startsWith('br') &&
+        !node.startsWith('meta')
+      ) {
         indent += tab;
       }
     });
@@ -52,15 +68,23 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
   isOpen,
   onClose,
   xmlContent,
+  xmlParts = null,
   dadosContent = {},
   onApply,
   onApplyXml,
   xmlName,
   initialTab = 'xml',
+  initialPartIndex = 0,
 }) => {
   const [activeTab, setActiveTab] = React.useState<'xml' | 'json'>(initialTab);
   const [xmlCode, setXmlCode] = React.useState(xmlContent);
   const [jsonCode, setJsonCode] = React.useState('');
+  const [localParts, setLocalParts] = React.useState<XmlPart[]>(() =>
+    xmlParts ? JSON.parse(JSON.stringify(xmlParts)) : []
+  );
+  const [selectedPartIndex, setSelectedPartIndex] = React.useState<number>(
+    typeof initialPartIndex === 'number' ? initialPartIndex : 0
+  );
   const [erroSintaxeXml, setErroSintaxeXml] = React.useState<string | null>(null);
   const [erroSintaxeJson, setErroSintaxeJson] = React.useState<string | null>(null);
   const [sucesso, setSucesso] = React.useState(false);
@@ -70,7 +94,17 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
 
   React.useEffect(() => {
     if (isOpen) {
-      setXmlCode(xmlContent);
+      const parts = xmlParts ? JSON.parse(JSON.stringify(xmlParts)) : [];
+      setLocalParts(parts);
+      const initialIdx = typeof initialPartIndex === 'number' && initialPartIndex < parts.length ? initialPartIndex : 0;
+      setSelectedPartIndex(initialIdx);
+
+      if (parts.length > 0 && parts[initialIdx]) {
+        setXmlCode(parts[initialIdx].xml);
+      } else {
+        setXmlCode(xmlContent);
+      }
+
       setJsonCode(JSON.stringify(dadosContent || {}, null, 2));
       setErroSintaxeXml(null);
       setErroSintaxeJson(null);
@@ -78,7 +112,19 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
       setIsEditingName(false);
       if (initialTab) setActiveTab(initialTab);
     }
-  }, [isOpen, xmlContent, dadosContent, xmlName, initialTab]);
+  }, [isOpen, xmlContent, xmlParts, dadosContent, xmlName, initialTab, initialPartIndex]);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleApply();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, xmlCode, jsonCode, localParts, selectedPartIndex, editName, xmlName]);
 
   if (!isOpen) return null;
 
@@ -88,6 +134,14 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
       setErroSintaxeXml(null);
       return true;
     } catch (err: any) {
+      // Se for uma parte individual com apenas tags parciais, tenta envolver em <documento> para testar
+      if (localParts && localParts.length > 0) {
+        try {
+          parseXmlDocument(`<documento>${xmlStr}</documento>`);
+          setErroSintaxeXml(null);
+          return true;
+        } catch {}
+      }
       setErroSintaxeXml(err.message || 'Erro de sintaxe no XML');
       return false;
     }
@@ -108,6 +162,28 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
     }
   };
 
+  // Alterna entre partes individuais no dropdown ou chips
+  const handleSelectPart = (targetIdx: number) => {
+    if (isNaN(targetIdx) || targetIdx === selectedPartIndex) return;
+
+    // 1. Salva o texto atual na parte ativa
+    const updatedParts = [...localParts];
+    if (updatedParts[selectedPartIndex]) {
+      updatedParts[selectedPartIndex] = {
+        ...updatedParts[selectedPartIndex],
+        xml: xmlCode,
+      };
+      setLocalParts(updatedParts);
+    }
+
+    // 2. Carrega o texto da nova parte selecionada
+    if (updatedParts[targetIdx]) {
+      setSelectedPartIndex(targetIdx);
+      setXmlCode(updatedParts[targetIdx].xml);
+      validarXml(updatedParts[targetIdx].xml);
+    }
+  };
+
   const handleFormat = () => {
     if (activeTab === 'json') {
       const res = validarJson(jsonCode);
@@ -117,7 +193,6 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
     } else {
       const isOk = validarXml(xmlCode);
       if (isOk) {
-        // Tenta reformatar se possível
         try {
           const formatted = formatarXml(xmlCode);
           if (formatted && formatted.length > 10) {
@@ -129,7 +204,20 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
   };
 
   const handleApply = () => {
-    const isXmlValido = validarXml(xmlCode);
+    let finalXml = xmlCode;
+    let updatedParts = localParts && localParts.length > 0 ? [...localParts] : [];
+
+    // Se houver partes, atualiza a parte atual e gera o XML unificado completo
+    if (updatedParts.length > 0 && updatedParts[selectedPartIndex]) {
+      updatedParts[selectedPartIndex] = {
+        ...updatedParts[selectedPartIndex],
+        xml: xmlCode,
+      };
+      setLocalParts(updatedParts);
+      finalXml = concatenarXmlsParticionados(updatedParts);
+    }
+
+    const isXmlValido = validarXml(finalXml);
     const jsonRes = validarJson(jsonCode);
 
     if (!isXmlValido) {
@@ -148,9 +236,14 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
     }
 
     if (onApply) {
-      onApply(xmlCode, jsonRes.parsed || {}, finalName);
+      onApply(
+        finalXml,
+        jsonRes.parsed || {},
+        finalName,
+        updatedParts.length > 0 ? updatedParts : undefined
+      );
     } else if (onApplyXml) {
-      onApplyXml(xmlCode, finalName);
+      onApplyXml(finalXml, finalName);
     }
 
     setSucesso(true);
@@ -174,8 +267,16 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const downloadName = editName.trim() || xmlName.replace(/\.xml$/i, '');
-      a.download = downloadName.endsWith('.xml') ? downloadName : `${downloadName}.xml`;
+
+      let downloadName = '';
+      if (localParts && localParts.length > 0 && localParts[selectedPartIndex]) {
+        downloadName = localParts[selectedPartIndex].nome;
+      } else {
+        const baseName = editName.trim() || xmlName.replace(/\.xml$/i, '');
+        downloadName = baseName.endsWith('.xml') ? baseName : `${baseName}.xml`;
+      }
+
+      a.download = downloadName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -191,35 +292,6 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault();
-      handleApply();
-    }
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault();
-      handleApply();
-    }
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const target = e.currentTarget;
-      const start = target.selectionStart;
-      const end = target.selectionEnd;
-      const val = target.value;
-      const newVal = val.substring(0, start) + '  ' + val.substring(end);
-      if (activeTab === 'xml') {
-        setXmlCode(newVal);
-        validarXml(newVal);
-      } else {
-        setJsonCode(newVal);
-        validarJson(newVal);
-      }
-      setTimeout(() => {
-        target.selectionStart = target.selectionEnd = start + 2;
-      }, 0);
     }
   };
 
@@ -247,9 +319,9 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
               <Code2 className="w-5 h-5" />
             </div>
             
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-semibold text-slate-200">Editor de Código:</span>
+            <div className="min-w-0 flex flex-col justify-center">
+              <span className="text-[11px] text-slate-400 font-medium leading-tight">Nome do Modelo:</span>
+              <div className="flex items-center gap-2 mt-0.5">
                 {isEditingName ? (
                   <input
                     autoFocus
@@ -272,18 +344,13 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
                       setEditName(xmlName.replace(/\.xml$/i, ''));
                       setIsEditingName(true);
                     }}
-                    className="flex items-center text-xs font-mono bg-slate-800 hover:bg-slate-700 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition-colors"
-                    title="Clique para renomear o template"
+                    className="flex items-center text-xs font-mono bg-slate-800 hover:bg-slate-700 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition-colors w-fit"
+                    title="Clique para renomear o documento"
                   >
                     <span>{editName || xmlName.replace(/\.xml$/i, '')}</span>
                   </button>
                 )}
               </div>
-              <p className="text-[11px] text-slate-400">
-                {activeTab === 'xml' 
-                  ? `${xmlLinesCount} linhas no Modelo XML` 
-                  : `${jsonLinesCount} linhas • ${chavesJsonCount} campos em JSON de Dados`}
-              </p>
             </div>
           </div>
 
@@ -313,17 +380,25 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
               type="button"
               onClick={handleDownload}
               className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
-              title={`Baixar arquivo .${activeTab}`}
+              title={
+                activeTab === 'xml' && localParts && localParts.length > 0 && localParts[selectedPartIndex]
+                  ? `Baixar arquivo da parte ${localParts[selectedPartIndex].nome}`
+                  : `Baixar arquivo .${activeTab}`
+              }
             >
               <Download className="w-3.5 h-3.5 text-blue-400" />
-              <span className="hidden sm:inline">Baixar .{activeTab}</span>
+              <span className="hidden sm:inline">
+                {activeTab === 'xml' && localParts && localParts.length > 0 && localParts[selectedPartIndex]
+                  ? `Baixar Parte [${localParts[selectedPartIndex].index < 10 ? '0' + localParts[selectedPartIndex].index : localParts[selectedPartIndex].index}]`
+                  : `Baixar .${activeTab}`}
+              </span>
             </button>
 
             <button
               type="button"
               onClick={handleApply}
               className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded bg-purple-600 hover:bg-purple-500 text-white shadow-sm transition ml-1"
-              title="Salvar alterações no modelo e formulário (Ctrl+S)"
+              title="Compilar e aplicar modelo XML (Ctrl + S)"
             >
               {sucesso ? <Check className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white" />}
               <span>{sucesso ? 'Aplicado com Sucesso!' : 'Compilar & Aplicar'}</span>
@@ -340,8 +415,8 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
           </div>
         </div>
 
-        {/* Tab Selector Bar */}
-        <div className="px-4 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between shrink-0">
+        {/* Tab & Part Selector Bar */}
+        <div className="px-4 bg-slate-950/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -376,7 +451,35 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
             </button>
           </div>
 
-          <div className="text-[11px] text-slate-500 hidden md:flex items-center gap-3">
+          {/* Multi-Part Selector Bar - APENAS LISTA DE PARTES */}
+          {activeTab === 'xml' && localParts && localParts.length > 0 ? (
+            <div className="flex items-center gap-1.5 py-1 bg-purple-950/40 px-2.5 rounded-lg border border-purple-800/50">
+              <label htmlFor="xml-part-select" className="text-xs text-purple-300 flex items-center shrink-0" title="Selecionar Parte do Modelo">
+                <Layers className="w-4 h-4 text-purple-400" />
+              </label>
+
+              {/* Dropdown de Partes */}
+              <select
+                id="xml-part-select"
+                value={selectedPartIndex}
+                onChange={e => handleSelectPart(parseInt(e.target.value, 10))}
+                className="text-xs bg-slate-900 hover:bg-slate-800 text-purple-200 border border-purple-500/70 hover:border-purple-400 rounded-md px-2.5 py-1 outline-none focus:ring-1 focus:ring-purple-400 transition cursor-pointer font-medium shadow-xs"
+              >
+                {localParts.map((part, idx) => (
+                  <option key={idx} value={idx}>
+                    📑 [Parte {part.index < 10 ? '0' + part.index : part.index}] {part.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : activeTab === 'xml' ? (
+            <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-slate-900 border border-slate-800 text-slate-400 text-xs font-medium">
+              <FileCode className="w-3.5 h-3.5 text-slate-500" />
+              <span>Arquivo Único (Monolítico)</span>
+            </div>
+          ) : null}
+
+          <div className="text-[11px] text-slate-500 hidden xl:flex items-center gap-3">
             <span>Atalho: <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">Ctrl + S</kbd> para aplicar</span>
           </div>
         </div>
@@ -400,7 +503,7 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
               }}
               language="xml"
               onSave={handleApply}
-              placeholder="<!-- Insira o código XML da estrutura e documento aqui -->"
+              placeholder="<!-- Insira o código XML da parte aqui -->"
             />
           ) : (
             <CodeMirrorEditor
@@ -423,10 +526,10 @@ export const XmlEditorModal: React.FC<XmlEditorModalProps> = ({
               <strong className="text-slate-300">Tags suportadas:</strong>
               <code className="text-purple-300">&lt;formulario&gt;</code>
               <code className="text-purple-300">&lt;grupo&gt;</code>
+              <code className="text-purple-300">&lt;secao&gt;</code>
               <code className="text-purple-300">&lt;input&gt;</code>
               <code className="text-purple-300">&lt;number&gt;</code>
               <code className="text-purple-300">&lt;select&gt;</code>
-              <code className="text-purple-300">&lt;radio&gt;</code>
               <code className="text-purple-300">&lt;if expr="..."&gt;</code>
               <code className="text-purple-300">&lt;foreach&gt;</code>
               <code className="text-purple-300">&lt;tabela&gt;</code>

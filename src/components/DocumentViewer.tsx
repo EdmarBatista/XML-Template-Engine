@@ -12,6 +12,7 @@
  */
 
 import React from 'react';
+import { FileText } from 'lucide-react';
 import { AstNode, FormStructure, NumberingContext } from '../types';
 import { DocumentA4Canvas } from './DocumentViewer/DocumentA4Canvas';
 import { DocumentNodeRenderer, extrairTooltip } from './DocumentViewer/DocumentNodeRenderer';
@@ -127,6 +128,12 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
     numerarBlocos: numeracaoAtiva,
   };
 
+  const temConteudo = Boolean(
+    conteudo?.filhos &&
+    conteudo.filhos.length > 0 &&
+    conteudo.filhos.some(f => f.tipo !== 'texto' || (f.texto || '').trim().length > 0)
+  );
+
   return (
     <DocumentA4Canvas
       modoA4={modoA4}
@@ -135,19 +142,31 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
       docRef={docRef}
     >
       <ErrorBoundary fallbackTitle="Erro ao renderizar o documento">
-        <DocumentNodeRenderer
-          nodes={conteudo.filhos || []}
-          dados={dados}
-          estrutura={estrutura}
-          destaquesAtivos={destaquesAtivos}
-          onFocusField={onFocusField}
-          onUpdateField={onUpdateField}
-          edicaoInline={edicaoInline}
-          variaveisVermelhasWord={variaveisVermelhasWord}
-          fontScale={fontScale}
-          contextoNumeracao={ctxNumeracaoInicial}
-          pathPrefix="root"
-        />
+        {temConteudo ? (
+          <DocumentNodeRenderer
+            nodes={conteudo.filhos || []}
+            dados={dados}
+            estrutura={estrutura}
+            destaquesAtivos={destaquesAtivos}
+            onFocusField={onFocusField}
+            onUpdateField={onUpdateField}
+            edicaoInline={edicaoInline}
+            variaveisVermelhasWord={variaveisVermelhasWord}
+            fontScale={fontScale}
+            contextoNumeracao={ctxNumeracaoInicial}
+            pathPrefix="root"
+          />
+        ) : (
+          <div className="py-20 px-6 text-center text-slate-400 dark:text-slate-500 flex flex-col items-center justify-center gap-3 select-none">
+            <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 opacity-60" />
+            <h3 className="font-semibold text-slate-600 dark:text-slate-300 text-sm">
+              Nenhum conteúdo no documento
+            </h3>
+            <p className="text-xs max-w-sm text-slate-400 dark:text-slate-500 leading-relaxed">
+              Este modelo XML não possui a tag <code className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 font-mono">&lt;conteudo&gt;</code> ou está vazio.
+            </p>
+          </div>
+        )}
       </ErrorBoundary>
     </DocumentA4Canvas>
   );

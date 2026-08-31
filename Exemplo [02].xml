@@ -1,0 +1,26 @@
+<documento>
+    <formulario>
+        <grupo titulo="2. Obrigações e Prazo de Execução">
+            <number id="prazo_meses" label="Prazo de Execução (em meses)" />
+            <input id="data_inicio" label="Data Prevista de Início" />
+            <input id="local_execucao" label="Local Principal de Execução" />
+            <select id="modalidade_garantia" label="Modalidade da Garantia">
+                <option valor="caucao">Caução em Dinheiro</option>
+                <option valor="seguro">Seguro Garantia</option>
+                <option valor="fianca">Fiança Bancária</option>
+            </select>
+        </grupo>
+    </formulario>
+
+    <conteudo>
+        <secao titulo="DO PRAZO E LOCAL DE EXECUÇÃO">
+            <p>O prazo total estimado para cumprimento integral do objeto é de <b>{{prazo_meses}} meses</b>, com data de início prevista para <b>{{data_inicio}}</b>.</p>
+            <p>Os trabalhos serão desenvolvidos primordialmente nas dependências localizadas em <b>{{local_execucao}}</b>, facultada a realização remota de atividades analíticas e de planejamento.</p>
+        </secao>
+
+        <secao titulo="DAS OBRIGAÇÕES DAS PARTES">
+            <p>Compete à <b>CONTRATADA</b> disponibilizar equipe técnica devidamente qualificada, zelar pela confidencialidade das informações acessadas e prestar a garantia na modalidade de <b>{{modalidade_garantia}}</b>.</p>
+            <p>Compete à <b>CONTRATANTE</b> prover os acessos necessários aos ambientes de homologação e efetuar a conferência e aprovação dos relatórios mensais de progresso.</p>
+        </secao>
+    </conteudo>
+</documento>
