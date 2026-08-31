@@ -10,14 +10,14 @@ export const contratoServicos: TemplateItem =
     <formulario>
         <grupo titulo="1. Contratante">
             <input id="contratante_nome" label="Razão Social / Nome do Contratante" tipo="texto" descricao="Nome completo do contratante" exemplo="Empresa Alpha Ltda"/>
-            <input id="contratante_cnpj" label="CNPJ / CPF do Contratante" tipo="cnpj" descricao="Documento do contratante" exemplo="12345678000199"/>
+            <number id="contratante_cnpj" label="CNPJ / CPF do Contratante" tipo="cnpj" descricao="Documento do contratante" exemplo="12345678000199"/>
             <input id="contratante_endereco" label="Endereço Completo" tipo="texto" descricao="Endereço da sede" exemplo="Rua das Flores, 100 - Centro"/>
             <input id="contratante_representante" label="Representante Legal" tipo="texto" descricao="Nome do representante legal" exemplo="Ana Beatriz Mendes"/>
         </grupo>
 
         <grupo titulo="2. Contratada">
             <input id="contratada_nome" label="Razão Social / Nome da Contratada" tipo="texto" descricao="Nome completo da contratada" exemplo="Beta Soluções Digitais ME"/>
-            <input id="contratada_cnpj" label="CNPJ da Contratada" tipo="cnpj" descricao="CNPJ da contratada" exemplo="98765432000188"/>
+            <number id="contratada_cnpj" label="CNPJ da Contratada" tipo="cnpj" descricao="CNPJ da contratada" exemplo="98765432000188"/>
             <input id="contratada_endereco" label="Endereço da Contratada" tipo="texto" descricao="Endereço da sede da contratada"/>
             <input id="contratada_email" label="E-mail de Contato" tipo="email" descricao="E-mail oficial de notificações"/>
         </grupo>

@@ -169,11 +169,13 @@ Campos são agrupados dentro de `<grupo titulo="...">`:
 
 #### Tipos de Controles Suportados:
 
+> **Nomenclatura padronizada:** cada conceito de tipo/atributo tem **um único nome canônico** (sem aliases). Ex.: use `number` (não `numero`/`inteiro`/`decimal`), `moeda` (não `dinheiro`), `date` (não `data`), `select` (não `selecao`), `checkbox` (não `booleano`), `textarea` (não `texto_longo`), `texto` (não `text`). O mesmo vale para atributos: `validar` (não `validacao`), `tipo` (não `tag`), `var`/`lista` no `<foreach>` (não `item`/`de`/`items`), e `cor` (não `hex`/`valor`/`value`). Tags de título: `<titulo>` (nível 1) e `<subtitulo>` (nível 2).
+
 | Tag | Atributos Principais | Descrição |
 |---|---|---|
-| `<input>` | `id`, `label`, `tipo`, `placeholder`, `descricao` | Campo de linha única (`texto`, `email`, `cpf`, `cnpj`, `cep`, `moeda`, `lista_csv`) |
+| `<input>` | `id`, `label`, `tipo`, `placeholder`, `descricao` | Campo de texto/e-mail/lista (`texto`, `email`, `lista_csv`) |
 | `<textarea>` | `id`, `label`, `rows` | Texto com múltiplas linhas |
-| `<number>` | `id`, `label`, `min`, `max`, `step`, `tipo` | Números inteiros, decimais ou quantitativos |
+| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step` | Campo numérico/mascarado: `tipo="number"`, `moeda`, `cpf`, `cnpj`, `cep` |
 | `<date>` | `id`, `label` | Seletor nativo de data (formato ISO / BR) |
 | `<select>` | `id`, `label` + filhos `<option>` | Caixa de seleção suspensa |
 | `<radio>` | `id`, `label` + filhos `<option>` | Grupo de botões de opção exclusivos |
@@ -284,7 +286,6 @@ O documento suporta interpolação de variáveis, aplicação de filtros via sin
 | `dataPorExtenso` | `2026-08-25` | `25 de agosto de 2026` |
 | `cpf` | `12345678900` | `123.456.789-00` |
 | `cnpj` | `12345678000195` | `12.345.678/0001-95` |
-| `cpfcnpj` | Detecta automaticamente | `123.456.789-00` ou `12.345.678/0001-95` |
 | `cep` | `01001000` | `01001-000` |
 | `romano` | `14` | `XIV` |
 

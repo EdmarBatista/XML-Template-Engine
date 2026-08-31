@@ -19,7 +19,7 @@ export const TextFieldInput: React.FC<TextFieldInputProps> = ({
   statusValidacao,
 }) => {
   const mascara = (campo.tipoInput || '').toLowerCase();
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cpfcnpj', 'cep'].includes(mascara);
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(mascara);
   const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara) : valor;
 
   return (

@@ -47,7 +47,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
   const clickTimerRef = React.useRef<any>(null);
 
   const tipoMascara = (campo?.tipoInput || filtro || '').toLowerCase();
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cpfcnpj', 'cep'].includes(tipoMascara);
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(tipoMascara);
 
   React.useEffect(() => {
     if (!editando) {

@@ -11,7 +11,6 @@ export type ColumnType =
   | 'checkbox'
   | 'cpf'
   | 'cnpj'
-  | 'cpfcnpj'
   | 'cep'
   | 'email'
   | 'tel';

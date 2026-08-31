@@ -40,7 +40,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
     const label = campoEl.getAttribute('label') || id;
     const descricao = campoEl.getAttribute('descricao') || '';
     const tipoInput = campoEl.getAttribute('tipo') || 'text';
-    const validar = campoEl.getAttribute('validar') || campoEl.getAttribute('validacao') || '';
+    const validar = campoEl.getAttribute('validar') || '';
     const placeholder = campoEl.getAttribute('placeholder') || '';
     const exemplo = campoEl.getAttribute('exemplo') || '';
 
@@ -62,27 +62,27 @@ export function extrairCampos(formularioNode: Element): FormStructure {
           const colId = colEl.getAttribute('id');
           if (!colId) return;
           const colLabel = colEl.getAttribute('label') || colId;
-          const rawTipo = (colEl.getAttribute('tipo') || colEl.getAttribute('tag') || 'input').toLowerCase().trim();
+          const rawTipo = (colEl.getAttribute('tipo') || 'input').toLowerCase().trim();
           
-          // Mapeamento unificado e simplificado
+          // Mapeamento unificado (um nome canônico por conceito)
           let colTipo: string = 'input';
-          if (rawTipo === 'number' || rawTipo === 'numero' || rawTipo === 'inteiro' || rawTipo === 'decimal') {
+          if (rawTipo === 'number') {
             colTipo = 'number';
-          } else if (rawTipo === 'moeda' || rawTipo === 'dinheiro') {
+          } else if (rawTipo === 'moeda') {
             colTipo = 'moeda';
-          } else if (rawTipo === 'date' || rawTipo === 'data') {
+          } else if (rawTipo === 'date') {
             colTipo = 'date';
-          } else if (rawTipo === 'select' || rawTipo === 'selecao') {
+          } else if (rawTipo === 'select') {
             colTipo = 'select';
-          } else if (rawTipo === 'radio' || rawTipo === 'radiogroup' || rawTipo === 'opcao') {
+          } else if (rawTipo === 'radio') {
             colTipo = 'radio';
-          } else if (rawTipo === 'textarea' || rawTipo === 'texto_longo' || rawTipo === 'textolongo') {
+          } else if (rawTipo === 'textarea') {
             colTipo = 'textarea';
-          } else if (rawTipo === 'checkbox' || rawTipo === 'booleano') {
+          } else if (rawTipo === 'checkbox') {
             colTipo = 'checkbox';
-          } else if (['cpf', 'cnpj', 'cpfcnpj', 'cep', 'email', 'tel'].includes(rawTipo)) {
+          } else if (['cpf', 'cnpj', 'cep', 'email', 'tel'].includes(rawTipo)) {
             colTipo = rawTipo;
-          } else if (rawTipo === 'texto' || rawTipo === 'text') {
+          } else if (rawTipo === 'texto') {
             colTipo = 'input';
           } else {
             colTipo = rawTipo;
@@ -92,7 +92,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
           const colMin = colEl.getAttribute('min') || undefined;
           const colMax = colEl.getAttribute('max') || undefined;
           const colStep = colEl.getAttribute('step') || undefined;
-          const colValidar = colEl.getAttribute('validar') || colEl.getAttribute('validacao') || undefined;
+          const colValidar = colEl.getAttribute('validar') || undefined;
 
           const opcoes: string[] = [];
           const opcoesAttr = colEl.getAttribute('opcoes');

@@ -1,9 +1,9 @@
 // Gerado a partir de documentUtils.ts (fatoracao)
 
-const TIPOS_COLUNA_GENERICOS = new Set(['', 'input', 'text', 'texto']);
+const TIPOS_COLUNA_GENERICOS = new Set(['', 'input', 'texto']);
 
 
-const TIPOS_COLUNA_MASCARA = new Set(['moeda', 'cpf', 'cnpj', 'cpfcnpj', 'cep', 'email', 'tel']);
+const TIPOS_COLUNA_MASCARA = new Set(['moeda', 'cpf', 'cnpj', 'cep', 'email', 'tel']);
 
 /**
  * Retorna o tipo efetivo de uma coluna de tabela, considerando tanto o atributo
@@ -22,7 +22,7 @@ export function obterTipoEfetivoColuna(tipo?: string, validar?: string): string 
   }
 
   // Caso contrário, se houver um validar conhecido, usa-o como tipo efetivo.
-  if (rawValidar && (TIPOS_COLUNA_MASCARA.has(rawValidar) || ['number', 'numero', 'inteiro', 'decimal'].includes(rawValidar))) {
+  if (rawValidar && TIPOS_COLUNA_MASCARA.has(rawValidar)) {
     return rawValidar;
   }
 

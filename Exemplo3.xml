@@ -1,12 +1,4 @@
-import type { TemplateItem } from "../defaultTemplates";
-
-export const termoReferencia: TemplateItem =
-  {
-    id: 'termo-referencia',
-    nome: 'Termo de Referência Completo',
-    descricao: 'Modelo completo para contratações públicas e privadas, com controle de itens, prazos, orçamentos, testes hierárquicos e fiscalização.',
-    categoria: 'Administrativo',
-    xml: `<documento>
+<documento>
     <formulario>
         <grupo titulo="1. Identificação da Contratação">
             <input id="orgao" label="Órgão/Entidade" tipo="texto" descricao="Nome do órgão ou entidade responsável pela contratação"/>
@@ -15,94 +7,44 @@ export const termoReferencia: TemplateItem =
             <input id="processo" label="Número do Processo" tipo="texto" descricao="Número do processo administrativo"/>
             <date id="data" label="Data de elaboração" descricao="Data de elaboração do documento"/>
             <textarea id="descricao_unidade" label="Descrição da Unidade" descricao="Descrição institucional da unidade"/>
-            <input id="email_responsavel" label="E-mail do Responsável" tipo="email" descricao="E-mail institucional do responsável. Exemplo: responsavel@orgao.gov.br"/>
-            <number id="cnpj" label="CNPJ da Contratada" tipo="cnpj" descricao="CNPJ para demonstração de formatação"/>
-            <number id="cep" label="CEP da Unidade" tipo="cep" descricao="CEP para demonstração de formatação"/>
+            <input id="email_responsavel" label="E-mail do Responsável" tipo="email" descricao="E-mail institucional do responsável"/>
+            <number id="cnpj" label="CNPJ da Contratada" tipo="cnpj" descricao="CNPJ para demonstração de formatação e máscara (campo number)"/>
+            <number id="cep" label="CEP da Unidade" tipo="cep" descricao="CEP para demonstração de formatação e máscara (campo number)"/>
         </grupo>
-
         <grupo titulo="2. Objeto">
             <input id="objeto" label="Objeto da Contratação" tipo="texto" descricao="Descrição resumida do objeto"/>
-
             <select id="tipo_contratacao" label="Tipo de Contratação" descricao="Natureza da contratação">
                 <option>Serviço</option>
                 <option>Obra</option>
                 <option>Serviço de engenharia</option>
             </select>
-
             <select id="forma_execucao" label="Forma de Execução" descricao="Forma de execução do objeto">
                 <option>Execução indireta</option>
                 <option>Empreitada por preço global</option>
                 <option>Empreitada por preço unitário</option>
             </select>
-
             <radio id="modalidade" label="Modalidade da Licitação" descricao="Modalidade prevista para a licitação">
                 <option>Pregão Eletrônico</option>
                 <option>Concorrência</option>
             </radio>
-
             <checkbox id="urgente" label="Contratação urgente" descricao="Indica se a contratação possui caráter urgente"/>
-
-            <if expr="urgente == true">
-                <input id="justificativa_urgencia" label="Justificativa da urgência" tipo="texto" descricao="Justificativa para a contratação urgente"/>
-            </if>
-
-            <radio id="divisao_objeto" label="Nota Explicativa sobre o Objeto">
-                <option valor="varios">Vários itens</option>
-                <if expr="divisao_objeto == 'varios'">
-                    <number id="quantidade_itens" label="Informe a quantidade de itens" min="1" step="1"/>
-                </if>
-                <option valor="unico">Item único</option>
-            </radio>
-
-            <if expr="divisao_objeto == 'unico'">
-                <input id="observacao_item_unico" label="Observação sobre item único" tipo="texto" descricao="Observação complementar para item único"/>
-            </if>
         </grupo>
-
         <grupo titulo="3. Características do Serviço">
             <select id="manutencao" label="Tipo de Manutenção" descricao="Tipo de manutenção a ser executada">
                 <option>Preventiva e corretiva</option>
-                <if expr="urgente == true">
-                    <option>Preventiva</option>
-                </if>
+                <option>Preventiva</option>
                 <option>Corretiva</option>
             </select>
-
-            <if expr="manutencao == 'Preventiva e corretiva'">
-                <textarea id="descricao_preventiva_corretiva" label="Descrição da manutenção preventiva e corretiva" descricao="Detalhamento das atividades preventivas e corretivas"/>
-            </if>
-
-            <if expr="manutencao == 'Preventiva'">
-                <input id="periodicidade_preventiva" label="Periodicidade da manutenção preventiva" tipo="texto" descricao="Periodicidade prevista para manutenção preventiva"/>
-            </if>
-
-            <if expr="manutencao == 'Corretiva'">
-                <textarea id="condicoes_corretiva" label="Condições da manutenção corretiva" descricao="Condições para execução da manutenção corretiva"/>
-            </if>
-
             <select id="continuidade" label="Continuidade do Serviço" descricao="Característica de continuidade do serviço">
                 <option>Contínuo</option>
-                <if expr="quantidade_total >= 10">
-                    <option>Não contínuo</option>
-                </if>
+                <option>Não contínuo</option>
             </select>
-
-            <if expr="continuidade == 'Contínuo'">
-                <input id="justificativa_continuidade" label="Justificativa para serviço contínuo" tipo="texto" descricao="Justificativa da continuidade do serviço"/>
-            </if>
-
             <select id="necessidade_material" label="Fornecimento de Materiais" descricao="Define quem fornecerá os materiais">
                 <option>Com fornecimento de materiais</option>
                 <option>Sem fornecimento de materiais</option>
             </select>
-
-            <if expr="necessidade_material == 'Com fornecimento de materiais'">
-                <input id="descricao_materiais" label="Materiais a serem fornecidos" tipo="texto" descricao="Descrição dos materiais que serão fornecidos"/>
-            </if>
-
             <textarea id="servicos" label="Serviços que poderão ser executados" descricao="Descrição complementar dos serviços"/>
         </grupo>
-
         <grupo titulo="4. Prazo e Vigência">
             <number id="prazo_execucao_dias" label="Prazo de Execução (dias)" min="1" step="1" descricao="Prazo de execução em dias"/>
             <input id="prazo_execucao" label="Prazo de Execução" tipo="texto" descricao="Descrição textual do prazo"/>
@@ -110,235 +52,129 @@ export const termoReferencia: TemplateItem =
             <date id="inicio_execucao" label="Previsão de Início da Execução" descricao="Data prevista para início"/>
             <date id="fim_execucao" label="Previsão de Término da Execução" descricao="Data prevista para término"/>
         </grupo>
-
         <grupo titulo="5. Estimativa da Contratação">
             <number id="valor_estimado" label="Valor Estimado (R$)" min="0" step="0.01" tipo="moeda" descricao="Valor estimado da contratação"/>
             <number id="valor_unitario" label="Valor Unitário de Referência (R$)" min="0" step="0.01" tipo="moeda" descricao="Valor unitário para demonstração de moeda"/>
             <input id="fonte_recurso" label="Fonte dos Recursos" tipo="texto" descricao="Fonte dos recursos orçamentários"/>
             <input id="dotacao" label="Dotação Orçamentária" tipo="texto" descricao="Dotação orçamentária"/>
         </grupo>
-
         <grupo titulo="6. Critérios da Contratação">
             <select id="criterio_julgamento" label="Critério de Julgamento" descricao="Critério utilizado no julgamento">
                 <option>Menor preço</option>
                 <option>Maior desconto</option>
                 <option>Técnica e preço</option>
             </select>
-
             <select id="regime_execucao" label="Regime de Execução" descricao="Regime de execução contratual">
                 <option>Empreitada por preço unitário</option>
                 <option>Empreitada por preço global</option>
             </select>
-
             <select id="qualificacao" label="Exigência de Qualificação Técnica" descricao="Indica se haverá exigência específica">
                 <option>Sim</option>
                 <option>Não</option>
             </select>
         </grupo>
-
         <grupo titulo="7. Itens e Serviços">
-            <tabela id="tabela_servicos" label="Planilha Orçamentária de Serviços">
-                <coluna id="item" label="Item" tipo="input" placeholder="Ex: Manutenção de Quadros"/>
-                <coluna id="unidade" label="Unidade" tipo="input" placeholder="Ex: Mês, UN, Horas"/>
-                <coluna id="quantidade" label="Qtd" tipo="number" min="1"/>
-                <coluna id="valor_unitario" label="Valor Unitário" tipo="input" validar="moeda" placeholder="Ex: 2.500,00"/>
-            </tabela>
-            <input id="itens_csv" label="Itens separados por vírgula" tipo="lista_csv" descricao="Lista utilizada pelo foreach. Exemplo: Elétrica, Hidráulica, Pintura"/>
+            <input id="itens_csv" label="Itens separados por vírgula" tipo="lista_csv" descricao="Lista utilizada pelo foreach" exemplo="Elétrica, Hidráulica, Pintura"/>
             <number id="quantidade_total" label="Quantidade total de itens" min="1" step="1" descricao="Quantidade total de itens"/>
-
-            <if expr="quantidade_total > 10">
-                <textarea id="justificativa_quantidade" label="Justificativa para quantidade superior a 10" descricao="Justificativa para quantidade elevada de itens"/>
-            </if>
         </grupo>
-
         <grupo titulo="8. Fiscalização">
             <input id="fiscal" label="Fiscal do Contrato" tipo="texto" descricao="Responsável pela fiscalização"/>
             <input id="gestor" label="Gestor do Contrato" tipo="texto" descricao="Responsável pela gestão"/>
             <input id="local_fiscalizacao" label="Local de Execução" tipo="texto" descricao="Local onde os serviços serão executados"/>
         </grupo>
     </formulario>
-
-    <conteudo><titulo>TERMO DE REFERÊNCIA</titulo>
-
-        <secao titulo="IDENTIFICAÇÃO DA CONTRATAÇÃO">
+    <conteudo>
+        <titulo>TERMO DE REFERÊNCIA</titulo>
+        <titulo>1. IDENTIFICAÇÃO DA CONTRATAÇÃO</titulo>
         O presente Termo de Referência tem por finalidade estabelecer as condições necessárias para a contratação de empresa especializada para execução de serviços de manutenção predial na <b>Unidade Local de Caxambu</b>.
-        Órgão/Entidade: <b>{{orgao}}</b>.
-        Unidade Administrativa: <b>{{unidade}}</b>.
-        Responsável pela elaboração: <i>{{responsavel}}</i>.
-        Processo Administrativo nº <u>{{processo}}</u>.
-        Data de elaboração: <b>{{data | data}}</b>.
-        Data por extenso: <b>{{data | dataPorExtenso}}</b>.
-        Descrição da unidade: {{descricao_unidade}}.
-        E-mail do responsável: <b>{{email_responsavel | email}}</b>.
-        CNPJ informado: <b>{{cnpj | cnpj}}</b>.
-        CEP informado: <b>{{cep | cep}}</b>.
-        </secao>
-
-        <secao titulo="OBJETO">
+        <p>Órgão/Entidade: <b>{{orgao}}</b>.</p>
+        <p>Unidade Administrativa: <b>{{unidade}}</b>.</p>
+        <p>Responsável pela elaboração: <i>{{responsavel}}</i>.</p>
+        <p>Processo Administrativo nº <u>{{processo}}</u>.</p>
+        <p>Data de elaboração: <b>{{data | data}}</b>.</p>
+        <p>Data por extenso: <b>{{data | dataPorExtenso}}</b>.</p>
+        <p>Descrição da unidade: {{descricao_unidade}}.</p>
+        <p>E-mail do responsável: <b>{{email_responsavel | email}}</b>.</p>
+        <p>CNPJ informado: <b>{{cnpj | cnpj}}</b>.</p>
+        <p>CEP informado: <b>{{cep | cep}}</b>.</p>
+        <titulo>2. OBJETO</titulo>
         O objeto da presente contratação consiste na prestação de serviços de manutenção predial na <b>Unidade Local de Caxambu</b>, abrangendo serviços necessários à conservação, manutenção, reparação e adequado funcionamento das instalações físicas da unidade.
         O objeto da contratação compreende a execução de serviços de manutenção <b>{{manutencao}}</b>, conforme as necessidades identificadas pela Administração e de acordo com as condições, quantidades e especificações estabelecidas neste Termo de Referência.
-
-        <if expr="divisao_objeto == 'varios'">
-            A licitação será dividida em <b>vários itens</b>, totalizando <b>{{quantidade_itens}}</b> itens.
-        </if>
-
-        <if expr="divisao_objeto == 'unico'">
-            A licitação será realizada considerando <b>item único</b>.
-            <if expr="observacao_item_unico != ''">
-                Observação: <i>{{observacao_item_unico}}</i>.
-            </if>
-        </if>
-
-        <if expr="urgente == true">
-            <b>ATENÇÃO:</b> A contratação possui caráter urgente, devendo ser observadas as providências administrativas e os prazos aplicáveis.
-            <u>Condição de urgência registrada para {{orgao}}</u>.
-            Justificativa da urgência: <i>{{justificativa_urgencia}}</i>.
-        </if>
-
-        <if expr="urgente == false">
-            A contratação não foi classificada como urgente.
-        </if>
-
         <if expr="necessidade_material == 'Com fornecimento de materiais'">
             A contratação compreenderá também o fornecimento dos materiais, insumos e demais componentes necessários à adequada execução dos serviços, observadas as especificações e padrões de qualidade estabelecidos pela Administração.
-            O valor unitário de referência é de <b>R$ {{valor_unitario | moeda}}</b>.
+            <p>O valor unitário de referência é de <b>{{valor_unitario | moeda}}</b>.</p>
         </if>
-
         <if expr="necessidade_material == 'Sem fornecimento de materiais'">
             Os materiais necessários à execução dos serviços serão fornecidos pela Administração, conforme as condições estabelecidas no instrumento convocatório e no contrato.
         </if>
-        </secao>
-
-        <secao titulo="JUSTIFICATIVA DA CONTRATAÇÃO">
+        <if expr="urgente == true">
+            <p><b>ATENÇÃO:</b> A contratação possui caráter urgente, devendo ser observadas as providências administrativas e os prazos aplicáveis.</p>
+            <p><u>Condição de urgência registrada para {{orgao}}</u>.</p>
+        </if>
+        <if expr="urgente == false">
+            <p>A contratação não foi classificada como urgente.</p>
+        </if>
+        <titulo>3. JUSTIFICATIVA DA CONTRATAÇÃO</titulo>
         A contratação justifica-se pela necessidade de assegurar condições adequadas de conservação, segurança, funcionamento e utilização das instalações da <b>Unidade Local de Caxambu</b>.
         A manutenção adequada das instalações prediais contribui para a preservação do patrimônio público, a continuidade das atividades administrativas e a segurança dos servidores, usuários e demais pessoas que frequentam a unidade.
         A execução dos serviços de manutenção é necessária para prevenir a deterioração das instalações e solucionar problemas que possam comprometer o funcionamento regular da unidade.
-        </secao>
-
-        <secao titulo="DESCRIÇÃO DA SOLUÇÃO">
+        <titulo>4. DESCRIÇÃO DA SOLUÇÃO</titulo>
         A solução consiste na contratação de empresa especializada para a execução de serviços de manutenção predial, de acordo com as demandas identificadas pela Administração.
         Os serviços deverão ser executados por profissionais devidamente capacitados, utilizando ferramentas, equipamentos, materiais e técnicas adequadas à natureza de cada atividade.
-        Descrição complementar: <i>{{servicos}}</i>.
-        </secao>
-
-        <secao titulo="NATUREZA DOS SERVIÇOS">
+        <p>Descrição complementar: <i>{{servicos}}</i>.</p>
+        <titulo>5. NATUREZA DOS SERVIÇOS</titulo>
         <if expr="tipo_contratacao == 'Serviço'">
-            <secao titulo="Serviço">
+            <subtitulo>5.1. Serviço</subtitulo>
             A contratação possui natureza de serviço, tendo como finalidade a execução das atividades necessárias à manutenção e conservação das instalações da <b>Unidade Local de Caxambu</b>.
-            </secao>
         </if>
         <if expr="tipo_contratacao == 'Serviço de engenharia'">
-            <secao titulo="Serviço de Engenharia">
+            <subtitulo>5.2. Serviço de Engenharia</subtitulo>
             A contratação possui natureza de serviço de engenharia, devendo a execução observar as normas técnicas e demais requisitos aplicáveis às atividades contratadas.
-            </secao>
         </if>
         <if expr="tipo_contratacao == 'Obra'">
-            <secao titulo="Obra">
+            <subtitulo>5.3. Obra</subtitulo>
             A contratação possui natureza de obra, devendo sua execução observar os projetos, especificações, normas técnicas e demais documentos integrantes da contratação.
-            </secao>
         </if>
-        </secao>
-
-        <secao titulo="REGIME E FORMA DE EXECUÇÃO">
+        <titulo>6. REGIME E FORMA DE EXECUÇÃO</titulo>
         A contratação será realizada sob a forma de <b>{{forma_execucao}}</b>, observadas as condições estabelecidas no edital, neste Termo de Referência e no respectivo instrumento contratual.
         O regime de execução será <i>{{regime_execucao}}</i>.
         A modalidade prevista para a licitação será <u>{{modalidade}}</u>.
         Os serviços deverão ser executados de acordo com as solicitações da Administração, respeitando os prazos estabelecidos e as orientações emitidas pelo gestor ou fiscal do contrato.
-        </secao>
-
-        <secao titulo="LOCAL DE EXECUÇÃO">
+        <titulo>7. LOCAL DE EXECUÇÃO</titulo>
         Os serviços serão executados na <b>Unidade Local de Caxambu</b>, situada em {{local_fiscalizacao}}.
         A empresa contratada deverá realizar os serviços no local indicado pela Administração, observando as regras de acesso, segurança, funcionamento e circulação existentes na unidade.
-        </secao>
-
-        <secao titulo="CARACTERÍSTICAS CONDICIONAIS DA MANUTENÇÃO">
-
-        <if expr="manutencao == 'Preventiva e corretiva'">
-            A manutenção será realizada nas modalidades <b>preventiva e corretiva</b>.
-            Detalhamento da manutenção preventiva e corretiva: <i>{{descricao_preventiva_corretiva}}</i>.
-        </if>
-
-        <if expr="manutencao == 'Preventiva'">
-            A manutenção será realizada na modalidade <b>preventiva</b>.
-            A periodicidade prevista para a manutenção preventiva será: <i>{{periodicidade_preventiva}}</i>.
-        </if>
-
-        <if expr="manutencao == 'Corretiva'">
-            A manutenção será realizada na modalidade <b>corretiva</b>.
-            Condições para execução da manutenção corretiva: <i>{{condicoes_corretiva}}</i>.
-        </if>
-
-        <if expr="continuidade == 'Contínuo'">
-            O serviço foi classificado como <b>contínuo</b>.
-            Justificativa para a continuidade: <i>{{justificativa_continuidade}}</i>.
-        </if>
-
-        <if expr="continuidade == 'Não contínuo'">
-            O serviço foi classificado como <b>não contínuo</b>.
-        </if>
-
-        <if expr="necessidade_material == 'Com fornecimento de materiais'">
-            A contratação compreenderá fornecimento de materiais.
-            Materiais a serem fornecidos: <i>{{descricao_materiais}}</i>.
-        </if>
-
-        <if expr="necessidade_material == 'Sem fornecimento de materiais'">
-            Não haverá fornecimento de materiais pela contratada.
-        </if>
-
-        </secao>
-
-        <secao titulo="PRAZO DE EXECUÇÃO E VIGÊNCIA">
+        <titulo>8. PRAZO DE EXECUÇÃO E VIGÊNCIA</titulo>
         O prazo previsto para execução dos serviços será de <b>{{prazo_execucao}}</b>, correspondente a <b>{{prazo_execucao_dias}}</b> dias.
-        O prazo também pode ser apresentado por extenso: <b>{{prazo_execucao_dias | numeroPorExtenso}}</b> dias.
-        O prazo em algarismos romanos é <b>{{prazo_execucao_dias | romano}}</b>.
+        <p>O prazo também pode ser apresentado por extenso: <b>{{prazo_execucao_dias | numeroPorExtenso}}</b> dias.</p>
+        <p>O prazo em algarismos romanos é <b>{{prazo_execucao_dias | romano}}</b>.</p>
         <if expr="prazo_execucao_dias >= 30">
-            O prazo de execução é igual ou superior a trinta dias.
+            <p>O prazo de execução é igual ou superior a trinta dias.</p>
             <if expr="prazo_execucao_dias >= 90">
-                O prazo de execução é igual ou superior a noventa dias.
+                <p>O prazo de execução é igual ou superior a noventa dias.</p>
             </if>
         </if>
-        <if expr="prazo_execucao_dias > 30">
-            O prazo de execução é inferior a trinta dias.
+        <if expr="prazo_execucao_dias < 30">
+            <p>O prazo de execução é inferior a trinta dias.</p>
         </if>
         A vigência da contratação será de <b>{{vigencia}}</b>, contados a partir de <b>{{inicio_execucao | data}}</b>.
-        Início da execução por extenso: <b>{{inicio_execucao | dataPorExtenso}}</b>.
-        Término da execução por extenso: <b>{{fim_execucao | dataPorExtenso}}</b>.
+        <p>Início da execução por extenso: <b>{{inicio_execucao | dataPorExtenso}}</b>.</p>
+        <p>Término da execução por extenso: <b>{{fim_execucao | dataPorExtenso}}</b>.</p>
         A previsão para término da execução será em <b>{{fim_execucao | data}}</b>.
         Os prazos poderão ser alterados somente nas hipóteses admitidas pela legislação aplicável e desde que devidamente justificadas e formalizadas.
-        </secao>
-
-        <secao titulo="DESCRIÇÃO DOS SERVIÇOS">
+        <titulo>9. DESCRIÇÃO DOS SERVIÇOS</titulo>
         Os serviços de manutenção predial poderão compreender, conforme a necessidade da Administração, atividades relacionadas à conservação e manutenção das instalações físicas, incluindo serviços de natureza elétrica, hidráulica, civil, pintura, cobertura, esquadrias, pisos, revestimentos e demais elementos integrantes da edificação.
-
-        <if expr="quantidade_total > 10">
-            A quantidade total estimada de itens é de <b>{{quantidade_total}}</b>.
-            A quantidade supera dez itens.
-            Justificativa apresentada: <i>{{justificativa_quantidade}}</i>.
-        </if>
-
-        <if expr="quantidade_total <= 10">
-            A quantidade total estimada de itens é de <b>{{quantidade_total}}</b>.
-        </if>
-
-        <secao titulo="Planilha Orçamentária de Serviços (Renderização Automática da Tabela)">
-            {{tabela_servicos}}
-        </secao>
-
-        <secao titulo="Relação dos Serviços">
-        <lista>
+        <subtitulo>9.1. Relação dos Serviços</subtitulo>
+        <lista_numerada>
             <foreach var="item" lista="itens_csv">
                 <item><b>{{item}}</b></item>
             </foreach>
-        </lista>
-        Quantidade total por extenso: <b>{{quantidade_total | numeroPorExtenso}}</b>.
-        Quantidade total em romano: <b>{{quantidade_total | romano}}</b>.
-        </secao>
-        </secao>
-
-        <secao titulo="OBRIGAÇÕES DA CONTRATADA">
+        </lista_numerada>
+        <p>A quantidade total estimada de itens é de <b>{{quantidade_total}}</b>.</p>
+        <p>Quantidade por extenso: <b>{{quantidade_total | numeroPorExtenso}}</b>.</p>
+        <p>Quantidade em romano: <b>{{quantidade_total | romano}}</b>.</p>
+        <titulo>10. OBRIGAÇÕES DA CONTRATADA</titulo>
         Constituem obrigações da contratada:
-        <lista>
+        <lista_numerada>
             <item>Executar os serviços de acordo com as especificações estabelecidas neste Termo de Referência.</item>
             <item>Disponibilizar profissionais capacitados e em quantidade suficiente para a execução dos serviços.</item>
             <item>Fornecer os equipamentos e ferramentas necessários à execução das atividades, quando aplicável.</item>
@@ -348,66 +184,50 @@ export const termoReferencia: TemplateItem =
             <item>Responsabilizar-se pelos danos causados à Administração ou a terceiros decorrentes da execução dos serviços.</item>
             <item>Observar as normas de segurança aplicáveis às atividades desenvolvidas.</item>
             <item>Atender às orientações do gestor e do fiscal do contrato.</item>
-        </lista>
-        </secao>
-
-        <secao titulo="OBRIGAÇÕES DA CONTRATANTE">
+        </lista_numerada>
+        <titulo>11. OBRIGAÇÕES DA CONTRATANTE</titulo>
         Constituem obrigações da contratante:
-        <lista>
+        <lista_numerada>
             <item>Fornecer as informações necessárias à adequada execução dos serviços.</item>
             <item>Permitir o acesso dos profissionais autorizados às áreas necessárias à execução das atividades.</item>
             <item>Acompanhar e fiscalizar a execução contratual.</item>
             <item>Comunicar à contratada eventuais irregularidades verificadas na execução dos serviços.</item>
             <item>Efetuar os pagamentos devidos após o cumprimento das condições estabelecidas no contrato.</item>
-        </lista>
-        </secao>
-
-        <secao titulo="FISCALIZAÇÃO E GESTÃO DO CONTRATO">
+        </lista_numerada>
+        <titulo>12. FISCALIZAÇÃO E GESTÃO DO CONTRATO</titulo>
         A gestão do contrato ficará sob responsabilidade de <b>{{gestor}}</b>.
         A fiscalização da execução contratual será realizada por <i>{{fiscal}}</i>.
         A fiscalização deverá acompanhar a execução dos serviços, verificar sua conformidade com as especificações estabelecidas e registrar as ocorrências relevantes durante a execução contratual.
         A fiscalização não exclui nem reduz a responsabilidade da contratada pela execução dos serviços.
-        </secao>
-
-        <secao titulo="CRITÉRIOS DE MEDIÇÃO E PAGAMENTO">
+        <titulo>13. CRITÉRIOS DE MEDIÇÃO E PAGAMENTO</titulo>
         A medição dos serviços será realizada conforme os serviços efetivamente executados e aceitos pela fiscalização.
         O pagamento será efetuado após a comprovação da execução dos serviços, observadas as condições estabelecidas no instrumento convocatório e no contrato.
         Somente serão considerados para pagamento os serviços devidamente executados e atestados pelo responsável pela fiscalização.
-        </secao>
-
-        <secao titulo="CRITÉRIOS DE ACEITAÇÃO">
+        <titulo>14. CRITÉRIOS DE ACEITAÇÃO</titulo>
         Os serviços serão considerados aceitos quando executados de acordo com as especificações estabelecidas neste Termo de Referência, observadas as normas técnicas aplicáveis e as orientações da fiscalização.
         Os serviços que apresentarem defeitos, falhas ou desconformidades deverão ser corrigidos pela contratada no prazo estabelecido pela fiscalização, sem ônus adicional para a Administração.
-        </secao>
-
-        <secao titulo="QUALIFICAÇÃO TÉCNICA">
+        <titulo>15. QUALIFICAÇÃO TÉCNICA</titulo>
         <if expr="qualificacao == 'Sim'">
             A licitante deverá comprovar sua capacidade técnica para execução do objeto, mediante apresentação da documentação de qualificação técnica exigida no instrumento convocatório, compatível com a natureza e complexidade dos serviços contratados.
         </if>
         <if expr="qualificacao == 'Não'">
             Não será estabelecida exigência específica de qualificação técnica além daquelas necessárias à comprovação da capacidade da licitante para execução do objeto.
         </if>
-        </secao>
-
-        <secao titulo="CRITÉRIO DE JULGAMENTO">
+        <titulo>16. CRITÉRIO DE JULGAMENTO</titulo>
         O critério de julgamento adotado para a contratação será <b>{{criterio_julgamento}}</b>, conforme estabelecido no instrumento convocatório.
-        </secao>
-
-        <secao titulo="ESTIMATIVA DO VALOR DA CONTRATAÇÃO">
-        O valor estimado da contratação é de <b>R$ {{valor_estimado | moeda}}</b>.
-        Valor estimado por extenso: <b>{{valor_estimado | moedaPorExtenso}}</b>.
-        Valor unitário de referência: <b>R$ {{valor_unitario | moeda}}</b>.
+        <titulo>17. ESTIMATIVA DO VALOR DA CONTRATAÇÃO</titulo>
+        O valor estimado da contratação é de <b>{{valor_estimado | moeda}}</b>.
+        <p>Valor estimado por extenso: <b>{{valor_estimado | numeroPorExtenso}}</b>.</p>
+        <p>Valor unitário de referência: <b>{{valor_unitario | moeda}}</b>.</p>
         <if expr="valor_estimado > 0">
-            A contratação possui valor estimado informado e superior a zero.
+            <p>A contratação possui valor estimado informado e superior a zero.</p>
         </if>
         <if expr="valor_estimado == 0">
-            O valor estimado informado é igual a zero.
+            <p>O valor estimado informado é igual a zero.</p>
         </if>
         Os recursos destinados à execução da contratação serão provenientes de <i>{{fonte_recurso}}</i>.
         A despesa correrá por conta da dotação orçamentária <u>{{dotacao}}</u>.
-        </secao>
-
-        <secao titulo="QUADRO RESUMO DA CONTRATAÇÃO">
+        <titulo>18. QUADRO RESUMO DA CONTRATAÇÃO</titulo>
         <tabela>
             <cabecalho>
                 <celula>Item</celula>
@@ -435,11 +255,11 @@ export const termoReferencia: TemplateItem =
             </linha>
             <linha>
                 <celula>Valor estimado</celula>
-                <celula>R$ {{valor_estimado | moeda}}</celula>
+                <celula>{{valor_estimado | moeda}}</celula>
             </linha>
             <linha>
                 <celula>Valor por extenso</celula>
-                <celula>{{valor_estimado | moedaPorExtenso}}</celula>
+                <celula>{{valor_estimado | numeroPorExtenso}}</celula>
             </linha>
             <linha>
                 <celula>Critério de julgamento</celula>
@@ -462,84 +282,37 @@ export const termoReferencia: TemplateItem =
                 <celula>{{cep | cep}}</celula>
             </linha>
         </tabela>
-        </secao>
-
-        <secao titulo="RESULTADOS PRETENDIDOS">
+        <titulo>19. RESULTADOS PRETENDIDOS</titulo>
         Com a contratação, pretende-se assegurar a conservação e o adequado funcionamento das instalações da <b>Unidade Local de Caxambu</b>, reduzir a ocorrência de falhas que possam interromper as atividades administrativas e preservar o patrimônio público.
         Pretende-se ainda garantir condições adequadas de segurança, utilização e funcionamento dos ambientes da unidade.
-        </secao>
-
-        <secao titulo="DISPOSIÇÕES FINAIS">
+        <titulo>20. DISPOSIÇÕES FINAIS</titulo>
         A execução dos serviços deverá observar integralmente as condições estabelecidas neste Termo de Referência, no instrumento convocatório e no contrato.
         Os casos omissos serão solucionados pela Administração, observada a legislação aplicável à contratação.
         Este Termo de Referência constitui parte integrante da documentação da contratação e deverá ser utilizado como referência para a elaboração das propostas e para a fiscalização da execução contratual.
-        </secao>
-
-        <secao titulo="RESPONSÁVEL">
-        <b>{{responsavel}}</b>
-        <i>Responsável pela elaboração do Termo de Referência.</i>
-        </secao>
-
-        <secao titulo="DEMONSTRAÇÃO DAS FUNCIONALIDADES DO MODELO">
-        Variável simples: {{objeto}}.
-        Variável com negrito: <b>{{objeto}}</b>.
-        Variável com itálico: <i>{{objeto}}</i>.
-        Variável sublinhada: <u>{{objeto}}</u>.
-        Variável monetária: <b>R$ {{valor_estimado | moeda}}</b>.
-        Data curta: <b>{{data | data}}</b>.
-        Data extensa: <b>{{data | dataPorExtenso}}</b>.
-        Número por extenso: <b>{{quantidade_total | numeroPorExtenso}}</b>.
-        Número romano: <b>{{quantidade_total | romano}}</b>.
-        E-mail formatado: <b>{{email_responsavel | email}}</b>.
-        CNPJ formatado: <b>{{cnpj | cnpj}}</b>.
-        CEP formatado: <b>{{cep | cep}}</b>.
-
-        <if expr="urgente == true">
-            Demonstração da variável condicional de urgência: <b>{{justificativa_urgencia}}</b>.
-        </if>
-
-        <if expr="divisao_objeto == 'varios'">
-            Demonstração da variável condicional de quantidade de itens: <b>{{quantidade_itens}}</b>.
-        </if>
-
-        <if expr="quantidade_total > 10">
-            Demonstração da variável condicional de justificativa da quantidade: <b>{{justificativa_quantidade}}</b>.
-        </if>
-
-        <if expr="manutencao == 'Preventiva e corretiva'">
-            Demonstração da variável condicional de manutenção preventiva e corretiva: <b>{{descricao_preventiva_corretiva}}</b>.
-        </if>
-
-        <if expr="manutencao == 'Preventiva'">
-            Demonstração da variável condicional de periodicidade preventiva: <b>{{periodicidade_preventiva}}</b>.
-        </if>
-
-        <if expr="manutencao == 'Corretiva'">
-            Demonstração da variável condicional de manutenção corretiva: <b>{{condicoes_corretiva}}</b>.
-        </if>
-
-        <if expr="continuidade == 'Contínuo'">
-            Demonstração da variável condicional de justificativa da continuidade: <b>{{justificativa_continuidade}}</b>.
-        </if>
-
-        <if expr="necessidade_material == 'Com fornecimento de materiais'">
-            Demonstração da variável condicional de materiais: <b>{{descricao_materiais}}</b>.
-        </if>
-
-        <if expr="divisao_objeto == 'unico'">
-            Demonstração da observação do item único: <b>{{observacao_item_unico}}</b>.
-        </if>
-
-        <secao titulo="Variáveis dentro de listas">
+        <titulo>21. RESPONSÁVEL</titulo>
+        <p><b>{{responsavel}}</b></p>
+        <p><i>Responsável pela elaboração do Termo de Referência.</i></p>
+        <titulo>22. DEMONSTRAÇÃO DAS FUNCIONALIDADES DO MODELO</titulo>
+        <p>Variável simples: {{objeto}}.</p>
+        <p>Variável com negrito: <b>{{objeto}}</b>.</p>
+        <p>Variável com itálico: <i>{{objeto}}</i>.</p>
+        <p>Variável sublinhada: <u>{{objeto}}</u>.</p>
+        <p>Variável monetária: <b>{{valor_estimado | moeda}}</b>.</p>
+        <p>Data curta: <b>{{data | data}}</b>.</p>
+        <p>Data extensa: <b>{{data | dataPorExtenso}}</b>.</p>
+        <p>Número por extenso: <b>{{quantidade_total | numeroPorExtenso}}</b>.</p>
+        <p>Número romano: <b>{{quantidade_total | romano}}</b>.</p>
+        <p>E-mail formatado: <b>{{email_responsavel | email}}</b>.</p>
+        <p>CNPJ formatado: <b>{{cnpj | cnpj}}</b>.</p>
+        <p>CEP formatado: <b>{{cep | cep}}</b>.</p>
+        <subtitulo>22.1. Variáveis dentro de listas</subtitulo>
         <lista>
             <item>Órgão: <b>{{orgao}}</b></item>
             <item>Unidade: <i>{{unidade}}</i></item>
-            <item>Valor: <b>R$ {{valor_estimado | moeda}}</b></item>
+            <item>Valor: <b>{{valor_estimado | moeda}}</b></item>
             <item>Data: <u>{{data | dataPorExtenso}}</u></item>
         </lista>
-        </secao>
-
-        <secao titulo="Variáveis dentro de tabelas">
+        <subtitulo>22.2. Variáveis dentro de tabelas</subtitulo>
         <tabela>
             <cabecalho>
                 <celula>Campo</celula>
@@ -549,7 +322,7 @@ export const termoReferencia: TemplateItem =
             <linha>
                 <celula>Valor</celula>
                 <celula>{{valor_estimado}}</celula>
-                <celula>R$ {{valor_estimado | moeda}}</celula>
+                <celula>{{valor_estimado | moeda}}</celula>
             </linha>
             <linha>
                 <celula>Data</celula>
@@ -567,131 +340,61 @@ export const termoReferencia: TemplateItem =
                 <celula>{{cnpj | cnpj}}</celula>
             </linha>
         </tabela>
-        </secao>
-
-        <secao titulo="Condições e combinações">
+        <subtitulo>22.3. Condições e combinações</subtitulo>
         <if expr="necessidade_material == 'Com fornecimento de materiais'">
-            <b>Condição 1:</b> há fornecimento de materiais.
+            <p><b>Condição 1:</b> há fornecimento de materiais.</p>
             <if expr="qualificacao == 'Sim'">
-                <b>Combinação 1:</b> fornecimento de materiais e exigência de qualificação técnica.
-                Valor da contratação: <b>R$ {{valor_estimado | moeda}}</b>.
+                <p><b>Combinação 1:</b> fornecimento de materiais e exigência de qualificação técnica.</p>
+                <p>Valor da contratação: <b>{{valor_estimado | moeda}}</b>.</p>
             </if>
             <if expr="qualificacao == 'Não'">
-                <b>Combinação 2:</b> fornecimento de materiais sem exigência específica de qualificação técnica.
+                <p><b>Combinação 2:</b> fornecimento de materiais sem exigência específica de qualificação técnica.</p>
             </if>
         </if>
         <if expr="necessidade_material == 'Sem fornecimento de materiais'">
-            <b>Condição 2:</b> não há fornecimento de materiais pela contratada.
+            <p><b>Condição 2:</b> não há fornecimento de materiais pela contratada.</p>
             <if expr="qualificacao == 'Sim'">
-                <b>Combinação 3:</b> materiais fornecidos pela Administração e exigência de qualificação técnica.
+                <p><b>Combinação 3:</b> materiais fornecidos pela Administração e exigência de qualificação técnica.</p>
             </if>
             <if expr="qualificacao == 'Não'">
-                <b>Combinação 4:</b> materiais fornecidos pela Administração e sem exigência específica de qualificação técnica.
+                <p><b>Combinação 4:</b> materiais fornecidos pela Administração e sem exigência específica de qualificação técnica.</p>
             </if>
         </if>
         <if expr="continuidade == 'Contínuo'">
-            O serviço foi classificado como contínuo.
+            <p>O serviço foi classificado como contínuo.</p>
         </if>
         <if expr="continuidade == 'Não contínuo'">
-            O serviço foi classificado como não contínuo.
+            <p>O serviço foi classificado como não contínuo.</p>
         </if>
         <if expr="criterio_julgamento == 'Menor preço'">
-            O critério selecionado é menor preço.
+            <p>O critério selecionado é menor preço.</p>
         </if>
         <if expr="criterio_julgamento == 'Maior desconto'">
-            O critério selecionado é maior desconto.
+            <p>O critério selecionado é maior desconto.</p>
         </if>
         <if expr="criterio_julgamento == 'Técnica e preço'">
-            O critério selecionado é técnica e preço.
+            <p>O critério selecionado é técnica e preço.</p>
         </if>
-        </secao>
-
-        <secao titulo="Foreach com formatação e texto combinado">
-        <lista>
+        <subtitulo>22.4. Foreach com formatação e texto combinado</subtitulo>
+        <lista_numerada>
             <foreach var="item" lista="itens_csv">
-                <item>Serviço selecionado: <b>{{item}}</b>. Unidade: <i>{{unidade}}</i>. Valor estimado: <u>R$ {{valor_estimado | moeda}}</u>.</item>
+                <item>Serviço selecionado: <b>{{item}}</b>. Unidade: <i>{{unidade}}</i>. Valor estimado: <u>{{valor_estimado | moeda}}</u>.</item>
             </foreach>
-        </lista>
-        </secao>
-
-        <secao titulo="Comparações numéricas">
+        </lista_numerada>
+        <subtitulo>22.5. Comparações numéricas</subtitulo>
         <if expr="quantidade_total > 1">
-            A quantidade total é superior a um item: <b>{{quantidade_total | numeroPorExtenso}}</b>.
+            <p>A quantidade total é superior a um item: <b>{{quantidade_total | numeroPorExtenso}}</b>.</p>
         </if>
         <if expr="quantidade_total == 1">
-            A quantidade total corresponde a um item.
+            <p>A quantidade total corresponde a um item.</p>
         </if>
         <if expr="quantidade_total >= 10">
-            A quantidade total é igual ou superior a dez.
+            <p>A quantidade total é igual ou superior a dez.</p>
         </if>
         <if expr="quantidade_total < 10">
-            A quantidade total é inferior a dez.
+            <p>A quantidade total é inferior a dez.</p>
         </if>
-        </secao>
-
-        <secao titulo="TESTES DE NUMERAÇÃO HIERÁRQUICA">Primeiro parágrafo do nível principal.Segundo parágrafo do nível principal.<secao titulo="SUBNÍVEL COM TÍTULO">Parágrafo do segundo nível.<secao titulo="TERCEIRO NÍVEL">Parágrafo do terceiro nível.<secao>Bloco sem título que cria um nível adicional.<secao titulo="QUARTO NÍVEL APÓS BLOCO SEM TÍTULO">Texto do quarto nível.</secao></secao></secao></secao><secao titulo="BLOCO SEM NUMERAÇÃO" numerar="false">Bloco visível sem numeração.<secao titulo="FILHO DO BLOCO SEM NUMERAÇÃO">Filho também sem numeração.</secao></secao><secao titulo="SUBSEÇÃO CONDICIONAL"><if expr="urgente == true"><secao titulo="CONDIÇÃO VERDADEIRA">Esta seção aparece quando urgente for verdadeiro.</secao></if><if expr="urgente == false"><secao titulo="CONDIÇÃO FALSA">Esta seção aparece quando urgente for falso.</secao></if></secao></secao></secao><secao titulo="FIM DO MODELO DE TESTES">
+        <titulo>23. FIM DO MODELO DE TESTES</titulo>
         Este bloco reúne exemplos de variáveis simples, variáveis com filtros, formatação monetária, datas, números por extenso, números romanos, e-mail, CNPJ, CEP, listas, foreach, tabelas, condições booleanas, comparações numéricas, condições aninhadas e combinações entre diferentes campos.
-    </secao></conteudo>
-</documento>`,
-    json: `{
-  "orgao": "Ministério do Planejamento e Tecnologia",
-  "unidade": "Secretaria de Governança Digital",
-  "responsavel": "Dr. Carlos Eduardo Ferreira",
-  "processo": "23000.012345/2026-99",
-  "data": "2026-08-29",
-  "descricao_unidade": "Unidade responsável pela gestão e normatização de recursos tecnológicos e contratos estratégicos.",
-  "email_responsavel": "carlos.ferreira@orgao.gov.br",
-  "cnpj": "12345678000199",
-  "cep": "70040010",
-  "objeto": "Contratação de Solução Integrada de Software e Inteligência Documental",
-  "tipo_contratacao": "Serviço",
-  "forma_execucao": "Execução indireta",
-  "modalidade": "Pregão Eletrônico",
-  "urgente": false,
-  "justificativa_urgencia": "",
-  "divisao_objeto": "unico",
-  "quantidade_itens": "1",
-  "observacao_item_unico": "Item indivisível em lote único para garantir interoperabilidade total.",
-  "manutencao": "Preventiva e corretiva",
-  "descricao_preventiva_corretiva": "Manutenção preventiva com rotinas semanais de backup e revisões de segurança, além de suporte corretivo com SLA de 4 horas.",
-  "periodicidade_preventiva": "Semanal e mensal conforme plano de trabalho",
-  "condicoes_corretiva": "Atendimento emergencial remoto e presencial para incidentes críticos.",
-  "continuidade": "Contínuo",
-  "justificativa_continuidade": "Serviço de natureza contínua indispensável para a manutenção operacional dos sistemas corporativos.",
-  "necessidade_material": "Com fornecimento de materiais",
-  "descricao_materiais": "Fornecimento de infraestrutura de nuvem, licenças de banco de dados e certificados SSL corporativos.",
-  "servicos": "Desenvolvimento sob demanda, sustentação de ambientes e treinamento de equipes técnicas.",
-  "prazo_execucao_dias": 365,
-  "prazo_execucao": "12 (doze) meses a partir da ordem de serviço",
-  "vigencia": "12 (doze) meses prorrogáveis na forma da Lei",
-  "inicio_execucao": "2026-09-01",
-  "fim_execucao": "2027-08-31",
-  "valor_estimado": 120000.00,
-  "valor_unitario": 10000.00,
-  "fonte_recurso": "Recursos Próprios - Fonte 100",
-  "dotacao": "Programa de Gestão e Tecnologia 04.122.2000.2000.0001",
-  "criterio_julgamento": "Menor preço",
-  "regime_execucao": "Empreitada por preço global",
-  "qualificacao": "Sim",
-  "tabela_servicos": [
-    {
-      "item": "Sustentação de Sistemas e Nuvem",
-      "unidade": "Mês",
-      "quantidade": 12,
-      "valor_unitario": "7.500,00"
-    },
-    {
-      "item": "Consultoria e Arquitetura de Software",
-      "unidade": "Horas",
-      "quantidade": 100,
-      "valor_unitario": "300,00"
-    }
-  ],
-  "itens_csv": "Sustentação de Nuvem, Segurança de Dados, Backup Contínuo, Suporte Nível 3",
-  "quantidade_total": 12,
-  "justificativa_quantidade": "Quantidade dimensionada com base na média histórica de consumo de horas e suporte técnico.",
-  "fiscal": "Eng. Roberto de Souza",
-  "gestor": "Dra. Mariana Albuquerque",
-  "local_fiscalizacao": "Edifício Sede - Bloco C, Sala 402 - Brasília/DF"
-}`
-  };
+    </conteudo>
+</documento>

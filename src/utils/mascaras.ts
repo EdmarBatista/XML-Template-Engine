@@ -39,15 +39,6 @@ export function formatarCNPJ(valor: any): string {
 }
 
 
-export function formatarCPFOuCNPJ(valor: any): string {
-  const digitos = normalizarDigitos(valor);
-  if (digitos.length <= 11) {
-    return formatarCPF(digitos);
-  }
-  return formatarCNPJ(digitos);
-}
-
-
 export function normalizarDigitos(valor: any): string {
   return String(valor ?? '').replace(/\D/g, '');
 }
@@ -88,8 +79,6 @@ export function aplicarMascaraCampo(valor: any, tipo: string): string {
       return formatarCPF(valor);
     case 'cnpj':
       return formatarCNPJ(valor);
-    case 'cpfcnpj':
-      return formatarCPFOuCNPJ(valor);
     case 'cep':
       return formatarCEP(valor);
     case 'tel':
@@ -112,10 +101,6 @@ export function normalizarValorCampo(valor: any, tipo: string): any {
   }
 
   if (nome === 'cnpj') {
-    return String(valor).replace(/\D/g, '').substring(0, 14);
-  }
-
-  if (nome === 'cpfcnpj') {
     return String(valor).replace(/\D/g, '').substring(0, 14);
   }
 
@@ -166,8 +151,6 @@ export function aplicarFiltroDocumento(valor: any, filtro: string): string {
       return formatarCPF(normalizarValorCampo(valor, 'cpf'));
     case 'cnpj':
       return formatarCNPJ(normalizarValorCampo(valor, 'cnpj'));
-    case 'cpfcnpj':
-      return formatarCPFOuCNPJ(normalizarValorCampo(valor, 'cpfcnpj'));
     case 'cep':
       return formatarCEP(normalizarValorCampo(valor, 'cep'));
     case 'tel':

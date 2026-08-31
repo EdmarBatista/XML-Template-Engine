@@ -95,7 +95,7 @@ export function renderInlineAstNodes(
         </mark>
       );
     } else if (node.tipo === 'cor') {
-      const cor = node.atributos?.cor || node.atributos?.hex || node.atributos?.valor || node.atributos?.value;
+      const cor = node.atributos?.cor;
       items.push(
         <span
           key={key}
@@ -135,8 +135,8 @@ export function renderInlineAstNodes(
         />
       );
     } else if (node.tipo === 'foreach') {
-      const varName = node.atributos?.var || node.atributos?.item || 'item';
-      const listaNome = node.atributos?.lista || node.atributos?.de || node.atributos?.items || '';
+      const varName = node.atributos?.var || 'item';
+      const listaNome = node.atributos?.lista || '';
       if (listaNome) {
         const valorListaBruto = escopo[listaNome] !== undefined ? escopo[listaNome] : obterValorPorCaminho(escopo, listaNome);
         const itens = valoresDaLista(valorListaBruto);

@@ -1,0 +1,24 @@
+{
+  "xml": "exemplo.xml",
+  "dados": {
+    "orgao": "DNIT",
+    "sigla": "DNIT",
+    "descricao": "Departamento Nacional de Infraestrutura de Trânsito",
+    "objeto": "Manutenção Predial",
+    "valor_total": "50000",
+    "data_abertura": "2027-05-11",
+    "urgente": true,
+    "modalidade": "Convite",
+    "tipo_fornecimento": "Material",
+    "itens_csv": "Reforma, Manutenção, Monitoramento",
+    "quantidade_total": "3",
+    "prazo_inicio": "2026-08-20",
+    "prazo_fim": "2026-11-04",
+    "cnpj": "04.892.707/0001-00",
+    "cep": "32141-587",
+    "email": "fulano@gmail.com",
+    "prazo_execucao_dias": "45",
+    "responsavel_tecnico": "Mariana Alves de Carvalho",
+    "gestor_contrato": "Camila Fernanda Oliveira"
+  }
+}

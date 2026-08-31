@@ -1,0 +1,131 @@
+<documento>
+    <formulario>
+        <grupo titulo="1. DADOS DO ÓRGÃO">
+            <input id="orgao" label="Nome do órgão"/>
+            <input id="sigla" label="Sigla"/>
+            <textarea id="descricao" label="Descrição institucional"/>
+        </grupo>
+
+        <grupo titulo="2. CONTRATAÇÃO">
+            <input id="objeto" label="Objeto da contratação"/>
+            <number id="valor_total" label="Valor total estimado (R$)" min="0" step="0.01"/>
+            <date id="data_abertura" label="Data de abertura da sessão"/>
+            <checkbox id="urgente" label="Contratação urgente"/>
+            <radio id="modalidade" label="Modalidade da licitação">
+                <option>Pregão Eletrônico</option>
+                <option>Concorrência</option>
+                <option>Convite</option>
+            </radio>
+            <select id="tipo_fornecimento" label="Tipo de fornecimento">
+                <option>Material</option>
+                <option>Serviço</option>
+                <option>Obra</option>
+            </select>
+        </grupo>
+
+        <grupo titulo="3. ITENS E QUANTIDADES">
+            <input id="itens_csv" label="Lista de itens (separados por vírgula)"/>
+            <number id="quantidade_total" label="Quantidade total de itens" min="1" step="1"/>
+        </grupo>
+
+        <grupo titulo="4. CRONOGRAMA">
+            <date id="prazo_inicio" label="Início da execução"/>
+            <date id="prazo_fim" label="Término da execução"/>
+        </grupo>
+
+        <grupo titulo="5. RESPONSÁVEIS">
+            <if expr="tipo_fornecimento == 'Serviço'">
+                <input id="responsavel_tecnico" label="Responsável técnico"/>
+            </if>
+            <input id="gestor_contrato" label="Gestor do contrato"/>
+        </grupo>
+    </formulario>
+
+    <conteudo>
+        <titulo>TERMO DE REFERÊNCIA</titulo>
+
+        <titulo>1. IDENTIFICAÇÃO DO ÓRGÃO</titulo>
+        O presente Termo de Referência é emitido pelo <b>{{orgao}}</b> (<i>{{sigla}}</i>).
+        <u>Descrição institucional:</u> {{descricao}}.
+
+        <titulo>2. OBJETO</titulo>
+        Contratação de <b>{{objeto}}</b>, no valor total estimado de {{valor_total | moeda}}.
+        A sessão pública será realizada em {{data_abertura | data}}.
+
+        <if expr="urgente == true">
+            <b>ATENÇÃO:</b> Esta contratação possui caráter urgente, devendo observar os prazos reduzidos previstos em lei.
+        </if>
+
+        Modalidade selecionada: <i>{{modalidade}}</i>.
+        Tipo de fornecimento: <u>{{tipo_fornecimento}}</u>.
+
+        <titulo>3. JUSTIFICATIVA</titulo>
+        A contratação se faz necessária para atender às demandas do <b>{{orgao}}</b>, conforme justificativa anexa ao processo administrativo.
+
+        <titulo>4. ITENS DA CONTRATAÇÃO</titulo>
+        <subtitulo>4.1. Relação de Itens</subtitulo>
+        <lista_numerada>
+            <foreach var="item" lista="itens_csv">
+                <item>{{item}}</item>
+            </foreach>
+        </lista_numerada>
+
+        <p>Quantidade total de itens: <b>{{quantidade_total}}</b>.</p>
+
+        <subtitulo>4.2. Tabela Resumo</subtitulo>
+        <tabela>
+            <cabecalho>
+                <celula>Item</celula>
+                <celula>Descrição</celula>
+                <celula>Valor Unitário</celula>
+            </cabecalho>
+            <linha>
+                <celula>1</celula>
+                <celula>{{objeto}}</celula>
+                <celula>{{valor_total | moeda}}</celula>
+            </linha>
+            <linha>
+                <celula>2</celula>
+                <celula>Serviços complementares</celula>
+                <celula>A definir</celula>
+            </linha>
+        </tabela>
+
+        <titulo>5. CRONOGRAMA DE EXECUÇÃO</titulo>
+        <lista>
+            <item>Início: {{prazo_inicio | data}}</item>
+            <item>Término: {{prazo_fim | data}}</item>
+        </lista>
+
+        <titulo>6. RESPONSÁVEIS</titulo>
+        <tabela>
+            <cabecalho>
+                <celula>Função</celula>
+                <celula>Nome</celula>
+            </cabecalho>
+            <linha>
+                <celula>Responsável Técnico</celula>
+                <celula><b>{{responsavel_tecnico}}</b></celula>
+            </linha>
+            <linha>
+                <celula>Gestor do Contrato</celula>
+                <celula><b>{{gestor_contrato}}</b></celula>
+            </linha>
+        </tabela>
+
+        <if expr="tipo_fornecimento == 'Serviço'">
+            <titulo>7. CONDIÇÕES ESPECÍFICAS PARA SERVIÇOS</titulo>
+            Os serviços deverão ser prestados conforme especificações técnicas detalhadas no Anexo I deste Termo de Referência.
+        </if>
+
+        <if expr="tipo_fornecimento == 'Obra'">
+            <titulo>7. CONDIÇÕES ESPECÍFICAS PARA OBRAS</titulo>
+            A obra deverá seguir o projeto básico aprovado, observando as normas técnicas da ABNT e os prazos estabelecidos no cronograma físico-financeiro.
+        </if>
+
+        <titulo>8. DISPOSIÇÕES FINAIS</titulo>
+        Este Termo de Referência foi elaborado por <i>{{responsavel_tecnico}}</i> e aprovado por <i>{{gestor_contrato}}</i>, estando em conformidade com a legislação vigente.
+
+        <p><b>{{sigla}}</b> — <i>{{orgao}}</i></p>
+    </conteudo>
+</documento>

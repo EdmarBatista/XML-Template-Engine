@@ -151,8 +151,8 @@ export function renderDocumentAstBlocks(
         />
       );
     } else if (node.tipo === 'foreach') {
-      const varName = node.atributos?.var || node.atributos?.item || 'item';
-      const listaNome = node.atributos?.lista || node.atributos?.de || node.atributos?.items || '';
+      const varName = node.atributos?.var || 'item';
+      const listaNome = node.atributos?.lista || '';
 
       if (listaNome) {
         const valorListaBruto = escopo[listaNome] !== undefined ? escopo[listaNome] : obterValorPorCaminho(escopo, listaNome);
@@ -217,21 +217,21 @@ export function renderDocumentAstBlocks(
           ctxLocal
         )
       );
-    } else if (node.tipo === 'titulo' || node.tipo === 'h1' || node.tipo === 'h2' || node.tipo === 'h3') {
-      const tag = node.tipo === 'titulo' ? 'h1' : node.tipo;
+    } else if (node.tipo === 'titulo' || node.tipo === 'subtitulo') {
+      // titulo = nível 1 (h1), subtitulo = nível 2 (h2)
+      const tag = node.tipo === 'titulo' ? 'h1' : 'h2';
       const alinhamento = node.atributos?.alinhamento || 'centro';
       const alignClass =
         alinhamento === 'centro' ? 'text-center' : alinhamento === 'direita' ? 'text-right' : 'text-left';
 
-      const HeadingTag = tag as 'h1' | 'h2' | 'h3';
-      const fontSize =
-        tag === 'h1' ? 20 * fontScale : tag === 'h2' ? 16 * fontScale : 14 * fontScale;
+      const HeadingTag = tag as 'h1' | 'h2';
+      const fontSize = tag === 'h1' ? 20 * fontScale : 16 * fontScale;
 
       elementos.push(
         <HeadingTag
           key={blockKey}
           data-word-type="titulo"
-          data-word-level={tag === 'h1' ? '1' : tag === 'h2' ? '2' : '3'}
+          data-word-level={tag === 'h1' ? '1' : '2'}
           data-word-align={alinhamento}
           className={`font-bold text-slate-900 dark:text-slate-100 my-4 tracking-tight uppercase select-text ${alignClass}`}
           style={{ fontSize: `${fontSize}px`, lineHeight: 1.3 }}

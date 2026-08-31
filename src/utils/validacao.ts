@@ -91,9 +91,6 @@ export function validarCampo(
   if (valType === 'cnpj' && !validarCNPJ(v)) {
     return { valido: false, msg: 'CNPJ inválido (verifique os dígitos verificadores)' };
   }
-  if (valType === 'cpfcnpj' && !validarCPF(v) && !validarCNPJ(v)) {
-    return { valido: false, msg: 'CPF ou CNPJ inválido' };
-  }
   if (valType === 'cep' && !validarCEP(v)) {
     return { valido: false, msg: 'CEP deve conter 8 dígitos' };
   }

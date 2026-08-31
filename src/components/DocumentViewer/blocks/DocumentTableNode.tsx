@@ -62,11 +62,11 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
     if (!nodes) return;
     for (const n of nodes) {
       if (n.tipo === 'foreach') {
-        const lNome = n.atributos?.lista || n.atributos?.de || n.atributos?.items;
+        const lNome = n.atributos?.lista;
         if (lNome) listasDetectadas.add(lNome);
       }
       if (n.tipo === 'var') {
-        const vId = n.atributos?.id || n.atributos?.nome || '';
+        const vId = n.atributos?.id || '';
         if (vId.includes('.')) {
           const parts = vId.split('.');
           colunasDetectadas.add(parts.slice(1).join('.'));
@@ -87,8 +87,6 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
 
   const listaPrincipal =
     node.atributos?.id ||
-    node.atributos?.nome ||
-    node.atributos?.lista ||
     Array.from(listasDetectadas)[0] ||
     '';
 
@@ -100,7 +98,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
       if (!filhos) return;
       for (const f of filhos) {
         if (f.tipo === 'var') {
-          varName = f.atributos?.id || f.atributos?.nome || '';
+          varName = f.atributos?.id || '';
           filtro = f.atributos?.filtro || '';
           return;
         }
@@ -325,8 +323,8 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
           processarFilhos(child.filhos || [], `${childKey}_if`, ctx, subCond);
         }
       } else if (child.tipo === 'foreach') {
-        const varName = child.atributos?.var || child.atributos?.item || 'item';
-        const lNome = child.atributos?.lista || child.atributos?.de || child.atributos?.items || listaPrincipal || '';
+        const varName = child.atributos?.var || 'item';
+        const lNome = child.atributos?.lista || listaPrincipal || '';
 
         if (lNome) {
           const valorListaBruto =

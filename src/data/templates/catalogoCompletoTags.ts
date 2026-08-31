@@ -9,13 +9,12 @@ export const catalogoCompletoTags: TemplateItem = {
     <formulario>
         <grupo titulo="Campos de Entrada (Input e Tipos Especiais)">
             <input id="campo_texto_simples" label="Input Padrão (Texto)" placeholder="Texto de demonstração" descricao="Tag input sem tipo ou tipo text padrão" exemplo="Texto de demonstração"/>
-            <input id="campo_cpf" label="Input CPF" tipo="cpf" placeholder="000.000.000-00" descricao="Tag input com máscara e validação de CPF" exemplo="123.456.789-00"/>
-            <input id="campo_cnpj" label="Input CNPJ" tipo="cnpj" placeholder="00.000.000/0000-00" descricao="Tag input com máscara e validação de CNPJ" exemplo="12.345.678/0001-90"/>
-            <input id="campo_cpfcnpj" label="Input CPF ou CNPJ Dinâmico" tipo="cpfcnpj" placeholder="Documento dinâmico" descricao="Tag input mista CPF ou CNPJ automática" exemplo="12345678900"/>
-            <input id="campo_cep" label="Input CEP" tipo="cep" placeholder="00000-000" descricao="Tag input com máscara de CEP e consulta integrada" exemplo="70040-010"/>
+            <number id="campo_cpf" label="Input CPF" tipo="cpf" placeholder="000.000.000-00" descricao="Tag input com máscara e validação de CPF" exemplo="123.456.789-00"/>
+            <number id="campo_cnpj" label="Input CNPJ" tipo="cnpj" placeholder="00.000.000/0000-00" descricao="Tag input com máscara e validação de CNPJ" exemplo="12.345.678/0001-90"/>
+            <number id="campo_cep" label="Input CEP" tipo="cep" placeholder="00000-000" descricao="Tag input com máscara de CEP e consulta integrada" exemplo="70040-010"/>
             <input id="campo_email" label="Input E-mail" tipo="email" placeholder="usuario@dominio.com.br" descricao="Tag input de e-mail" exemplo="contato@empresa.com.br"/>
             <input id="campo_tel" label="Input Telefone" tipo="tel" placeholder="(00) 00000-0000" descricao="Tag input com máscara telefônica" exemplo="(61) 98765-4321"/>
-            <input id="campo_moeda_input" label="Input Moeda Monetária" tipo="moeda" placeholder="0,00" descricao="Tag input monetária formatada em Real" exemplo="15000,00"/>
+            <number id="campo_moeda_input" label="Input Moeda Monetária" tipo="moeda" placeholder="0,00" descricao="Tag input monetária formatada em Real" exemplo="15000,00"/>
         </grupo>
 
         <grupo titulo="Campos Numéricos, Data e Texto Longo">
@@ -107,28 +106,18 @@ export const catalogoCompletoTags: TemplateItem = {
         </secao>
 
         <!-- ================================================================= -->
-        <!-- 2. TÍTULOS E CABEÇALHOS (<titulo>, <h1>, <h2>, <h3>)              -->
+        <!-- 2. TÍTULOS E CABEÇALHOS (<titulo>, <subtitulo>)                     -->
         <!-- ================================================================= -->
         <secao titulo="TÍTULOS, CABEÇALHOS E ALINHAMENTOS" numerar="true">
-            <!-- Variações da tag <titulo> -->
+            <!-- <titulo> = nível 1 (h1) -->
             <titulo alinhamento="centro">Texto de exemplo para comparação de título</titulo>
             <titulo alinhamento="esquerda">Texto de exemplo para comparação de título</titulo>
             <titulo alinhamento="direita">Texto de exemplo para comparação de título</titulo>
 
-            <!-- Variações da tag <h1> -->
-            <h1 alinhamento="centro">Texto de exemplo para comparação de título</h1>
-            <h1 alinhamento="esquerda">Texto de exemplo para comparação de título</h1>
-            <h1 alinhamento="direita">Texto de exemplo para comparação de título</h1>
-
-            <!-- Variações da tag <h2> -->
-            <h2 alinhamento="centro">Texto de exemplo para comparação de título</h2>
-            <h2 alinhamento="esquerda">Texto de exemplo para comparação de título</h2>
-            <h2 alinhamento="direita">Texto de exemplo para comparação de título</h2>
-
-            <!-- Variações da tag <h3> -->
-            <h3 alinhamento="centro">Texto de exemplo para comparação de título</h3>
-            <h3 alinhamento="esquerda">Texto de exemplo para comparação de título</h3>
-            <h3 alinhamento="direita">Texto de exemplo para comparação de título</h3>
+            <!-- <subtitulo> = nível 2 (h2) -->
+            <subtitulo alinhamento="centro">Texto de exemplo para comparação de subtítulo</subtitulo>
+            <subtitulo alinhamento="esquerda">Texto de exemplo para comparação de subtítulo</subtitulo>
+            <subtitulo alinhamento="direita">Texto de exemplo para comparação de subtítulo</subtitulo>
         </secao>
 
         <!-- ================================================================= -->
@@ -331,16 +320,9 @@ export const catalogoCompletoTags: TemplateItem = {
                 <p>Elemento {{item_loop._indice}}: {{item_loop.col_nome}} — Categoria: {{item_loop.col_categoria}} — Prioridade: {{item_loop.col_prioridade}} — Quantidade: {{item_loop.col_qtd}} — Status: {{item_loop.col_status}} — R$ {{item_loop.col_valor | moeda}}</p>
             </foreach>
 
-            <!-- Variação com de="..." e item="..." -->
-            <p><b>2. Iteração com atributos alias de="..." e item="...":</b></p>
-            <foreach de="tabela_itens" item="elemento">
-                <p>Elemento {{elemento.numero}}: {{elemento.col_nome}} — Categoria: {{elemento.col_categoria}} — Prioridade: {{elemento.col_prioridade}} — Quantidade: {{elemento.col_qtd}} — Status: {{elemento.col_status}} — R$ {{elemento.col_valor | moeda}}</p>
-            </foreach>
-
-            <!-- Variação com items="..." e var="..." -->
-            <p><b>3. Iteração com atributo alias items="...":</b></p>
-            <foreach items="tabela_itens" var="registro">
-                <p>Elemento {{registro._index}}: {{registro.col_nome}} — Categoria: {{registro.col_categoria}} — Prioridade: {{registro.col_prioridade}} — Quantidade: {{registro.col_qtd}} — Status: {{registro.col_status}} — R$ {{registro.col_valor | moeda}}</p>
+            <!-- Iteração canônica com lista="..." e var="..." -->
+            <foreach lista="tabela_itens" var="item_loop">
+                <p>Elemento {{item_loop._indice}}: {{item_loop.col_nome}} — Categoria: {{item_loop.col_categoria}} — Prioridade: {{item_loop.col_prioridade}} — Quantidade: {{item_loop.col_qtd}} — Status: {{item_loop.col_status}} — R$ {{item_loop.col_valor | moeda}}</p>
             </foreach>
         </secao>
 
@@ -384,7 +366,6 @@ export const catalogoCompletoTags: TemplateItem = {
             <p>Filtro de algarismos romanos: {{campo_numero_simples | romano}}</p>
             <p>Filtro de máscara de CPF: {{campo_cpf | cpf}}</p>
             <p>Filtro de máscara de CNPJ: {{campo_cnpj | cnpj}}</p>
-            <p>Filtro de CPF ou CNPJ dinâmico: {{campo_cpfcnpj | cpfcnpj}}</p>
             <p>Filtro de máscara de CEP: {{campo_cep | cep}}</p>
             <p>Filtro de telefone: {{campo_tel | telefone}}</p>
             <p>Filtro de e-mail: {{campo_email | email}}</p>
@@ -437,11 +418,6 @@ export const catalogoCompletoTags: TemplateItem = {
                     <celula>campo_cnpj</celula>
                     <celula>input (cnpj)</celula>
                     <celula>{{campo_cnpj | cnpj}}</celula>
-                </linha>
-                <linha>
-                    <celula>campo_cpfcnpj</celula>
-                    <celula>input (cpfcnpj)</celula>
-                    <celula>{{campo_cpfcnpj | cpfcnpj}}</celula>
                 </linha>
                 <linha>
                     <celula>campo_cep</celula>
@@ -541,7 +517,6 @@ export const catalogoCompletoTags: TemplateItem = {
   "campo_texto_simples": "Exemplo de texto preenchido",
   "campo_cpf": "12345678900",
   "campo_cnpj": "12345678000190",
-  "campo_cpfcnpj": "12345678900",
   "campo_cep": "70040010",
   "campo_email": "contato@empresa.com.br",
   "campo_tel": "61987654321",

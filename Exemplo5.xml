@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<documento>
+
+    <formulario>
+
+        <grupo titulo="1. Campos Básicos">
+
+            <input
+                id="orgao"
+                label="Texto [tipo=&quot;texto&quot;]"
+                tipo="texto"
+                descricao="Campo de texto simples"
+            />
+
+            <textarea
+                id="descricao_unidade"
+                label="Texto multilinha [tipo=&quot;texto_multilinha&quot;]"
+                descricao="Campo de texto multilinha"
+            />
+
+            <input
+                id="email_responsavel"
+                label="E-mail [tipo=&quot;email&quot;]"
+                tipo="email"
+                descricao="Campo de e-mail"
+            />
+
+            <date
+                id="data"
+                label="Data [tipo=&quot;data&quot;]"
+                descricao="Campo de data"
+            />
+
+        </grupo>
+
+
+        <grupo titulo="2. Números e Formatações">
+
+            <number
+                id="numero_simples"
+                label="Número [sem tipo]"
+                min="0"
+                step="1"
+                descricao="Número sem tipo específico"
+            />
+
+            <number
+                id="prazo_execucao_dias"
+                label="Prazo"
+                min="1"
+                step="1"
+                descricao="Número inteiro"
+            />
+
+            <number
+                id="valor_estimado"
+                label="Valor [tipo=&quot;moeda&quot;]"
+                min="0"
+                step="0.01"
+                tipo="moeda"
+                descricao="Valor monetário"
+            />
+
+            <number
+                id="cnpj"
+                label="CNPJ [tipo=&quot;cnpj&quot;]"
+                tipo="cnpj"
+                descricao="Campo CNPJ"
+            />
+
+            <number
+                id="cep"
+                label="CEP [tipo=&quot;cep&quot;]"
+                tipo="cep"
+                descricao="Campo CEP"
+            />
+
+        </grupo>
+
+
+        <grupo titulo="3. Seleções">
+
+            <select
+                id="tipo_contratacao"
+                label="Seleção [tipo=&quot;selecao&quot;]"
+                descricao="Campo de seleção"
+            >
+                <option>Opção A</option>
+                <option>Opção B</option>
+                <option>Opção C</option>
+            </select>
+
+            <radio
+                id="modalidade"
+                label="Radio [tipo=&quot;radio&quot;]"
+                descricao="Campo de radio"
+            >
+                <option>Sim</option>
+                <option>Não</option>
+            </radio>
+
+            <checkbox
+                id="urgente"
+                label="Checkbox [tipo=&quot;booleano&quot;]"
+                descricao="Campo booleano"
+            />
+
+        </grupo>
+
+
+        <grupo titulo="4. Lista">
+
+            <input
+                id="itens_csv"
+                label="Lista [tipo=&quot;lista_csv&quot;]"
+                tipo="lista_csv"
+                descricao="Lista utilizada pelo foreach, exemplo: Alpha, Beta, Gamma"
+                
+            />
+
+        </grupo>
+
+    </formulario>
+
+
+    <conteudo>
+
+        <titulo>TESTE DO MOTOR XML</titulo>
+
+        <subtitulo>Teste completo das funcionalidades</subtitulo>
+
+
+        <secao titulo="Variáveis">
+
+            Texto: <b>{{orgao}}</b>.
+
+            Texto multilinha: {{descricao_unidade}}.
+
+            E-mail: {{email_responsavel}}.
+
+            Data: <b>{{data | data}}</b>.
+
+            Data por extenso: <i>{{data | dataPorExtenso}}</i>.
+
+        </secao>
+
+
+        <secao titulo="Números">
+
+            Número sem tipo: {{numero_simples}}.
+
+            Prazo: <b>{{prazo_execucao_dias}}</b>.
+
+            Prazo por extenso: <i>{{prazo_execucao_dias | numeroPorExtenso}}</i>.
+
+            Prazo romano: <u>{{prazo_execucao_dias | romano}}</u>.
+
+            Valor: <b>{{valor_estimado | moeda}}</b>.
+
+            Valor por extenso: <i>{{valor_estimado | numeroPorExtenso}}</i>.
+
+        </secao>
+
+
+        <secao titulo="Documentos">
+
+            CNPJ: <b>{{cnpj | cnpj}}</b>.
+
+            CEP: <b>{{cep | cep}}</b>.
+
+        </secao>
+
+
+        <secao titulo="Seleção e Booleano">
+
+            Seleção: {{tipo_contratacao}}.
+
+            Radio: {{modalidade}}.
+
+            Checkbox: <b>{{urgente}}</b>.
+
+        </secao>
+
+
+        <secao titulo="Estilos">
+
+            Texto normal.
+
+            <b>Texto em negrito.</b>
+
+            <i>Texto em itálico.</i>
+
+            <u>Texto sublinhado.</u>
+
+            <b><i>Texto em negrito e itálico.</i></b>
+
+            <b><u>Texto em negrito e sublinhado.</u></b>
+
+            <u><i>Texto em itálico e sublinhado.</i></u>
+
+            <b><i><u>Texto com os três estilos.</u></i></b>
+
+        </secao>
+
+
+        <secao titulo="Condições">
+
+            <if expr="tipo_contratacao == 'Opção A'">A seleção possui o valor Opção A.</if>
+
+            <if expr="tipo_contratacao != 'Opção A'">A seleção é diferente de Opção A.</if>
+
+            <if expr="prazo_execucao_dias > 1">O prazo é maior que 1.</if>
+
+            <if expr="prazo_execucao_dias < 10">O prazo é menor que 10.</if>
+
+            <if expr="prazo_execucao_dias >= 10">O prazo é maior ou igual a 10.</if>
+
+            <if expr="prazo_execucao_dias <= 10">O prazo é menor ou igual a 10.</if>
+
+            <if expr="prazo_execucao_dias == 1">O prazo é exatamente 1.</if>
+
+            <if expr="prazo_execucao_dias != 1">O prazo é diferente de 1.</if>
+
+            <if expr="valor_estimado > 0">Existe um valor informado.</if>
+
+        </secao>
+
+
+        <secao titulo="Condições Booleanas">
+
+            <if expr="urgente == true">O checkbox está marcado.</if>
+
+            <if expr="urgente == false">O checkbox está desmarcado.</if>
+
+        </secao>
+
+
+        <secao titulo="Condições Aninhadas">
+
+            <if expr="tipo_contratacao == 'Opção A'">
+                A primeira condição foi satisfeita.
+                <if expr="urgente == true">
+                    A segunda condição também foi satisfeita.
+                    <if expr="prazo_execucao_dias > 1">
+                        A terceira condição foi satisfeita.
+                    </if>
+                </if>
+            </if>
+
+        </secao>
+
+
+        <secao titulo="Operadores Lógicos">
+
+            <if expr="urgente == true &amp;&amp; tipo_contratacao == 'Opção A'">AND verdadeiro.</if>
+
+            <if expr="urgente == true || tipo_contratacao == 'Opção A'">OR verdadeiro.</if>
+
+        </secao>
+
+
+        <secao titulo="Lista">
+
+            <lista_numerada>
+
+                <item>Primeiro item fixo.</item>
+
+                <item>Segundo item fixo.</item>
+
+                <item>Terceiro item com <b>formatação</b>.</item>
+
+            </lista_numerada>
+
+            <lista>
+
+                <item>Primeiro item sem numeração.</item>
+
+                <item>Segundo item sem numeração.</item>
+
+            </lista>
+
+        </secao>
+
+
+        <secao titulo="Foreach">
+
+            <lista_numerada>
+
+                <foreach var="item" lista="itens_csv">
+
+                    <item><b>{{item}}</b></item>
+
+                </foreach>
+
+            </lista_numerada>
+
+        </secao>
+
+
+        <secao titulo="Foreach com outras variáveis">
+
+            <lista>
+
+                <foreach var="item" lista="itens_csv">
+
+                    <item>Item: <b>{{item}}</b>. Data: <i>{{data | dataPorExtenso}}</i>. Valor: <u>{{valor_estimado | moeda}}</u>.</item>
+
+                </foreach>
+
+            </lista>
+
+        </secao>
+
+
+        <secao titulo="Tabela">
+
+            <tabela>
+
+                <cabecalho>
+                    <celula>Campo</celula>
+                    <celula>Original</celula>
+                    <celula>Formatado</celula>
+                </cabecalho>
+
+                <linha>
+                    <celula>Texto</celula>
+                    <celula>{{orgao}}</celula>
+                    <celula><b>{{orgao}}</b></celula>
+                </linha>
+
+                <linha>
+                    <celula>Data</celula>
+                    <celula>{{data}}</celula>
+                    <celula>{{data | dataPorExtenso}}</celula>
+                </linha>
+
+                <linha>
+                    <celula>Número</celula>
+                    <celula>{{prazo_execucao_dias}}</celula>
+                    <celula>{{prazo_execucao_dias | numeroPorExtenso}}</celula>
+                </linha>
+
+                <linha>
+                    <celula>Moeda</celula>
+                    <celula>{{valor_estimado}}</celula>
+                    <celula>{{valor_estimado | moeda}}</celula>
+                </linha>
+
+                <linha>
+                    <celula>CNPJ</celula>
+                    <celula>{{cnpj}}</celula>
+                    <celula>{{cnpj | cnpj}}</celula>
+                </linha>
+
+                <linha>
+                    <celula>CEP</celula>
+                    <celula>{{cep}}</celula>
+                    <celula>{{cep | cep}}</celula>
+                </linha>
+
+            </tabela>
+
+        </secao>
+
+
+        <secao titulo="Variáveis em lista">
+
+            <lista>
+
+                <item>Texto: <b>{{orgao}}</b></item>
+
+                <item>Data: <i>{{data | dataPorExtenso}}</i></item>
+
+                <item>Valor: <b>{{valor_estimado | moeda}}</b></item>
+
+                <item>CNPJ: {{cnpj | cnpj}}</item>
+
+            </lista>
+
+        </secao>
+
+
+        <secao titulo="Variáveis em tabela">
+
+            <tabela>
+
+                <cabecalho>
+                    <celula>Variável</celula>
+                    <celula>Valor</celula>
+                    <celula>Resultado</celula>
+                </cabecalho>
+
+                <linha>
+                    <celula>Valor</celula>
+                    <celula>{{valor_estimado}}</celula>
+                    <celula>{{valor_estimado | moeda}}</celula>
+                </linha>
+
+                <linha>
+                    <celula>Número</celula>
+                    <celula>{{prazo_execucao_dias}}</celula>
+                    <celula>{{prazo_execucao_dias | romano}}</celula>
+                </linha>
+
+                <linha>
+                    <celula>Data</celula>
+                    <celula>{{data}}</celula>
+                    <celula>{{data | data}}</celula>
+                </linha>
+
+            </tabela>
+
+        </secao>
+
+
+        <secao titulo="Hierarquia">
+
+            Primeiro nível.
+
+            <secao titulo="Segundo nível">
+
+                Segundo nível.
+
+                <secao titulo="Terceiro nível">
+
+                    Terceiro nível.
+
+                    <secao>
+
+                        Bloco sem título.
+
+                        <secao titulo="Quarto nível">
+
+                            Quarto nível.
+
+                        </secao>
+
+                    </secao>
+
+                </secao>
+
+            </secao>
+
+        </secao>
+
+
+        <secao titulo="Sem Numeração" numerar="false">
+
+            Este bloco testa uma seção sem numeração.
+
+            <secao titulo="Filho sem numeração">
+
+                Esta é uma subseção dentro do bloco sem numeração.
+
+            </secao>
+
+        </secao>
+
+
+        <secao titulo="Condição com Seção">
+
+            <if expr="urgente == true">
+
+                <secao titulo="Condição verdadeira">
+
+                    O checkbox está marcado.
+
+                    Valor:
+                    <b>{{orgao}}</b>.
+
+                </secao>
+
+            </if>
+
+            <if expr="urgente == false">
+
+                <secao titulo="Condição falsa">
+
+                    O checkbox está desmarcado.
+
+                </secao>
+
+            </if>
+
+        </secao>
+
+
+        <secao titulo="Teste Final">
+
+            Este documento serve exclusivamente para testar
+            as funcionalidades do motor XML.
+
+            Cada ID declarado no formulário é utilizado
+            pelo menos uma vez no conteúdo.
+
+        </secao>
+
+    </conteudo>
+
+</documento>

@@ -22,7 +22,7 @@ export const bateriaTestes: TemplateItem =
 
         <grupo titulo="3. Números">
             <number id="numero" label="Número [sem tipo]" min="0" step="1" descricao="Número sem tipo especial"/>
-            <number id="inteiro" label="Número inteiro [tipo=&quot;numero_inteiro&quot;]" min="0" step="1" tipo="numero_inteiro" descricao="Número inteiro"/>
+            <number id="inteiro" label="Número inteiro" min="0" step="1" descricao="Número inteiro"/>
             <number id="moeda" label="Valor [tipo=&quot;moeda&quot;]" min="0" step="0.01" tipo="moeda" descricao="Campo monetário"/>
         </grupo>
 

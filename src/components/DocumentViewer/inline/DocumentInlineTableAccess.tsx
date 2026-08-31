@@ -71,7 +71,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
   const isDate = colTipo === 'date' || colTipo === 'data';
   const isTextArea = colTipo === 'textarea' || colTipo === 'texto_longo';
   const isCurrency = colTipo === 'moeda' || colTipo === 'dinheiro';
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cpfcnpj', 'cep'].includes(colTipo) || isCurrency;
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(colTipo) || isCurrency;
   const maskName = isCurrency ? 'moeda' : colTipo;
   const isNumberField = ['number', 'numero', 'inteiro', 'decimal'].includes(colTipo);
 

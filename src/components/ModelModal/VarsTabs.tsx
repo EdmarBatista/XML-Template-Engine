@@ -144,7 +144,7 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
                                     const val = rowObj[col.id] ?? '';
                                     const colTipo = obterTipoEfetivoColuna(col.tipo, col.validar);
                                     const isNumber = ['number', 'inteiro', 'numero', 'decimal'].includes(colTipo);
-                                    const isMaskedCol = ['moeda', 'cpf', 'cnpj', 'cpfcnpj', 'cep'].includes(colTipo);
+                                    const isMaskedCol = ['moeda', 'cpf', 'cnpj', 'cep'].includes(colTipo);
                                     const valorColuna = isMaskedCol ? aplicarMascaraCampo(val, colTipo) : val;
                                     return (
                                       <td key={col.id} className="px-2 py-1">

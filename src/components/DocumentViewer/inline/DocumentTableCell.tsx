@@ -89,7 +89,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   const isTextArea = tipoColuna === 'textarea' || tipoColuna === 'texto_longo';
   const isNumber = tipoColuna === 'number' || tipoColuna === 'numero' || tipoColuna === 'inteiro';
   const isCurrency = tipoColuna === 'moeda' || tipoColuna === 'dinheiro';
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cpfcnpj', 'cep'].includes(tipoColuna) || isCurrency;
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(tipoColuna) || isCurrency;
   const maskName = isCurrency ? 'moeda' : tipoColuna;
 
   React.useEffect(() => {

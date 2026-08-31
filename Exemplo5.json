@@ -1,0 +1,19 @@
+{
+  "xml": "Exemplo5.xml",
+  "data_geracao": "2026-08-25T11:28:12.222Z",
+  "dados": {
+    "orgao": "Departamento Nacional de Infraestrutura de Transportes",
+    "descricao_unidade": "Unidade responsável pela contratação e acompanhamento da execução do objeto.",
+    "email_responsavel": "responsavel@dnit.gov.br",
+    "data": "2026-10-28",
+    "numero_simples": "123",
+    "prazo_execucao_dias": "15",
+    "valor_estimado": 125000.51,
+    "cnpj": "41421869000197",
+    "cep": "30130010",
+    "tipo_contratacao": "Opção A",
+    "modalidade": "Não",
+    "urgente": true,
+    "itens_csv": "Alpha, Beta, Gamma"
+  }
+}

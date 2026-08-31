@@ -109,8 +109,8 @@ export const DocumentListNode: React.FC<DocumentListNodeProps> = ({
           processarFilhosLista(itemNode.filhos || [], `${itemKey}_if`, localCtx, subCond);
         }
       } else if (itemNode.tipo === 'foreach') {
-        const varName = itemNode.atributos?.var || itemNode.atributos?.item || 'item';
-        const listaNome = itemNode.atributos?.lista || itemNode.atributos?.de || itemNode.atributos?.items || '';
+        const varName = itemNode.atributos?.var || 'item';
+        const listaNome = itemNode.atributos?.lista || '';
         if (listaNome) {
           const valorListaBruto =
             escopo[listaNome] !== undefined

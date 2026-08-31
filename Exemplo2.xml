@@ -1,0 +1,305 @@
+<documento>
+    <formulario>
+        <grupo titulo="Identificação da Contratação">
+            <input id="orgao" label="Órgão/Entidade"/>
+            <input id="unidade" label="Unidade Administrativa"/>
+            <input id="responsavel" label="Responsável pela elaboração"/>
+            <input id="processo" label="Número do Processo"/>
+            <date id="data" label="Data de elaboração"/>
+            <textarea id="descricao_unidade" label="Descrição da Unidade"/>
+        </grupo>
+
+        <grupo titulo="Objeto">
+            <input id="objeto" label="Objeto da Contratação"/>
+            <select id="tipo_contratacao" label="Tipo de Contratação">
+                <option>Serviço</option>
+                <option>Obra</option>
+                <option>Serviço de engenharia</option>
+            </select>
+            <select id="forma_execucao" label="Forma de Execução">
+                <option>Execução indireta</option>
+                <option>Empreitada por preço global</option>
+                <option>Empreitada por preço unitário</option>
+            </select>
+            <radio id="modalidade" label="Modalidade da Licitação">
+                <option>Pregão Eletrônico</option>
+                <option>Concorrência</option>
+            </radio>
+            <checkbox id="urgente" label="Contratação urgente"/>
+        </grupo>
+
+        <grupo titulo="Características do Serviço">
+            <select id="manutencao" label="Tipo de Manutenção">
+                <option>Preventiva e corretiva</option>
+                <option>Preventiva</option>
+                <option>Corretiva</option>
+            </select>
+            <select id="continuidade" label="Continuidade do Serviço">
+                <option>Contínuo</option>
+                <option>Não contínuo</option>
+            </select>
+            <select id="necessidade_material" label="Fornecimento de Materiais">
+                <option>Com fornecimento de materiais</option>
+                <option>Sem fornecimento de materiais</option>
+            </select>
+            <textarea id="servicos" label="Serviços que poderão ser executados"/>
+        </grupo>
+
+        <grupo titulo="Prazo e Vigência">
+            <number id="prazo_execucao_dias" label="Prazo de Execução (dias)" min="1" step="1"/>
+            <input id="prazo_execucao" label="Prazo de Execução"/>
+            <input id="vigencia" label="Prazo de Vigência"/>
+            <date id="inicio_execucao" label="Previsão de Início da Execução"/>
+            <date id="fim_execucao" label="Previsão de Término da Execução"/>
+        </grupo>
+
+        <grupo titulo="Estimativa da Contratação">
+            <number id="valor_estimado" label="Valor Estimado (R$)" min="0" step="0.01"/>
+            <input id="fonte_recurso" label="Fonte dos Recursos"/>
+            <input id="dotacao" label="Dotação Orçamentária"/>
+        </grupo>
+
+        <grupo titulo="Critérios da Contratação">
+            <select id="criterio_julgamento" label="Critério de Julgamento">
+                <option>Menor preço</option>
+                <option>Maior desconto</option>
+                <option>Técnica e preço</option>
+            </select>
+            <select id="regime_execucao" label="Regime de Execução">
+                <option>Empreitada por preço unitário</option>
+                <option>Empreitada por preço global</option>
+            </select>
+            <select id="qualificacao" label="Exigência de Qualificação Técnica">
+                <option>Sim</option>
+                <option>Não</option>
+            </select>
+        </grupo>
+
+        <grupo titulo="Itens e Serviços">
+            <input id="itens_csv" label="Itens separados por vírgula"/>
+            <number id="quantidade_total" label="Quantidade total de itens" min="1" step="1"/>
+        </grupo>
+
+        <grupo titulo="Fiscalização">
+            <input id="fiscal" label="Fiscal do Contrato"/>
+            <input id="gestor" label="Gestor do Contrato"/>
+            <input id="local_fiscalizacao" label="Local de Execução"/>
+        </grupo>
+    </formulario>
+
+    <conteudo>
+        <titulo>TERMO DE REFERÊNCIA</titulo>
+
+        <titulo>1. IDENTIFICAÇÃO DA CONTRATAÇÃO</titulo>
+        O presente Termo de Referência tem por finalidade estabelecer as condições necessárias para a contratação de empresa especializada para execução de serviços de manutenção predial na <b>Unidade Local de Caxambu</b>.
+
+        <p>Órgão/Entidade: <b>{{orgao}}</b>.</p>
+        <p>Unidade Administrativa: <b>{{unidade}}</b>.</p>
+        <p>Responsável pela elaboração: <i>{{responsavel}}</i>.</p>
+        <p>Processo Administrativo nº <u>{{processo}}</u>.</p>
+        <p>Data de elaboração: <b>{{data | data}}</b>.</p>
+        <p>Descrição da unidade: {{descricao_unidade}}.</p>
+
+        <titulo>2. OBJETO</titulo>
+        O objeto da presente contratação consiste na prestação de serviços de manutenção predial na <b>Unidade Local de Caxambu</b>, abrangendo serviços necessários à conservação, manutenção, reparação e adequado funcionamento das instalações físicas da unidade.
+
+        O objeto da contratação compreende a execução de serviços de manutenção <b>{{manutencao}}</b>, conforme as necessidades identificadas pela Administração e de acordo com as condições, quantidades e especificações estabelecidas neste Termo de Referência.
+
+        <if expr="necessidade_material == 'Com fornecimento de materiais'">
+            A contratação compreenderá também o fornecimento dos materiais, insumos e demais componentes necessários à adequada execução dos serviços, observadas as especificações e padrões de qualidade estabelecidos pela Administração.
+        </if>
+
+        <if expr="necessidade_material == 'Sem fornecimento de materiais'">
+            Os materiais necessários à execução dos serviços serão fornecidos pela Administração, conforme as condições estabelecidas no instrumento convocatório e no contrato.
+        </if>
+
+        <if expr="urgente == true">
+            <p><b>ATENÇÃO:</b> A contratação possui caráter urgente, devendo ser observadas as providências administrativas e os prazos aplicáveis.</p>
+        </if>
+
+        <titulo>3. JUSTIFICATIVA DA CONTRATAÇÃO</titulo>
+        A contratação justifica-se pela necessidade de assegurar condições adequadas de conservação, segurança, funcionamento e utilização das instalações da <b>Unidade Local de Caxambu</b>.
+
+        A manutenção adequada das instalações prediais contribui para a preservação do patrimônio público, a continuidade das atividades administrativas e a segurança dos servidores, usuários e demais pessoas que frequentam a unidade.
+
+        A execução dos serviços de manutenção é necessária para prevenir a deterioração das instalações e solucionar problemas que possam comprometer o funcionamento regular da unidade.
+
+        <titulo>4. DESCRIÇÃO DA SOLUÇÃO</titulo>
+        A solução consiste na contratação de empresa especializada para a execução de serviços de manutenção predial, de acordo com as demandas identificadas pela Administração.
+
+        Os serviços deverão ser executados por profissionais devidamente capacitados, utilizando ferramentas, equipamentos, materiais e técnicas adequadas à natureza de cada atividade.
+
+        <p>Descrição complementar: <i>{{servicos}}</i>.</p>
+
+        <titulo>5. NATUREZA DOS SERVIÇOS</titulo>
+
+        <if expr="tipo_contratacao == 'Serviço'">
+            <subtitulo>5.1. Serviço</subtitulo>
+            A contratação possui natureza de serviço, tendo como finalidade a execução das atividades necessárias à manutenção e conservação das instalações da <b>Unidade Local de Caxambu</b>.
+        </if>
+
+        <if expr="tipo_contratacao == 'Serviço de engenharia'">
+            <subtitulo>5.2. Serviço de Engenharia</subtitulo>
+            A contratação possui natureza de serviço de engenharia, devendo a execução observar as normas técnicas e demais requisitos aplicáveis às atividades contratadas.
+        </if>
+
+        <if expr="tipo_contratacao == 'Obra'">
+            <subtitulo>5.3. Obra</subtitulo>
+            A contratação possui natureza de obra, devendo sua execução observar os projetos, especificações, normas técnicas e demais documentos integrantes da contratação.
+        </if>
+
+        <titulo>6. REGIME E FORMA DE EXECUÇÃO</titulo>
+        A contratação será realizada sob a forma de <b>{{forma_execucao}}</b>, observadas as condições estabelecidas no edital, neste Termo de Referência e no respectivo instrumento contratual.
+
+        O regime de execução será <i>{{regime_execucao}}</i>.
+
+        A modalidade prevista para a licitação será <u>{{modalidade}}</u>.
+
+        Os serviços deverão ser executados de acordo com as solicitações da Administração, respeitando os prazos estabelecidos e as orientações emitidas pelo gestor ou fiscal do contrato.
+
+        <titulo>7. LOCAL DE EXECUÇÃO</titulo>
+        Os serviços serão executados na <b>Unidade Local de Caxambu</b>, situada em {{local_fiscalizacao}}.
+
+        A empresa contratada deverá realizar os serviços no local indicado pela Administração, observando as regras de acesso, segurança, funcionamento e circulação existentes na unidade.
+
+        <titulo>8. PRAZO DE EXECUÇÃO E VIGÊNCIA</titulo>
+        O prazo previsto para execução dos serviços será de <b>{{prazo_execucao}}</b>, correspondente a <b>{{prazo_execucao_dias}}</b> dias.
+
+        A vigência da contratação será de <b>{{vigencia}}</b>, contados a partir de <b>{{inicio_execucao | data}}</b>.
+
+        A previsão para término da execução será em <b>{{fim_execucao | data}}</b>.
+
+        Os prazos poderão ser alterados somente nas hipóteses admitidas pela legislação aplicável e desde que devidamente justificadas e formalizadas.
+
+        <titulo>9. DESCRIÇÃO DOS SERVIÇOS</titulo>
+        Os serviços de manutenção predial poderão compreender, conforme a necessidade da Administração, atividades relacionadas à conservação e manutenção das instalações físicas, incluindo serviços de natureza elétrica, hidráulica, civil, pintura, cobertura, esquadrias, pisos, revestimentos e demais elementos integrantes da edificação.
+
+        <subtitulo>9.1. Relação dos Serviços</subtitulo>
+        <lista_numerada>
+            <foreach var="item" lista="itens_csv">
+                <item><b>{{item}}</b></item>
+            </foreach>
+        </lista_numerada>
+
+        <p>A quantidade total estimada de itens é de <b>{{quantidade_total}}</b>.</p>
+
+        <titulo>10. OBRIGAÇÕES DA CONTRATADA</titulo>
+        Constituem obrigações da contratada:
+
+        <lista_numerada>
+            <item>Executar os serviços de acordo com as especificações estabelecidas neste Termo de Referência.</item>
+            <item>Disponibilizar profissionais capacitados e em quantidade suficiente para a execução dos serviços.</item>
+            <item>Fornecer os equipamentos e ferramentas necessários à execução das atividades, quando aplicável.</item>
+            <item>Cumprir os prazos estabelecidos pela Administração.</item>
+            <item>Reparar, corrigir ou refazer, às suas expensas, os serviços executados em desacordo com as especificações.</item>
+            <item>Manter durante a execução contratual as condições de habilitação e qualificação exigidas na contratação.</item>
+            <item>Responsabilizar-se pelos danos causados à Administração ou a terceiros decorrentes da execução dos serviços.</item>
+            <item>Observar as normas de segurança aplicáveis às atividades desenvolvidas.</item>
+            <item>Atender às orientações do gestor e do fiscal do contrato.</item>
+        </lista_numerada>
+
+        <titulo>11. OBRIGAÇÕES DA CONTRATANTE</titulo>
+        Constituem obrigações da contratante:
+
+        <lista_numerada>
+            <item>Fornecer as informações necessárias à adequada execução dos serviços.</item>
+            <item>Permitir o acesso dos profissionais autorizados às áreas necessárias à execução das atividades.</item>
+            <item>Acompanhar e fiscalizar a execução contratual.</item>
+            <item>Comunicar à contratada eventuais irregularidades verificadas na execução dos serviços.</item>
+            <item>Efetuar os pagamentos devidos após o cumprimento das condições estabelecidas no contrato.</item>
+        </lista_numerada>
+
+        <titulo>12. FISCALIZAÇÃO E GESTÃO DO CONTRATO</titulo>
+        A gestão do contrato ficará sob responsabilidade de <b>{{gestor}}</b>.
+
+        A fiscalização da execução contratual será realizada por <i>{{fiscal}}</i>.
+
+        A fiscalização deverá acompanhar a execução dos serviços, verificar sua conformidade com as especificações estabelecidas e registrar as ocorrências relevantes durante a execução contratual.
+
+        A fiscalização não exclui nem reduz a responsabilidade da contratada pela execução dos serviços.
+
+        <titulo>13. CRITÉRIOS DE MEDIÇÃO E PAGAMENTO</titulo>
+        A medição dos serviços será realizada conforme os serviços efetivamente executados e aceitos pela fiscalização.
+
+        O pagamento será efetuado após a comprovação da execução dos serviços, observadas as condições estabelecidas no instrumento convocatório e no contrato.
+
+        Somente serão considerados para pagamento os serviços devidamente executados e atestados pelo responsável pela fiscalização.
+
+        <titulo>14. CRITÉRIOS DE ACEITAÇÃO</titulo>
+        Os serviços serão considerados aceitos quando executados de acordo com as especificações estabelecidas neste Termo de Referência, observadas as normas técnicas aplicáveis e as orientações da fiscalização.
+
+        Os serviços que apresentarem defeitos, falhas ou desconformidades deverão ser corrigidos pela contratada no prazo estabelecido pela fiscalização, sem ônus adicional para a Administração.
+
+        <titulo>15. QUALIFICAÇÃO TÉCNICA</titulo>
+
+        <if expr="qualificacao == 'Sim'">
+            A licitante deverá comprovar sua capacidade técnica para execução do objeto, mediante apresentação da documentação de qualificação técnica exigida no instrumento convocatório, compatível com a natureza e complexidade dos serviços contratados.
+        </if>
+
+        <if expr="qualificacao == 'Não'">
+            Não será estabelecida exigência específica de qualificação técnica além daquelas necessárias à comprovação da capacidade da licitante para execução do objeto.
+        </if>
+
+        <titulo>16. CRITÉRIO DE JULGAMENTO</titulo>
+        O critério de julgamento adotado para a contratação será <b>{{criterio_julgamento}}</b>, conforme estabelecido no instrumento convocatório.
+
+        <titulo>17. ESTIMATIVA DO VALOR DA CONTRATAÇÃO</titulo>
+        O valor estimado da contratação é de <b>{{valor_estimado | moeda}}</b>.
+
+        Os recursos destinados à execução da contratação serão provenientes de <i>{{fonte_recurso}}</i>.
+
+        A despesa correrá por conta da dotação orçamentária <u>{{dotacao}}</u>.
+
+        <titulo>18. QUADRO RESUMO DA CONTRATAÇÃO</titulo>
+        <tabela>
+            <cabecalho>
+                <celula>Item</celula>
+                <celula>Informação</celula>
+            </cabecalho>
+            <linha>
+                <celula>Órgão</celula>
+                <celula><b>{{orgao}}</b></celula>
+            </linha>
+            <linha>
+                <celula>Unidade</celula>
+                <celula>{{unidade}}</celula>
+            </linha>
+            <linha>
+                <celula>Objeto</celula>
+                <celula>{{objeto}}</celula>
+            </linha>
+            <linha>
+                <celula>Tipo de contratação</celula>
+                <celula>{{tipo_contratacao}}</celula>
+            </linha>
+            <linha>
+                <celula>Manutenção</celula>
+                <celula>{{manutencao}}</celula>
+            </linha>
+            <linha>
+                <celula>Valor estimado</celula>
+                <celula>{{valor_estimado | moeda}}</celula>
+            </linha>
+            <linha>
+                <celula>Critério de julgamento</celula>
+                <celula>{{criterio_julgamento}}</celula>
+            </linha>
+        </tabela>
+
+        <titulo>19. RESULTADOS PRETENDIDOS</titulo>
+        Com a contratação, pretende-se assegurar a conservação e o adequado funcionamento das instalações da <b>Unidade Local de Caxambu</b>, reduzir a ocorrência de falhas que possam interromper as atividades administrativas e preservar o patrimônio público.
+
+        Pretende-se ainda garantir condições adequadas de segurança, utilização e funcionamento dos ambientes da unidade.
+
+        <titulo>20. DISPOSIÇÕES FINAIS</titulo>
+        A execução dos serviços deverá observar integralmente as condições estabelecidas neste Termo de Referência, no instrumento convocatório e no contrato.
+
+        Os casos omissos serão solucionados pela Administração, observada a legislação aplicável à contratação.
+
+        Este Termo de Referência constitui parte integrante da documentação da contratação e deverá ser utilizado como referência para a elaboração das propostas e para a fiscalização da execução contratual.
+
+        <titulo>21. RESPONSÁVEL</titulo>
+        <p><b>{{responsavel}}</b></p>
+        <p><i>Responsável pela elaboração do Termo de Referência.</i></p>
+    </conteudo>
+</documento>
