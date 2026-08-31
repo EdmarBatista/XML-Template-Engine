@@ -49,7 +49,7 @@
         <u>Descrição institucional:</u> {{descricao}}.
 
         <titulo>2. OBJETO</titulo>
-        Contratação de <b>{{objeto}}</b>, no valor total estimado de {{valor_total | moeda}}.
+        Contratação de <b>{{objeto}}</b>, no valor total estimado de R$ {{valor_total | moeda}}.
         A sessão pública será realizada em {{data_abertura | data}}.
 
         <if expr="urgente == true">
@@ -82,7 +82,7 @@
             <linha>
                 <celula>1</celula>
                 <celula>{{objeto}}</celula>
-                <celula>{{valor_total | moeda}}</celula>
+                <celula>R$ {{valor_total | moeda}}</celula>
             </linha>
             <linha>
                 <celula>2</celula>

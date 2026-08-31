@@ -156,9 +156,9 @@
 
             Prazo romano: <u>{{prazo_execucao_dias | romano}}</u>.
 
-            Valor: <b>{{valor_estimado | moeda}}</b>.
+            Valor: <b>R$ {{valor_estimado | moeda}}</b>.
 
-            Valor por extenso: <i>{{valor_estimado | numeroPorExtenso}}</i>.
+            Valor por extenso: <i>{{valor_estimado | moedaPorExtenso}}</i>.
 
         </secao>
 
@@ -304,7 +304,7 @@
 
                 <foreach var="item" lista="itens_csv">
 
-                    <item>Item: <b>{{item}}</b>. Data: <i>{{data | dataPorExtenso}}</i>. Valor: <u>{{valor_estimado | moeda}}</u>.</item>
+                    <item>Item: <b>{{item}}</b>. Data: <i>{{data | dataPorExtenso}}</i>. Valor: <u>R$ {{valor_estimado | moeda}}</u>.</item>
 
                 </foreach>
 
@@ -344,7 +344,7 @@
                 <linha>
                     <celula>Moeda</celula>
                     <celula>{{valor_estimado}}</celula>
-                    <celula>{{valor_estimado | moeda}}</celula>
+                    <celula>R$ {{valor_estimado | moeda}}</celula>
                 </linha>
 
                 <linha>
@@ -372,7 +372,7 @@
 
                 <item>Data: <i>{{data | dataPorExtenso}}</i></item>
 
-                <item>Valor: <b>{{valor_estimado | moeda}}</b></item>
+                <item>Valor: <b>R$ {{valor_estimado | moeda}}</b></item>
 
                 <item>CNPJ: {{cnpj | cnpj}}</item>
 
@@ -394,7 +394,7 @@
                 <linha>
                     <celula>Valor</celula>
                     <celula>{{valor_estimado}}</celula>
-                    <celula>{{valor_estimado | moeda}}</celula>
+                    <celula>R$ {{valor_estimado | moeda}}</celula>
                 </linha>
 
                 <linha>

@@ -101,7 +101,7 @@
         O objeto da contratação compreende a execução de serviços de manutenção <b>{{manutencao}}</b>, conforme as necessidades identificadas pela Administração e de acordo com as condições, quantidades e especificações estabelecidas neste Termo de Referência.
         <if expr="necessidade_material == 'Com fornecimento de materiais'">
             A contratação compreenderá também o fornecimento dos materiais, insumos e demais componentes necessários à adequada execução dos serviços, observadas as especificações e padrões de qualidade estabelecidos pela Administração.
-            O valor unitário de referência é de <b>{{valor_unitario | moeda}}</b>.
+            O valor unitário de referência é de <b>R$ {{valor_unitario | moeda}}</b>.
         </if>
         <if expr="necessidade_material == 'Sem fornecimento de materiais'">
             Os materiais necessários à execução dos serviços serão fornecidos pela Administração, conforme as condições estabelecidas no instrumento convocatório e no contrato.
@@ -215,9 +215,9 @@
         </secao><secao titulo="CRITÉRIO DE JULGAMENTO">
         O critério de julgamento adotado para a contratação será <b>{{criterio_julgamento}}</b>, conforme estabelecido no instrumento convocatório.
         </secao><secao titulo="ESTIMATIVA DO VALOR DA CONTRATAÇÃO">
-        O valor estimado da contratação é de <b>{{valor_estimado | moeda}}</b>.
-        Valor estimado por extenso: <b>{{valor_estimado | numeroPorExtenso}}</b>.
-        Valor unitário de referência: <b>{{valor_unitario | moeda}}</b>.
+        O valor estimado da contratação é de <b>R$ {{valor_estimado | moeda}}</b>.
+        Valor estimado por extenso: <b>{{valor_estimado | moedaPorExtenso}}</b>.
+        Valor unitário de referência: <b>R$ {{valor_unitario | moeda}}</b>.
         <if expr="valor_estimado > 0">
             A contratação possui valor estimado informado e superior a zero.
         </if>
@@ -254,11 +254,11 @@
             </linha>
             <linha>
                 <celula>Valor estimado</celula>
-                <celula>{{valor_estimado | moeda}}</celula>
+                <celula>R$ {{valor_estimado | moeda}}</celula>
             </linha>
             <linha>
                 <celula>Valor por extenso</celula>
-                <celula>{{valor_estimado | numeroPorExtenso}}</celula>
+                <celula>{{valor_estimado | moedaPorExtenso}}</celula>
             </linha>
             <linha>
                 <celula>Critério de julgamento</celula>
@@ -296,7 +296,7 @@
         Variável com negrito: <b>{{objeto}}</b>.
         Variável com itálico: <i>{{objeto}}</i>.
         Variável sublinhada: <u>{{objeto}}</u>.
-        Variável monetária: <b>{{valor_estimado | moeda}}</b>.
+        Variável monetária: <b>R$ {{valor_estimado | moeda}}</b>.
         Data curta: <b>{{data | data}}</b>.
         Data extensa: <b>{{data | dataPorExtenso}}</b>.
         Número por extenso: <b>{{quantidade_total | numeroPorExtenso}}</b>.
@@ -308,7 +308,7 @@
         <lista>
             <item>Órgão: <b>{{orgao}}</b></item>
             <item>Unidade: <i>{{unidade}}</i></item>
-            <item>Valor: <b>{{valor_estimado | moeda}}</b></item>
+            <item>Valor: <b>R$ {{valor_estimado | moeda}}</b></item>
             <item>Data: <u>{{data | dataPorExtenso}}</u></item>
         </lista>
         </secao><secao titulo="Variáveis dentro de tabelas">
@@ -321,7 +321,7 @@
             <linha>
                 <celula>Valor</celula>
                 <celula>{{valor_estimado}}</celula>
-                <celula>{{valor_estimado | moeda}}</celula>
+                <celula>R$ {{valor_estimado | moeda}}</celula>
             </linha>
             <linha>
                 <celula>Data</celula>
@@ -344,7 +344,7 @@
             <b>Condição 1:</b> há fornecimento de materiais.
             <if expr="qualificacao == 'Sim'">
                 <b>Combinação 1:</b> fornecimento de materiais e exigência de qualificação técnica.
-                Valor da contratação: <b>{{valor_estimado | moeda}}</b>.
+                Valor da contratação: <b>R$ {{valor_estimado | moeda}}</b>.
             </if>
             <if expr="qualificacao == 'Não'">
                 <b>Combinação 2:</b> fornecimento de materiais sem exigência específica de qualificação técnica.
@@ -377,7 +377,7 @@
         </secao><secao titulo="Foreach com formatação e texto combinado">
         <lista_numerada>
             <foreach var="item" lista="itens_csv">
-                <item>Serviço selecionado: <b>{{item}}</b>. Unidade: <i>{{unidade}}</i>. Valor estimado: <u>{{valor_estimado | moeda}}</u>.</item>
+                <item>Serviço selecionado: <b>{{item}}</b>. Unidade: <i>{{unidade}}</i>. Valor estimado: <u>R$ {{valor_estimado | moeda}}</u>.</item>
             </foreach>
         </lista_numerada>
         </secao><secao titulo="Comparações numéricas">

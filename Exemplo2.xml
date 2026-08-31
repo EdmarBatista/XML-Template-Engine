@@ -244,7 +244,7 @@
         O critério de julgamento adotado para a contratação será <b>{{criterio_julgamento}}</b>, conforme estabelecido no instrumento convocatório.
 
         <titulo>17. ESTIMATIVA DO VALOR DA CONTRATAÇÃO</titulo>
-        O valor estimado da contratação é de <b>{{valor_estimado | moeda}}</b>.
+        O valor estimado da contratação é de <b>R$ {{valor_estimado | moeda}}</b>.
 
         Os recursos destinados à execução da contratação serão provenientes de <i>{{fonte_recurso}}</i>.
 
@@ -278,7 +278,7 @@
             </linha>
             <linha>
                 <celula>Valor estimado</celula>
-                <celula>{{valor_estimado | moeda}}</celula>
+                <celula>R$ {{valor_estimado | moeda}}</celula>
             </linha>
             <linha>
                 <celula>Critério de julgamento</celula>
