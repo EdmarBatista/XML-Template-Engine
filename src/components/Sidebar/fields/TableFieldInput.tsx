@@ -26,7 +26,7 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
         const strVal = String(val);
         const limpo = strVal === '' ? '' : strVal.replace(/[^\d.-]/g, '');
         valFinal = limpo === '' ? '' : Number(limpo);
-      } else if (['moeda', 'cpf', 'cnpj', 'cep'].includes(tipo)) {
+      } else if (['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(tipo)) {
         const fmt = aplicarMascaraCampo(val, tipo);
         valFinal = normalizarValorCampo(fmt, tipo);
       } else if (tipo === 'checkbox') {
@@ -120,8 +120,8 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
               <div className="grid grid-cols-1 gap-2 pt-1">
                 {colunas.map(col => {
                   const valorCelula = linha[col.id] ?? '';
-                  const colTipo = obterTipoEfetivoColuna(col.tipo, col.validar);
-                  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(colTipo);
+                  const colTipo = obterTipoEfetivoColuna(col.tipo);
+                  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipo);
                   const valorExibido = isMasked ? aplicarMascaraCampo(valorCelula, colTipo) : valorCelula;
 
                   return (

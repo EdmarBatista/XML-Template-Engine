@@ -9,34 +9,34 @@ export const contratoServicos: TemplateItem =
     xml: `<documento>
     <formulario>
         <grupo titulo="1. Contratante">
-            <input id="contratante_nome" label="Razão Social / Nome do Contratante" tipo="texto" descricao="Nome completo do contratante" exemplo="Empresa Alpha Ltda"/>
-            <number id="contratante_cnpj" label="CNPJ / CPF do Contratante" tipo="cnpj" descricao="Documento do contratante" exemplo="12345678000199"/>
-            <input id="contratante_endereco" label="Endereço Completo" tipo="texto" descricao="Endereço da sede" exemplo="Rua das Flores, 100 - Centro"/>
-            <input id="contratante_representante" label="Representante Legal" tipo="texto" descricao="Nome do representante legal" exemplo="Ana Beatriz Mendes"/>
+            <input id="contratante_nome" label="Razão Social / Nome do Contratante" tipo="texto" placeholder="Empresa Alpha Ltda" descricao="Nome completo do contratante"/>
+            <number id="contratante_cnpj" label="CNPJ / CPF do Contratante" tipo="cnpj" placeholder="12.345.678/0001-99" descricao="Documento do contratante"/>
+            <input id="contratante_endereco" label="Endereço Completo" tipo="texto" placeholder="Rua das Flores, 100 - Centro" descricao="Endereço da sede"/>
+            <input id="contratante_representante" label="Representante Legal" tipo="texto" placeholder="Ana Beatriz Mendes" descricao="Nome do representante legal"/>
         </grupo>
 
         <grupo titulo="2. Contratada">
-            <input id="contratada_nome" label="Razão Social / Nome da Contratada" tipo="texto" descricao="Nome completo da contratada" exemplo="Beta Soluções Digitais ME"/>
-            <number id="contratada_cnpj" label="CNPJ da Contratada" tipo="cnpj" descricao="CNPJ da contratada" exemplo="98765432000188"/>
-            <input id="contratada_endereco" label="Endereço da Contratada" tipo="texto" descricao="Endereço da sede da contratada"/>
-            <input id="contratada_email" label="E-mail de Contato" tipo="email" descricao="E-mail oficial de notificações"/>
+            <input id="contratada_nome" label="Razão Social / Nome da Contratada" tipo="texto" placeholder="Beta Soluções Digitais ME" descricao="Nome completo da contratada"/>
+            <number id="contratada_cnpj" label="CNPJ da Contratada" tipo="cnpj" placeholder="98.765.432/0001-88" descricao="CNPJ da contratada"/>
+            <input id="contratada_endereco" label="Endereço da Contratada" tipo="texto" placeholder="Av. Paulista, 1000 - Bela Vista" descricao="Endereço da sede da contratada"/>
+            <input id="contratada_email" label="E-mail de Contato" tipo="email" placeholder="contato@empresa.com.br" descricao="E-mail oficial de notificações"/>
         </grupo>
 
         <grupo titulo="3. Escopo e Entregas">
-            <textarea id="descricao_servico" label="Descrição dos Serviços" descricao="Detalhamento das entregas e escopo técnico"/>
+            <textarea id="descricao_servico" label="Descrição dos Serviços" placeholder="Detalhamento das entregas e escopo técnico..." descricao="Detalhamento das entregas e escopo técnico"/>
             <tabela id="cronograma_entregas" label="Cronograma de Marcos e Parcelas">
                 <coluna id="etapa" label="Etapa / Marco" tipo="input" placeholder="Ex: Fase 1 - Planejamento e Arquitetura"/>
                 <coluna id="prazo" label="Prazo Estimado" tipo="input" placeholder="Ex: 30 dias"/>
-                <coluna id="valor" label="Valor da Etapa (R$)" tipo="input" validar="moeda" placeholder="Ex: 15.000,00"/>
+                <coluna id="valor" label="Valor da Etapa (R$)" tipo="moeda" placeholder="0,00"/>
             </tabela>
-            <number id="valor_total" label="Valor Total dos Serviços (R$)" tipo="moeda" min="0" step="0.01"/>
+            <number id="valor_total" label="Valor Total dos Serviços (R$)" tipo="moeda" min="0" step="0.01" placeholder="0,00"/>
             <select id="forma_pagamento" label="Forma de Pagamento" descricao="Condição de quitação">
                 <option>À vista via PIX / Transferência</option>
                 <option>Parcelado conforme cronograma de entregas</option>
                 <option>Por marcos de entrega (milestones)</option>
             </select>
-            <input id="prazo_vigencia" label="Prazo de Vigência Contratual" tipo="texto" exemplo="12 (doze) meses"/>
-            <input id="cidade_foro" label="Comarca / Foro de Eleição" tipo="texto" exemplo="São Paulo / SP"/>
+            <input id="prazo_vigencia" label="Prazo de Vigência Contratual" tipo="texto" placeholder="12 (doze) meses"/>
+            <input id="cidade_foro" label="Comarca / Foro de Eleição" tipo="texto" placeholder="São Paulo / SP"/>
         </grupo>
     </formulario>
 

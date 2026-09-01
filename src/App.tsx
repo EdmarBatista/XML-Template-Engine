@@ -29,11 +29,9 @@
 import React from 'react';
 import { AlertTriangle, RotateCcw, X } from 'lucide-react';
 import { DocumentViewer } from './components/DocumentViewer';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import { ModelModal } from './components/ModelModal';
 import { SidebarToolbar } from './components/SidebarToolbar';
 import { Sidebar } from './components/Sidebar';
-import { XmlEditorModal } from './components/XmlEditorModal';
 import { useToast } from './hooks/useToast';
 import { usePreferencias } from './hooks/usePreferencias';
 import { useCamposFoco } from './hooks/useCamposFoco';
@@ -115,6 +113,13 @@ export default function App() {
     onNovoEstadoGerado: resetFormState,
   });
 
+  const handleNewTemplate = () => {
+    import('./utils/xmlEditorCompletions').then(({ TEMPLATE_NOVO_DOCUMENTO }) => {
+      carregarXmlEJson('Novo Documento.xml', TEMPLATE_NOVO_DOCUMENTO, null, undefined);
+      showToast('Novo modelo em branco criado.');
+    });
+  };
+
   // Inicializa e sincroniza dados do template ativo no LocalStorage
   React.useEffect(() => {
     if (modelo) {
@@ -139,7 +144,7 @@ export default function App() {
 
   // Persiste dados no LocalStorage em tempo real quando alterados
   React.useEffect(() => {
-    if (currentTemplate?.id && dados && Object.keys(dados).length > 0) {
+    if (currentTemplate?.id && dados) {
       StorageService.saveFormDataForTemplate(currentTemplate.id, dados);
     }
   }, [dados, currentTemplate?.id]);
@@ -208,10 +213,7 @@ export default function App() {
 
   // D. Hook de Gerenciamento de Modais
   const {
-    isXmlEditorOpen,
     setIsXmlEditorOpen,
-    openXmlEditor,
-    closeXmlEditor,
     toggleXmlEditor,
     isModelModalOpen,
     setIsModelModalOpen,
@@ -356,7 +358,6 @@ export default function App() {
         {modelo ? (
           <>
             {/* Barra Lateral do Formulário */}
-            <ErrorBoundary fallbackTitle="Erro ao carregar o formulário lateral">
               <Sidebar
                 estrutura={modelo.formulario}
                 dados={dados}
@@ -376,6 +377,7 @@ export default function App() {
                     onRemoveCustomTemplate={handleRemoveCustomTemplate}
                     currentXmlName={xmlName}
                     onSelectTemplate={handleSelectTemplate}
+                    onNewTemplate={handleNewTemplate}
                     onLoadJson={handleLoadJsonString}
                     onToggleSidebar={handleToggleSidebar}
                     onDoubleToggleSidebar={handleDoubleToggleSidebar}
@@ -387,7 +389,7 @@ export default function App() {
                     onExportWord={handleExportWord}
                     onExportPdf={handleExportPdf}
                     onPrint={handlePrint}
-                    onOpenXmlEditor={openXmlEditor}
+                    
                     onOpenModelModal={openModelModal}
                     onClearForm={handleClearForm}
                     variaveisVermelhasWord={variaveisVermelhasWord}
@@ -446,7 +448,6 @@ export default function App() {
                   />
                 }
               />
-            </ErrorBoundary>
 
             {/* Divisor Redimensionável com Arraste */}
             {!sidebarCollapsed && (
@@ -476,7 +477,6 @@ export default function App() {
             )}
 
             {/* Visualizador do Documento em Tempo Real */}
-            <ErrorBoundary fallbackTitle="Erro ao carregar o visualizador do documento">
               <DocumentViewer
                 conteudo={modelo.conteudo}
                 dados={dados}
@@ -496,7 +496,6 @@ export default function App() {
                 zoom={modoA4 ? zoomA4 : zoomFluido}
                 modoA4={modoA4}
               />
-            </ErrorBoundary>
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500">
@@ -506,10 +505,10 @@ export default function App() {
             <p className="text-xs mt-1">Abra o editor de código para verificar e corrigir a estrutura.</p>
             <button
               type="button"
-              onClick={openXmlEditor}
+              onClick={openModelModal}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md text-xs font-semibold hover:bg-blue-500 transition"
             >
-              Abrir Editor de Código (XML & JSON)
+              Abrir Painel de Variáveis / Editor XML
             </button>
           </div>
         )}
@@ -517,36 +516,25 @@ export default function App() {
 
       {/* Modal de Variáveis e Inspetor de Modelo */}
       {modelo && (
-        <ModelModal
-          isOpen={isModelModalOpen}
-          onClose={closeModelModal}
-          modelo={{ ...modelo, dados }}
-          rawXml={rawXml}
-          xmlParts={xmlParts}
-          xmlName={xmlName}
-          onUpdateField={updateField}
-          onUpdateMultipleFields={novosDados => {
-            setDados(prev => ({
-              ...prev,
-              ...novosDados,
-            }));
-            showToast('Dados atualizados com sucesso!');
-          }}
-          onApplyAll={aplicarNovoXmlEJson}
-          onApplyXml={(novoXml, novoNome) => aplicarNovoXmlEJson(novoXml, dados, novoNome)}
-        />
+          <ModelModal
+            isOpen={isModelModalOpen}
+            onClose={closeModelModal}
+            modelo={{ ...modelo, dados }}
+            rawXml={rawXml}
+            xmlParts={xmlParts}
+            xmlName={xmlName}
+            onUpdateField={updateField}
+            onUpdateMultipleFields={novosDados => {
+              setDados(prev => ({
+                ...prev,
+                ...novosDados,
+              }));
+              showToast('Dados atualizados com sucesso!');
+            }}
+            onApplyAll={aplicarNovoXmlEJson}
+            onApplyXml={(novoXml, novoNome) => aplicarNovoXmlEJson(novoXml, dados, novoNome)}
+          />
       )}
-
-      {/* Modal do Editor de Código-Fonte (XML & JSON) */}
-      <XmlEditorModal
-        isOpen={isXmlEditorOpen}
-        onClose={closeXmlEditor}
-        xmlContent={rawXml}
-        xmlParts={xmlParts}
-        dadosContent={dados}
-        onApply={aplicarNovoXmlEJson}
-        xmlName={xmlName}
-      />
 
       {/* Modal de Confirmação para Limpar Formulário */}
       {showClearConfirmModal && (

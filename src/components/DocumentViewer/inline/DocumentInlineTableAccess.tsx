@@ -63,17 +63,17 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
 
   const ehColunaInteira = tabelaAcesso.indice === null;
   const colTipo = colMeta
-    ? obterTipoEfetivoColuna(colMeta.tipo, colMeta.validar)
+    ? obterTipoEfetivoColuna(colMeta.tipo)
     : (filtro || '').toLowerCase();
   const isSelect = colTipo === 'select';
   const isRadio = colTipo === 'radio';
-  const isCheckbox = colTipo === 'checkbox' || colTipo === 'booleano';
-  const isDate = colTipo === 'date' || colTipo === 'data';
-  const isTextArea = colTipo === 'textarea' || colTipo === 'texto_longo';
-  const isCurrency = colTipo === 'moeda' || colTipo === 'dinheiro';
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(colTipo) || isCurrency;
-  const maskName = isCurrency ? 'moeda' : colTipo;
-  const isNumberField = ['number', 'numero', 'inteiro', 'decimal'].includes(colTipo);
+  const isCheckbox = colTipo === 'checkbox';
+  const isDate = colTipo === 'date';
+  const isTextArea = colTipo === 'textarea';
+  const isCurrency = colTipo === 'moeda';
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipo);
+  const maskName = colTipo;
+  const isNumberField = colTipo === 'number';
 
   React.useEffect(() => {
     if (!editando) {

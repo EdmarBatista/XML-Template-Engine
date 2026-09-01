@@ -21,14 +21,15 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 - ✏️ **Edição e Interatividade**:
   - **Variáveis Interativas**: Destaque e sincronização bidirecional entre o campo do formulário e o texto no documento.
   - **Edição Inline**: Alterne para o modo de edição direta no corpo do documento.
-  - **Editor XML Integrado**: Editor CodeMirror 6 com syntax highlighting, validação de schema e numeração de linhas.
-  - **Inspetor de Variáveis e Modelo**: Painel para visualização da árvore AST e lista de variáveis detectadas.
+  - **Editor XML Integrado**: Editor CodeMirror 6 com syntax highlighting, autocompletar inteligente (sugere tags, atributos e variáveis), validação de schema, alertas de variáveis em tempo real e numeração de linhas.
+  - **Inspetor de Variáveis e Modelo**: Painel para visualização da árvore AST, lista de variáveis detectadas e alertas de validação de escopo.
 - 🌐 **Consultas e Máscaras Automáticas**:
-  - Máscara monetária (`moeda`), CPF, CNPJ e CEP.
+  - Máscaras para **telefone** (fixo e celular), monetária (`moeda`), CPF, CNPJ e CEP, com validação rigorosa integrada.
   - Consulta automática de CEP via **ViaCEP** e CNPJ via **ReceitaWS/OpenCNPJ**.
   - Formatação de valores e datas por extenso em português.
 - 💾 **Persistência Local**: Todo o estado (modelos customizados, dados preenchidos, zoom, preferências de barra lateral e exibição) é persistido no `localStorage`.
-- 📥 **Arrastar e Soltar (Drag & Drop) e Carregamento Inteligente de Dados**:
+- 📥 **Gestão de Templates, Drag & Drop e Dados**:
+  - **Criação Rápida**: Opção "Novo Modelo Em Branco" no seletor de templates para iniciar projetos com a estrutura base pronta (`<documento>`, `<formulario>`, `<conteudo>`).
   - **Arrastar XML + JSON juntos**: Cria o modelo customizado e armazena o JSON como seu conjunto de dados de exemplo.
   - **Arrastar `.json` isolado**: Preenche imediatamente os dados do formulário ativo.
   - **Arrastar `.xml` isolado**: Importa o novo modelo de documento.
@@ -157,8 +158,10 @@ Campos são organizados dentro de `<grupo titulo="...">`:
 <formulario>
   <grupo titulo="Identificação das Partes">
     <input id="nome_contratante" label="Nome do Contratante" placeholder="Digite o nome completo" />
-    <input id="cpf_contratante" label="CPF" tipo="cpf" />
-    <input id="cep_imovel" label="CEP do Imóvel" tipo="cep" />
+    <input id="email_contratante" label="E-mail" tipo="email" />
+    <number id="cpf_contratante" label="CPF" tipo="cpf" />
+    <number id="cnpj_empresa" label="CNPJ" tipo="cnpj" />
+    <number id="cep_imovel" label="CEP do Imóvel" tipo="cep" />
     <select id="tipo_pessoa" label="Tipo de Pessoa">
       <option valor="F">Pessoa Física</option>
       <option valor="J">Pessoa Jurídica</option>
@@ -169,18 +172,23 @@ Campos são organizados dentro de `<grupo titulo="...">`:
 
 #### Controles Suportados no `<formulario>`:
 
-> **Nomenclatura padronizada:** cada conceito de tipo/atributo tem **um único nome canônico** (sem aliases). Ex.: use `number` (não `numero`/`inteiro`/`decimal`), `moeda` (não `dinheiro`), `date` (não `data`), `select` (não `selecao`), `checkbox` (não `booleano`), `textarea` (não `texto_longo`), `texto` (não `text`). O mesmo vale para atributos: `validar` (não `validacao`), `tipo` (não `tag`), `var`/`lista` no `<foreach>` (não `item`/`de`/`items`), e `cor` (não `hex`/`valor`/`value`). Tags de título: `<titulo>` (nível 1) e `<subtitulo>` (nível 2).
+> **Nomenclatura padronizada e estrita:** cada conceito de tipo/atributo tem **um único nome canônico**.
+> - **`placeholder="..."`**: Texto fantasma de orientação que fica *dentro* do campo quando vazio.
+> - **`descricao="..."`**: Texto explicativo/ajuda fixo posicionado *abaixo* do campo.
+> - **`tipo="..."`**: Define a especialização, máscara e validação do campo.
+>
+> Use `<number>` para todos os valores numéricos, valores monetários (`tipo="moeda"`), documentos com dígitos (`tipo="cpf"`, `tipo="cnpj"`) e códigos postais (`tipo="cep"`). Use `<input>` estritamente para texto livre (`tipo="texto"` ou padrão), e-mail (`tipo="email"`) e listas de itens (`tipo="lista_csv"`).
 
 | Tag | Atributos Principais | Descrição e Tipos Válidos |
 |---|---|---|
-| `<input>` | `id`, `label`, `tipo`, `validar`, `placeholder`, `descricao`, `exemplo` | Campo de entrada. Atributo `tipo`: `texto` (padrão), `email`, `tel`, `cpf`, `cnpj`, `cep`, `moeda`, `number`, `lista_csv`. |
-| `<textarea>` | `id`, `label`, `rows`, `placeholder`, `descricao`, `exemplo` | Campo de texto multilinha (padrão de 4 linhas ou configurável via `rows="N"`). |
-| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step`, `placeholder`, `descricao` | Campo numérico com validação e limites de valor. |
-| `<date>` | `id`, `label`, `placeholder`, `descricao` | Seletor nativo de data (formato ISO YYYY-MM-DD / exibição BR DD/MM/AAAA). |
-| `<select>` | `id`, `label` + filhos `<option>` | Caixa de seleção suspensa. Cada `<option>` aceita texto e atributo opcional `valor="..."`. |
-| `<radio>` | `id`, `label` + filhos `<option>` | Grupo de botões de opção exclusivos. Cada `<option>` aceita texto e atributo `valor="..."`. |
-| `<checkbox>` | `id`, `label` | Caixa de seleção booleana (`true` / `false`). |
-| `<tabela>` | `id`, `label` + filhos `<coluna>` | Grade dinâmica de linhas e colunas com adição, remoção e reordenação de linhas. |
+| `<input>` | `id`, `label`, `tipo`, `placeholder`, `descricao` | Campo de texto de linha única. Atributos de `tipo`: `texto` (padrão), `email` (com validação de formato) e `lista_csv` (lista para loops `<foreach>`). |
+| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step`, `placeholder`, `descricao` | Campo numérico e de dados com máscara/dígitos. Atributos de `tipo`: `number` (numérico com setas), `moeda` (R$ com máscara monetária), `cpf` (máscara e validação de dígitos), `cnpj` (máscara, validação e consulta OpenCNPJ), `cep` (máscara, validação e consulta ViaCEP). |
+| `<textarea>` | `id`, `label`, `rows`, `placeholder`, `descricao` | Campo de texto com múltiplas linhas (altura configurável via `rows="N"`, padrão: 4). |
+| `<date>` | `id`, `label`, `descricao` | Seletor nativo de data (formato ISO YYYY-MM-DD / exibição DD/MM/AAAA). |
+| `<select>` | `id`, `label`, `descricao` + filhos `<option>` | Caixa de seleção suspensa (dropdown). Cada `<option>` aceita texto e atributo opcional `valor="..."`. |
+| `<radio>` | `id`, `label`, `descricao` + filhos `<option>` | Grupo de botões de seleção exclusiva. Cada `<option>` aceita texto e atributo opcional `valor="..."`. |
+| `<checkbox>` | `id`, `label`, `descricao` | Caixa de seleção booleana (`true` / `false`). |
+| `<tabela>` | `id`, `label` + filhos `<coluna>` | Grade dinâmica de dados (tabela interativa onde o usuário pode adicionar, excluir e reordenar linhas). |
 
 #### Configuração de `<coluna>` dentro de `<tabela>` (Formulário):
 ```xml
@@ -188,19 +196,20 @@ Campos são organizados dentro de `<grupo titulo="...">`:
   <coluna id="descricao" label="Descrição" tipo="texto" placeholder="Ex: Licença de software" />
   <coluna id="quantidade" label="Qtd" tipo="number" min="1" step="1" />
   <coluna id="valor_unitario" label="Valor Unitário" tipo="moeda" />
-  <coluna id="tipo_item" label="Categoria" tipo="select" opcoes="Hardware, Software, Serviço" />
+  <coluna id="categoria" label="Categoria" tipo="select" opcoes="Hardware, Software, Serviço" />
 </tabela>
 ```
-- **Atributos de `<coluna>`**: `id` (obrigatório), `label`, `tipo` (`texto`, `number`, `moeda`, `date`, `select`, `radio`, `textarea`, `checkbox`, `cpf`, `cnpj`, `cep`, `email`, `tel`), `placeholder`, `min`, `max`, `step`, `validar`, `opcoes` (valores separados por vírgula ou tags `<option>` filhas).
+- **Tipos suportados em `<coluna>`**: `texto` (padrão), `number`, `moeda`, `date`, `select`, `radio`, `textarea`, `checkbox`.
+- **Atributos de `<coluna>`**: `id` (obrigatório), `label`, `tipo`, `placeholder`, `min`, `max`, `step`, `opcoes` (valores separados por vírgula ou tags `<option>` filhas).
 
 #### Condicionais no Formulário (`<if>`):
-Permite exibir ou ocultar campos ou opções dinamicamente no formulário com base em valores preenchidos:
+Permite exibir ou ocultar campos dinamicamente no formulário com base em valores preenchidos:
 ```xml
 <grupo titulo="Dados Adicionais">
   <checkbox id="tem_fiador" label="Possui Fiador?" />
   <if expr="tem_fiador == true">
-    <input id="nome_fiador" label="Nome do Fiador" />
-    <input id="cpf_fiador" label="CPF do Fiador" tipo="cpf" />
+    <input id="nome_fiador" label="Nome do Fiador" placeholder="Nome completo" />
+    <number id="cpf_fiador" label="CPF do Fiador" tipo="cpf" />
   </if>
 </grupo>
 ```

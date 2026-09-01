@@ -15,6 +15,7 @@ export interface PrefsState {
   irParaDocumentoAtivo: boolean;
   edicaoInline: boolean;
   isResizing: boolean;
+  activeModelModalTab: string;
 }
 
 export interface PrefsSetters {
@@ -31,6 +32,7 @@ export interface PrefsSetters {
   setIrParaDocumentoAtivo: React.Dispatch<React.SetStateAction<boolean>>;
   setEdicaoInline: React.Dispatch<React.SetStateAction<boolean>>;
   setIsResizing: React.Dispatch<React.SetStateAction<boolean>>;
+  setActiveModelModalTab: React.Dispatch<React.SetStateAction<string>>;
 }
 
 /**
@@ -40,22 +42,20 @@ export interface PrefsSetters {
  */
 export function usePreferencias(): PrefsState & PrefsSetters {
   const initialPrefs = React.useMemo(() => StorageService.loadPreferences(), []);
-
   const [sidebarWidth, setSidebarWidth] = React.useState<number>(initialPrefs.sidebarWidth);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState<boolean>(initialPrefs.sidebarCollapsed);
   const [toolbarLateral, setToolbarLateral] = React.useState<boolean>(initialPrefs.toolbarLateral);
   const [darkMode, setDarkMode] = React.useState<boolean>(initialPrefs.darkMode);
   const [isResizing, setIsResizing] = React.useState(false);
-
   const [zoomA4, setZoomA4] = React.useState<number>(initialPrefs.zoomA4);
   const [zoomFluido, setZoomFluido] = React.useState<number>(initialPrefs.zoomFluido);
   const [modoA4, setModoA4] = React.useState<boolean>(initialPrefs.modoA4);
-
   const [variaveisVermelhasWord, setVariaveisVermelhasWord] = React.useState<boolean>(initialPrefs.variaveisVermelhasWord);
   const [numeracaoAtiva, setNumeracaoAtiva] = React.useState<boolean>(initialPrefs.numeracaoAtiva);
   const [irParaCampoAtivo, setIrParaCampoAtivo] = React.useState<boolean>(initialPrefs.irParaCampoAtivo);
   const [irParaDocumentoAtivo, setIrParaDocumentoAtivo] = React.useState<boolean>(initialPrefs.irParaDocumentoAtivo);
   const [edicaoInline, setEdicaoInline] = React.useState<boolean>(initialPrefs.edicaoInline);
+  const [activeModelModalTab, setActiveModelModalTab] = React.useState<string>(initialPrefs.activeModelModalTab || 'vars-edit');
 
   React.useEffect(() => {
     if (isResizing) return;
@@ -72,6 +72,7 @@ export function usePreferencias(): PrefsState & PrefsSetters {
       modoA4,
       zoomA4,
       zoomFluido,
+      activeModelModalTab,
     };
     StorageService.savePreferences(currentPrefs);
   }, [
@@ -88,6 +89,7 @@ export function usePreferencias(): PrefsState & PrefsSetters {
     zoomA4,
     zoomFluido,
     isResizing,
+    activeModelModalTab,
   ]);
 
   // Aplica/reverte a classe .dark no <html> (controla os tokens do tema)
@@ -112,6 +114,7 @@ export function usePreferencias(): PrefsState & PrefsSetters {
     irParaDocumentoAtivo,
     edicaoInline,
     isResizing,
+    activeModelModalTab,
     setSidebarWidth,
     setSidebarCollapsed,
     setToolbarLateral,
@@ -124,5 +127,6 @@ export function usePreferencias(): PrefsState & PrefsSetters {
     setIrParaDocumentoAtivo,
     setEdicaoInline,
     setIsResizing,
+    setActiveModelModalTab,
   };
 }

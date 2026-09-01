@@ -80,17 +80,17 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     colKey !== '_idx' &&
     colKey !== 'numero';
 
-  // Identificação unificada do tipo (considera também o `validar` da coluna)
-  const tipoColuna = obterTipoEfetivoColuna(colMeta?.tipo, colMeta?.validar) || filtro || 'input';
+  // Identificação unificada do tipo
+  const tipoColuna = obterTipoEfetivoColuna(colMeta?.tipo) || filtro || 'input';
   const isSelect = tipoColuna === 'select';
   const isRadio = tipoColuna === 'radio';
-  const isDate = tipoColuna === 'date' || tipoColuna === 'data';
-  const isCheckbox = tipoColuna === 'checkbox' || tipoColuna === 'booleano';
-  const isTextArea = tipoColuna === 'textarea' || tipoColuna === 'texto_longo';
-  const isNumber = tipoColuna === 'number' || tipoColuna === 'numero' || tipoColuna === 'inteiro';
-  const isCurrency = tipoColuna === 'moeda' || tipoColuna === 'dinheiro';
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(tipoColuna) || isCurrency;
-  const maskName = isCurrency ? 'moeda' : tipoColuna;
+  const isDate = tipoColuna === 'date';
+  const isCheckbox = tipoColuna === 'checkbox';
+  const isTextArea = tipoColuna === 'textarea';
+  const isNumber = tipoColuna === 'number';
+  const isCurrency = tipoColuna === 'moeda';
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(tipoColuna);
+  const maskName = tipoColuna;
 
   React.useEffect(() => {
     if (editando && inputRef.current) {

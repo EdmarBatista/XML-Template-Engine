@@ -108,19 +108,14 @@ export const DocumentInlineAutoTable: React.FC<DocumentInlineAutoTableProps> = (
                 {colunas.map((col, cIdx) => {
                   const val = rowObj[col];
                   const colMeta = estrutura?.campos?.[chaveReal]?.colunas?.find(c => c.id === col);
-                  const colTipoEfetivo = obterTipoEfetivoColuna(colMeta?.tipo, colMeta?.validar);
+                  const colTipoEfetivo = obterTipoEfetivoColuna(colMeta?.tipo);
                   const isUltimaColuna = cIdx === colunas.length - 1;
 
                   let formattedVal = '';
                   if (val !== null && val !== undefined && val !== '') {
-                    if (['moeda', 'cpf', 'cnpj', 'cep'].includes(colTipoEfetivo)) {
+                    if (['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipoEfetivo)) {
                       formattedVal = aplicarFiltroDocumento(val, colTipoEfetivo);
-                    } else if (
-                      colTipoEfetivo === 'number' ||
-                      colTipoEfetivo === 'numero' ||
-                      colTipoEfetivo === 'inteiro' ||
-                      colTipoEfetivo === 'decimal'
-                    ) {
+                    } else if (colTipoEfetivo === 'number') {
                       formattedVal = typeof val === 'number' ? String(val) : String(val);
                     } else if (typeof val === 'boolean') {
                       formattedVal = val ? 'Sim' : 'Não';

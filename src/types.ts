@@ -1,25 +1,28 @@
 export type FieldType = 'input' | 'textarea' | 'number' | 'date' | 'checkbox' | 'radio' | 'select' | 'tabela';
 
+export type InputSubtype = 'texto' | 'email' | 'lista_csv';
+
+export type NumberSubtype = 'number' | 'moeda' | 'cpf' | 'cnpj' | 'cep' | 'telefone';
+
 export type ColumnType =
-  | 'input'
-  | 'number'
-  | 'moeda'
-  | 'date'
-  | 'select'
-  | 'radio'
-  | 'textarea'
-  | 'checkbox'
-  | 'cpf'
-  | 'cnpj'
-  | 'cep'
-  | 'email'
-  | 'tel';
+  | 'input'      // ou 'texto' (texto comum)
+  | 'texto'
+  | 'number'     // numérico puro
+  | 'moeda'      // valor monetário formatado
+  | 'date'       // seletor nativo de data
+  | 'select'     // dropdown
+  | 'radio'      // seleção exclusiva
+  | 'textarea'   // texto multilinha
+  | 'checkbox'   // booleano
+  | 'cpf'        // máscara CPF
+  | 'cnpj'       // máscara CNPJ
+  | 'cep'        // máscara CEP
+  | 'telefone';
 
 export interface TableColumnMetadata {
   id: string;
   label: string;
-  tipo?: ColumnType | string;
-  validar?: string;
+  tipo?: ColumnType;
   placeholder?: string;
   min?: string | number;
   max?: string | number;
@@ -54,13 +57,11 @@ export interface FieldMetadata {
   tipoInput?: string;
   descricao?: string;
   placeholder?: string;
-  exemplo?: string;
   min?: string | number;
   max?: string | number;
   step?: string | number;
   rows?: number | string;
   condicao?: string;
-  validar?: string;
   opcoes?: string[];
   opcoesDetalhadas?: FieldOption[];
   colunas?: TableColumnMetadata[];

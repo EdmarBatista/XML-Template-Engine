@@ -16,7 +16,6 @@ import { FileText } from 'lucide-react';
 import { AstNode, FormStructure, NumberingContext } from '../types';
 import { DocumentA4Canvas } from './DocumentViewer/DocumentA4Canvas';
 import { DocumentNodeRenderer, extrairTooltip } from './DocumentViewer/DocumentNodeRenderer';
-import { ErrorBoundary } from './ErrorBoundary';
 
 export { extrairTooltip };
 
@@ -141,7 +140,6 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
       fontScale={fontScale}
       docRef={docRef}
     >
-      <ErrorBoundary fallbackTitle="Erro ao renderizar o documento">
         {temConteudo ? (
           <DocumentNodeRenderer
             nodes={conteudo.filhos || []}
@@ -167,7 +165,6 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
             </p>
           </div>
         )}
-      </ErrorBoundary>
     </DocumentA4Canvas>
   );
 };

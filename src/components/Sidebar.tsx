@@ -317,7 +317,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Feedback visual de consulta de CNPJ */}
-        {campo.tipoInput === 'cnpj' && cnpjLookup.chave === normalizarDigitos(valor) && (
+        {campo.tipo === 'number' && campo.tipoInput === 'cnpj' && cnpjLookup.chave === normalizarDigitos(valor) && (
           <div className="mt-2 text-xs">
             {cnpjLookup.loading && (
               <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 py-1 bg-blue-50 dark:bg-slate-800 border border-transparent dark:border-slate-700/80 px-2 rounded">
@@ -348,7 +348,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Feedback visual de consulta de CEP */}
-        {campo.tipoInput === 'cep' && cepLookup.chave === normalizarDigitos(valor) && (
+        {campo.tipo === 'number' && campo.tipoInput === 'cep' && cepLookup.chave === normalizarDigitos(valor) && (
           <div className="mt-2 text-xs">
             {cepLookup.loading && (
               <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 py-1 bg-blue-50 dark:bg-slate-800 border border-transparent dark:border-slate-700/80 px-2 rounded">

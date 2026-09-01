@@ -59,7 +59,6 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               <span>Seus Templates</span>
               <span className="text-[9px] text-slate-500 font-normal">{customTemplates.length}</span>
             </div>
-
             {customTemplates.length === 0 ? (
               <div className="px-3 py-2 text-[11px] text-slate-500 italic">
                 Nenhum template salvo ainda. Arraste ou abra um arquivo XML/ZIP.

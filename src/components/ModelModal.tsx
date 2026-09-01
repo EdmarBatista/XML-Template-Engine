@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AlertCircle,
   AlertTriangle,
   Braces,
   Check,
@@ -20,9 +21,12 @@ import {
   X,
 } from 'lucide-react';
 import { IntermediateModel, XmlPart } from '../types';
+import { TEMPLATE_NOVO_DOCUMENTO } from '../utils/xmlEditorCompletions';
 import { concatenarXmlsParticionados, parseXmlDocument } from '../utils/xmlParser';
+import { verificarVariaveisXml } from '../utils/xmlEditorCompletions';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { VarsTabEditor, VarsTableResumo } from './ModelModal/VarsTabs';
+import { usePreferencias } from '../hooks/usePreferencias';
 
 export interface ModelModalProps {
   isOpen: boolean;
@@ -80,7 +84,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   onApplyAll,
   initialTab = 'vars-edit',
 }) => {
-  const [tab, setTab] = React.useState<TabType>(initialTab);
+  const { activeModelModalTab, setActiveModelModalTab } = usePreferencias();
+  const tab = (activeModelModalTab as TabType) || 'vars-edit';
+  const setTab = (t: TabType) => setActiveModelModalTab(t);
+
   const [busca, setBusca] = React.useState('');
   const [filtroStatus, setFiltroStatus] = React.useState<'todos' | 'preenchidos' | 'vazios'>('todos');
   const [copiado, setCopiado] = React.useState(false);
@@ -93,6 +100,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
 
   // Estados de Edição XML e Multi-Partes
   const [xmlCode, setXmlCode] = React.useState('');
+  const [debouncedXmlCode, setDebouncedXmlCode] = React.useState('');
   const [localParts, setLocalParts] = React.useState<XmlPart[]>(() =>
     xmlParts ? JSON.parse(JSON.stringify(xmlParts)) : []
   );
@@ -132,9 +140,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       setErroSintaxeXml(null);
       setIsEditingJson(false);
       setIsEditingXmlName(false);
-      if (initialTab) setTab(initialTab);
     }
-  }, [isOpen, rawXml, xmlParts, xmlName, initialTab]);
+  }, [isOpen, rawXml, xmlParts, xmlName]);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -152,7 +159,16 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, tab, xmlCode, jsonCode, localParts, selectedPartIndex, editXmlName, xmlName, dados]);
 
-  if (!isOpen) return null;
+  const validacaoVariaveis = React.useMemo(() => {
+    try {
+      const xmlToValidate = localParts && localParts.length > 0 
+        ? concatenarXmlsParticionados(localParts) 
+        : debouncedXmlCode;
+      return verificarVariaveisXml(xmlToValidate);
+    } catch {
+      return { usadasNaoDeclaradas: [], declaradasNaoUsadas: [] };
+    }
+  }, [debouncedXmlCode, localParts]);
 
   const copiarConteudo = (texto: string) => {
     navigator.clipboard.writeText(texto).then(() => {
@@ -226,7 +242,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   };
 
   // Validação XML
-  const validarXml = (xmlStr: string): boolean => {
+  const validarXml = React.useCallback((xmlStr: string): boolean => {
     try {
       parseXmlDocument(xmlStr);
       setErroSintaxeXml(null);
@@ -243,7 +259,23 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       setErroSintaxeXml(err.message || 'Erro de sintaxe no XML');
       return false;
     }
-  };
+  }, [localParts]);
+
+  // Aplica o debounce na edição XML para otimizar a performance
+  // durante a digitação de documentos longos, evitando validação
+  // e extração de variáveis a cada tecla pressionada.
+  React.useEffect(() => {
+    if (!isOpen || tab !== 'xml-edit') return;
+    
+    const timer = setTimeout(() => {
+      setDebouncedXmlCode(xmlCode);
+      validarXml(xmlCode);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [xmlCode, isOpen, tab, validarXml]);
+
+  if (!isOpen) return null;
 
   // Alterna entre partes individuais no editor XML
   const handleSelectPart = (targetIdx: number) => {
@@ -440,7 +472,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               }`}
             >
               <Braces className="w-3.5 h-3.5 text-emerald-600" />
-              <span>JSON Dados</span>
+              <span>JSON (Dados)</span>
             </button>
 
             <button
@@ -453,7 +485,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               }`}
             >
               <Code className="w-3.5 h-3.5 text-purple-600" />
-              <span>Editar Modelo (XML)</span>
+              <span>XML (Modelo)</span>
             </button>
 
             <button
@@ -615,7 +647,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     ) : (
                       <>
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                        <span className="font-mono text-slate-300">payload_dados.json</span>
+                        <span className="font-mono text-slate-300">{xmlName.replace(/\.xml$/i, '')}_dados.json</span>
                         <span className="text-slate-500 text-[10px] hidden sm:inline">(Modo de leitura com cores ativas)</span>
                       </>
                     )}
@@ -700,6 +732,27 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 </div>
               )}
 
+              {(validacaoVariaveis.usadasNaoDeclaradas.length > 0 || validacaoVariaveis.declaradasNaoUsadas.length > 0) && (
+                <div className="px-3 py-2 bg-slate-900 border border-slate-800 rounded-md flex flex-col gap-1 shrink-0">
+                  {validacaoVariaveis.usadasNaoDeclaradas.length > 0 && (
+                    <div className="flex items-start gap-1.5 text-xs text-rose-400">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Variáveis usadas mas não declaradas:</strong> {validacaoVariaveis.usadasNaoDeclaradas.join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  {validacaoVariaveis.declaradasNaoUsadas.length > 0 && (
+                    <div className="flex items-start gap-1.5 text-xs text-amber-400">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Variáveis declaradas mas não usadas:</strong> {validacaoVariaveis.declaradasNaoUsadas.join(', ')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex-1 min-h-[360px] relative rounded-lg overflow-hidden border border-slate-800 bg-slate-950 flex flex-col shadow-inner">
                 <div className="px-3 py-2 bg-slate-900/90 border-b border-slate-800 text-[11px] text-purple-300 flex items-center justify-between shrink-0 flex-wrap gap-2">
                   <div className="flex flex-col justify-center">
@@ -728,6 +781,19 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setXmlCode(TEMPLATE_NOVO_DOCUMENTO);
+                        setEditXmlName('Novo Documento');
+                        setLocalParts([]);
+                      }}
+                      className="flex items-center gap-1 text-xs px-2.5 py-1 bg-emerald-600/20 text-emerald-400 border border-emerald-500/50 rounded hover:bg-emerald-600/30 transition mr-2"
+                      title="Criar novo modelo em branco"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Novo Modelo
+                    </button>
                     {localParts && localParts.length > 0 && (
                       <div className="flex items-center gap-1.5 mr-1">
                         <label htmlFor="modal-xml-part-select" className="text-xs text-purple-300 font-semibold flex items-center shrink-0" title="Selecionar Parte do Modelo">
@@ -775,7 +841,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     value={xmlCode}
                     onChange={code => {
                       setXmlCode(code);
-                      validarXml(code);
                     }}
                     language="xml"
                     onSave={handleApplyXml}

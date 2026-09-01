@@ -81,7 +81,6 @@ export function aplicarMascaraCampo(valor: any, tipo: string): string {
       return formatarCNPJ(valor);
     case 'cep':
       return formatarCEP(valor);
-    case 'tel':
     case 'telefone':
       return formatarTelefone(valor);
     default:
@@ -106,6 +105,10 @@ export function normalizarValorCampo(valor: any, tipo: string): any {
 
   if (nome === 'cep') {
     return String(valor).replace(/\D/g, '').substring(0, 8);
+  }
+
+  if (nome === 'telefone') {
+    return String(valor).replace(/\D/g, '').substring(0, 11);
   }
 
   if (nome === 'moeda') {
@@ -153,7 +156,6 @@ export function aplicarFiltroDocumento(valor: any, filtro: string): string {
       return formatarCNPJ(normalizarValorCampo(valor, 'cnpj'));
     case 'cep':
       return formatarCEP(normalizarValorCampo(valor, 'cep'));
-    case 'tel':
     case 'telefone':
       return formatarTelefone(valor);
     case 'email':

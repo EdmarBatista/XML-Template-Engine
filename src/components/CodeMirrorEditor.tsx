@@ -3,6 +3,8 @@ import CodeMirror from '@uiw/react-codemirror';
 import { xml } from '@codemirror/lang-xml';
 import { json } from '@codemirror/lang-json';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { autocompletion } from '@codemirror/autocomplete';
+import { xmlTemplateCompletions } from '../utils/xmlEditorCompletions';
 import {
   EditorView,
   MatchDecorator,
@@ -127,6 +129,13 @@ export const CodeMirrorEditor: React.FC<CodeMirrorEditorProps> = ({
 
     if (language === 'xml') {
       ext.push(variableHighlightPlugin);
+      ext.push(
+        autocompletion({
+          override: [xmlTemplateCompletions],
+          defaultKeymap: true,
+          icons: true,
+        })
+      );
     }
 
     if (onSave) {

@@ -128,6 +128,18 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         const partsFinal = novasXmlParts !== undefined ? novasXmlParts : xmlParts;
         const doc = parseXmlDocument(novoXml);
         const novoModelo = criarModeloIntermediario(doc, nomeFinal, partsFinal || undefined);
+        
+        // Constrói novo estado filtrando e mesclando com os novos dados recebidos
+        const novoEstado = construirEstadoInicial(novoModelo.formulario.campos);
+        if (novosDados) {
+          Object.keys(novosDados).forEach(k => {
+            if (k in novoEstado) {
+              novoEstado[k] = novosDados[k];
+            }
+          });
+        }
+        const jsonStrNovo = JSON.stringify(novoEstado, null, 2);
+
         setRawXml(novoXml);
         setXmlName(nomeFinal);
         setXmlParts(partsFinal || null);
@@ -142,13 +154,12 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
 
           if (!isDefault) {
             const idx = nextList.findIndex(t => t.id === currentTemplate.id);
-            const jsonStr = novosDados && Object.keys(novosDados).length > 0 ? JSON.stringify(novosDados, null, 2) : undefined;
             if (idx >= 0) {
               const updated: TemplateItem = {
                 ...nextList[idx],
                 nome: nomeFinal,
                 xml: novoXml,
-                json: jsonStr ?? nextList[idx].json,
+                json: jsonStrNovo ?? nextList[idx].json,
                 xmlParts: partsFinal && partsFinal.length > 0 ? partsFinal : undefined,
               };
               nextList[idx] = updated;
@@ -162,7 +173,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
                 descricao: 'Modelo personalizado',
                 categoria: 'Personalizados',
                 xml: novoXml,
-                json: jsonStr,
+                json: jsonStrNovo,
                 xmlParts: partsFinal && partsFinal.length > 0 ? partsFinal : undefined,
               };
               nextList.unshift(newTpl);
@@ -170,7 +181,6 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
               setCurrentTemplate(newTpl);
             }
           } else {
-            const jsonStr = novosDados && Object.keys(novosDados).length > 0 ? JSON.stringify(novosDados, null, 2) : currentTemplate.json;
             const newId = 'custom-' + Date.now();
             const newTpl: TemplateItem = {
               id: newId,
@@ -178,7 +188,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
               descricao: `Cópia personalizada de ${currentTemplate.nome}`,
               categoria: 'Personalizados',
               xml: novoXml,
-              json: jsonStr,
+              json: jsonStrNovo ?? currentTemplate.json,
               xmlParts: partsFinal && partsFinal.length > 0 ? partsFinal : undefined,
             };
             nextList.unshift(newTpl);
@@ -189,12 +199,6 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
           StorageService.saveCustomTemplates(nextList);
           StorageService.setLastTemplateId(targetId);
           return nextList;
-        });
-
-        // Constrói novo estado mesclando com os novos dados recebidos
-        const novoEstado = construirEstadoInicial(novoModelo.formulario.campos);
-        Object.keys(novosDados).forEach(k => {
-          novoEstado[k] = novosDados[k];
         });
 
         if (onNovoEstadoGerado) {
@@ -264,7 +268,9 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
           const dadosExtraidos = jsonPayload.dados ? jsonPayload.dados : jsonPayload;
           if (typeof dadosExtraidos === 'object' && dadosExtraidos !== null) {
             Object.keys(dadosExtraidos).forEach(k => {
-              novoEstado[k] = dadosExtraidos[k];
+              if (k in novoEstado) {
+                novoEstado[k] = dadosExtraidos[k];
+              }
             });
           }
         } else {

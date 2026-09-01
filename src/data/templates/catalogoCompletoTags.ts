@@ -7,23 +7,26 @@ export const catalogoCompletoTags: TemplateItem = {
   categoria: 'Referência e Testes',
   xml: `<documento>
     <formulario>
-        <grupo titulo="Campos de Entrada (Input e Tipos Especiais)">
-            <input id="campo_texto_simples" label="Input Padrão (Texto)" placeholder="Texto de demonstração" descricao="Tag input sem tipo ou tipo text padrão" exemplo="Texto de demonstração"/>
-            <number id="campo_cpf" label="Input CPF" tipo="cpf" placeholder="000.000.000-00" descricao="Tag input com máscara e validação de CPF" exemplo="123.456.789-00"/>
-            <number id="campo_cnpj" label="Input CNPJ" tipo="cnpj" placeholder="00.000.000/0000-00" descricao="Tag input com máscara e validação de CNPJ" exemplo="12.345.678/0001-90"/>
-            <number id="campo_cep" label="Input CEP" tipo="cep" placeholder="00000-000" descricao="Tag input com máscara de CEP e consulta integrada" exemplo="70040-010"/>
-            <input id="campo_email" label="Input E-mail" tipo="email" placeholder="usuario@dominio.com.br" descricao="Tag input de e-mail" exemplo="contato@empresa.com.br"/>
-            <input id="campo_tel" label="Input Telefone" tipo="tel" placeholder="(00) 00000-0000" descricao="Tag input com máscara telefônica" exemplo="(61) 98765-4321"/>
-            <number id="campo_moeda_input" label="Input Moeda Monetária" tipo="moeda" placeholder="0,00" descricao="Tag input monetária formatada em Real" exemplo="15000,00"/>
+        <grupo titulo="Campos de Texto (Curtos e Longos)">
+            <input id="campo_texto_simples" label="Texto Curto (Padrão)" placeholder="Texto de demonstração" descricao="Tag input sem tipo ou tipo texto padrão"/>
+            <input id="campo_email" label="E-mail" tipo="email" placeholder="usuario@dominio.com.br" descricao="Tag input de e-mail"/>
+            <textarea id="campo_textarea_pequeno" label="Área de Texto (3 Linhas)" rows="3" placeholder="Texto de demonstração para área de texto longo..." descricao="Tag textarea com altura compacta"/>
+            <textarea id="campo_textarea_grande" label="Área de Texto (6 Linhas)" rows="6" placeholder="Texto de demonstração para área de texto longo..." descricao="Tag textarea expandida"/>
         </grupo>
 
-        <grupo titulo="Campos Numéricos, Data e Texto Longo">
-            <number id="campo_numero_simples" label="Number Inteiro Padrão" min="1" max="100" step="1" descricao="Tag number com limites inteiros" exemplo="10"/>
-            <number id="campo_numero_decimal" label="Number Decimal com Passo" min="0" max="100" step="0.5" descricao="Tag number decimal com step fracionado" exemplo="15.5"/>
-            <number id="campo_valor_moeda" label="Number com Tipo Moeda" min="0" step="0.01" tipo="moeda" descricao="Tag number monetária com casas decimais" exemplo="2540.50"/>
-            <date id="campo_data_registro" label="Data de Registro" descricao="Tag date com calendário nativo" exemplo="2026-08-29"/>
-            <textarea id="campo_textarea_pequeno" label="Textarea com 3 Linhas" rows="3" placeholder="Texto de demonstração para área de texto" descricao="Tag textarea com altura compacta" exemplo="Texto de demonstração para área de texto longo com múltiplas linhas de conteúdo."/>
-            <textarea id="campo_textarea_grande" label="Textarea com 6 Linhas" rows="6" placeholder="Texto de demonstração para área de texto" descricao="Tag textarea expandida" exemplo="Texto de demonstração para área de texto longo com múltiplas linhas de conteúdo."/>
+        <grupo titulo="Campos Numéricos e Especiais (Com Máscara)">
+            <number id="campo_cpf" label="Número de CPF" tipo="cpf" placeholder="000.000.000-00" descricao="Tag number com máscara e validação de CPF"/>
+            <number id="campo_cnpj" label="Número de CNPJ" tipo="cnpj" placeholder="00.000.000/0000-00" descricao="Tag number com máscara e validação de CNPJ"/>
+            <number id="campo_cep" label="Número de CEP" tipo="cep" placeholder="00000-000" descricao="Tag number com máscara de CEP e consulta integrada"/>
+            <number id="campo_tel" label="Número de Telefone" tipo="telefone" placeholder="(00) 00000-0000" descricao="Tag number com máscara de telefone"/>
+            <number id="campo_moeda_input" label="Valor Monetário (String)" tipo="moeda" placeholder="0,00" descricao="Tag number monetária formatada em Real (dados em string)"/>
+            <number id="campo_valor_moeda" label="Valor Monetário (Número)" min="0" step="0.01" tipo="moeda" placeholder="2540,50" descricao="Tag number monetária com casas decimais (dados em number)"/>
+        </grupo>
+
+        <grupo titulo="Campos Numéricos Padrão e Data">
+            <number id="campo_numero_simples" label="Número Inteiro" min="1" max="100" step="1" placeholder="10" descricao="Tag number com limites inteiros"/>
+            <number id="campo_numero_decimal" label="Número Decimal" min="0" max="100" step="0.5" placeholder="15.5" descricao="Tag number decimal com step fracionado"/>
+            <date id="campo_data_registro" label="Data de Registro" descricao="Tag date com calendário nativo"/>
         </grupo>
 
         <grupo titulo="Campos de Opções (Checkbox, Select e Radio)">
@@ -354,8 +357,8 @@ export const catalogoCompletoTags: TemplateItem = {
         <!-- 12. INVOCAÇÃO DE VARIÁVEIS E FILTROS DE FORMATAÇÃO               -->
         <!-- ================================================================= -->
         <secao titulo="INVOCAÇÃO DE VARIÁVEIS E FILTROS DE FORMATAÇÃO" numerar="true">
-            <!-- Catálogo completo de filtros via {{campo | filtro}} -->
-            <p><b>1. Catálogo completo de filtros via sintaxe {{campo | filtro}}:</b></p>
+            <!-- Catálogo completo de filtros via {campo | filtro} -->
+            <p><b>1. Catálogo completo de filtros via sintaxe {campo | filtro}:</b></p>
             <p>Valor de texto simples: {{campo_texto_simples}}</p>
             <p>Campo input monetário formatado (campo_moeda_input): R$ {{campo_moeda_input | moeda}} (<i>{{campo_moeda_input | moedaPorExtenso}}</i>)</p>
             <p>Campo número monetário formatado (campo_valor_moeda): R$ {{campo_valor_moeda | moeda}} (<i>{{campo_valor_moeda | moedaPorExtenso}}</i>)</p>

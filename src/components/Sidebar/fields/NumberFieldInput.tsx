@@ -17,7 +17,7 @@ export const NumberFieldInput: React.FC<NumberFieldInputProps> = ({
   onChange,
 }) => {
   const mascara = (campo.tipoInput || '').toLowerCase();
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(mascara);
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(mascara);
   const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara) : valor;
 
   return (
@@ -31,7 +31,7 @@ export const NumberFieldInput: React.FC<NumberFieldInputProps> = ({
         max={isMasked ? undefined : campo.max}
         step={isMasked ? undefined : campo.step}
         value={valorExibido}
-        placeholder={campo.placeholder || campo.exemplo ? `Ex: ${campo.exemplo}` : ''}
+        placeholder={campo.placeholder || ''}
         onKeyDown={e => {
           if (!isMasked && ['e', 'E', '+'].includes(e.key)) {
             e.preventDefault();

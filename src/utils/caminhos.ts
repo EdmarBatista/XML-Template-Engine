@@ -3,7 +3,7 @@
 const TIPOS_COLUNA_GENERICOS = new Set(['', 'input', 'texto']);
 
 
-const TIPOS_COLUNA_MASCARA = new Set(['moeda', 'cpf', 'cnpj', 'cep', 'email', 'tel']);
+const TIPOS_COLUNA_MASCARA = new Set(['moeda', 'cpf', 'cnpj', 'cep', 'email', 'telefone']);
 
 /**
  * Retorna o tipo efetivo de uma coluna de tabela, considerando tanto o atributo
@@ -11,21 +11,9 @@ const TIPOS_COLUNA_MASCARA = new Set(['moeda', 'cpf', 'cnpj', 'cep', 'email', 't
  * é tratada como moeda (formatada/justada na edição e na exportação).
  */
 
-export function obterTipoEfetivoColuna(tipo?: string, validar?: string): string {
+export function obterTipoEfetivoColuna(tipo?: string): string {
   const rawTipo = String(tipo || '').toLowerCase().trim();
-  const rawValidar = String(validar || '').toLowerCase().trim();
-
-  // Se o tipo explícito já for um tipo concreto (number, moeda, date, select, ...),
-  // usa-o diretamente.
-  if (!TIPOS_COLUNA_GENERICOS.has(rawTipo)) {
-    return rawTipo;
-  }
-
-  // Caso contrário, se houver um validar conhecido, usa-o como tipo efetivo.
-  if (rawValidar && TIPOS_COLUNA_MASCARA.has(rawValidar)) {
-    return rawValidar;
-  }
-
+  if (rawTipo === 'texto') return 'input';
   return rawTipo || 'input';
 }
 

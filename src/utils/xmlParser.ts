@@ -1,4 +1,4 @@
-import { AstNode, FieldMetadata, FieldOption, FormGroup, FormItem, FormStructure, IntermediateModel, TableColumnMetadata, XmlPart } from '../types';
+import { AstNode, ColumnType, FieldMetadata, FieldOption, FormGroup, FormItem, FormStructure, IntermediateModel, TableColumnMetadata, XmlPart } from '../types';
 
 export function sanitizarXmlParaParser(xmlString: string): string {
   // Converte temporariamente caracteres como < e > dentro de expr="..." para &lt; e &gt;
@@ -54,10 +54,8 @@ export function extrairCampos(formularioNode: Element): FormStructure {
 
     const label = campoEl.getAttribute('label') || id;
     const descricao = campoEl.getAttribute('descricao') || '';
-    const tipoInput = campoEl.getAttribute('tipo') || 'text';
-    const validar = campoEl.getAttribute('validar') || '';
+    const tipoInput = (campoEl.getAttribute('tipo') || (tag === 'number' ? 'number' : 'texto')).toLowerCase().trim();
     const placeholder = campoEl.getAttribute('placeholder') || '';
-    const exemplo = campoEl.getAttribute('exemplo') || '';
 
     const campo: FieldMetadata = {
       id,
@@ -66,7 +64,6 @@ export function extrairCampos(formularioNode: Element): FormStructure {
       tipoInput,
       descricao,
       placeholder,
-      exemplo,
     };
 
     if (tag === 'tabela') {
@@ -95,7 +92,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
             colTipo = 'textarea';
           } else if (rawTipo === 'checkbox') {
             colTipo = 'checkbox';
-          } else if (['cpf', 'cnpj', 'cep', 'email', 'tel'].includes(rawTipo)) {
+          } else if (['cpf', 'cnpj', 'cep', 'email', 'telefone'].includes(rawTipo)) {
             colTipo = rawTipo;
           } else if (rawTipo === 'texto') {
             colTipo = 'input';
@@ -107,7 +104,6 @@ export function extrairCampos(formularioNode: Element): FormStructure {
           const colMin = colEl.getAttribute('min') || undefined;
           const colMax = colEl.getAttribute('max') || undefined;
           const colStep = colEl.getAttribute('step') || undefined;
-          const colValidar = colEl.getAttribute('validar') || undefined;
 
           const opcoes: string[] = [];
           const opcoesAttr = colEl.getAttribute('opcoes');
@@ -130,8 +126,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
           colunas.push({
             id: colId,
             label: colLabel,
-            tipo: colTipo,
-            validar: colValidar,
+            tipo: colTipo as ColumnType,
             placeholder: colPlaceholder,
             min: colMin,
             max: colMax,
@@ -237,34 +232,64 @@ export function extrairCampos(formularioNode: Element): FormStructure {
     return null;
   };
 
-  formularioNode.querySelectorAll(':scope > grupo').forEach(grupoEl => {
-    const titulo = grupoEl.getAttribute('titulo') || 'Grupo';
-    const ids: string[] = [];
-    const itens: FormItem[] = [];
+  const orfaosIds: string[] = [];
+  const orfaosItens: FormItem[] = [];
 
-    Array.from(grupoEl.children).forEach(el => {
+  Array.from(formularioNode.children).forEach(el => {
+    const tag = el.tagName.toLowerCase();
+    
+    if (tag === 'grupo') {
+      const titulo = el.getAttribute('titulo') || 'Grupo';
+      const ids: string[] = [];
+      const itens: FormItem[] = [];
+
+      Array.from(el.children).forEach(childEl => {
+        const item = processarItemFormulario(childEl);
+        if (!item) return;
+
+        const registrarIds = (it: FormItem | null) => {
+          if (!it) return;
+          if (it.tipo === 'campo') {
+            if (!ids.includes(it.id)) ids.push(it.id);
+          } else if (it.tipo === 'if') {
+            it.itens.forEach(registrarIds);
+          }
+        };
+
+        registrarIds(item);
+        itens.push(item);
+      });
+
+      grupos.push({
+        titulo,
+        campos: ids,
+        itens,
+      });
+    } else {
+      // Processa itens fora de grupos
       const item = processarItemFormulario(el);
-      if (!item) return;
-
-      const registrarIds = (it: FormItem | null) => {
-        if (!it) return;
-        if (it.tipo === 'campo') {
-          if (!ids.includes(it.id)) ids.push(it.id);
-        } else if (it.tipo === 'if') {
-          it.itens.forEach(registrarIds);
-        }
-      };
-
-      registrarIds(item);
-      itens.push(item);
-    });
-
-    grupos.push({
-      titulo,
-      campos: ids,
-      itens,
-    });
+      if (item) {
+        const registrarIds = (it: FormItem | null) => {
+          if (!it) return;
+          if (it.tipo === 'campo') {
+            if (!orfaosIds.includes(it.id)) orfaosIds.push(it.id);
+          } else if (it.tipo === 'if') {
+            it.itens.forEach(registrarIds);
+          }
+        };
+        registrarIds(item);
+        orfaosItens.push(item);
+      }
+    }
   });
+
+  if (orfaosItens.length > 0) {
+    grupos.unshift({
+      titulo: 'Geral',
+      campos: orfaosIds,
+      itens: orfaosItens,
+    });
+  }
 
   return { grupos, campos };
 }

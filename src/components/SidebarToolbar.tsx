@@ -8,6 +8,7 @@ interface SidebarToolbarProps {
   customTemplates: TemplateItem[];
   onRemoveCustomTemplate: (id: string) => void;
   onSelectTemplate: (t: TemplateItem) => void;
+  onNewTemplate?: () => void;
   onLoadJson?: (jsonStr: string) => void;
   onUploadXml: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onUploadJson: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -17,7 +18,6 @@ interface SidebarToolbarProps {
   onExportWord: () => void;
   onExportPdf: () => void;
   onPrint: () => void;
-  onOpenXmlEditor?: () => void;
   onOpenModelModal: () => void;
   onClearForm: () => void;
   variaveisVermelhasWord: boolean;
@@ -46,8 +46,8 @@ interface SidebarToolbarProps {
 }
 
 export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
-  currentXmlName, customTemplates, onRemoveCustomTemplate, onSelectTemplate, onLoadJson, onUploadXml, onUploadJson, onUploadZip, onSaveJson, onSaveZip,
-  onExportWord, onExportPdf, onPrint, onOpenXmlEditor, onOpenModelModal, onClearForm,
+  currentXmlName, customTemplates, onRemoveCustomTemplate, onSelectTemplate, onNewTemplate, onLoadJson, onUploadXml, onUploadJson, onUploadZip, onSaveJson, onSaveZip,
+  onExportWord, onExportPdf, onPrint, onOpenModelModal, onClearForm,
   variaveisVermelhasWord, onToggleVariaveisVermelhas, numeracaoAtiva, onToggleNumeracao,
   edicaoInline, onToggleEdicaoInline, irParaCampoAtivo, onToggleIrParaCampo,
   irParaDocumentoAtivo, onToggleIrParaDocumento, modoA4, onToggleModoA4, darkMode, onToggleDarkMode, onCopiarTexto, copiado, zoom, onZoomIn, onZoomOut, onResetZoom, onToggleSidebar, onDoubleToggleSidebar, collapsed
@@ -177,12 +177,6 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
          A4
       </button>
 
-      {onOpenXmlEditor && (
-        <button type="button" onClick={onOpenXmlEditor} className="btn-toolbar" title="Editar Modelo (XML & JSON)">
-          <Code className="w-4 h-4 text-purple-400" />
-        </button>
-      )}
-
       <button type="button" onClick={onOpenModelModal} className="btn-toolbar" title="Painel de Variáveis">
         <Sliders className="w-4 h-4 text-cyan-400" />
       </button>
@@ -248,6 +242,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
             customTemplates={customTemplates}
             onSelectTemplate={onSelectTemplate}
             onRemoveCustomTemplate={onRemoveCustomTemplate}
+            
             onLoadJson={onLoadJson}
           />
 

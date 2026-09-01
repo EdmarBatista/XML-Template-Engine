@@ -1,9 +1,5 @@
 import React from 'react';
 import { FieldMetadata } from '../../../types';
-import {
-  aplicarMascaraCampo,
-  normalizarValorCampo,
-} from '../../../utils/documentUtils';
 
 interface TextFieldInputProps {
   campo: FieldMetadata;
@@ -18,28 +14,14 @@ export const TextFieldInput: React.FC<TextFieldInputProps> = ({
   onChange,
   statusValidacao,
 }) => {
-  const mascara = (campo.tipoInput || '').toLowerCase();
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(mascara);
-  const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara) : valor;
-
   return (
     <div>
       <input
         id={campo.id}
-        type={isMasked ? 'text' : campo.tipoInput || 'text'}
-        inputMode={isMasked ? 'numeric' : undefined}
-        value={valorExibido}
-        placeholder={campo.placeholder || campo.exemplo ? `Ex: ${campo.exemplo}` : ''}
-        onChange={e => {
-          const raw = e.target.value;
-          if (isMasked) {
-            const formatado = aplicarMascaraCampo(raw, mascara);
-            const valBruto = normalizarValorCampo(formatado, mascara);
-            onChange(campo.id, valBruto);
-          } else {
-            onChange(campo.id, raw);
-          }
-        }}
+        type={campo.tipoInput === 'email' ? 'email' : 'text'}
+        value={valor ?? ''}
+        placeholder={campo.placeholder || ''}
+        onChange={e => onChange(campo.id, e.target.value)}
         className={`w-full text-xs text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border rounded-md px-2.5 py-1.5 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
           !statusValidacao.valido ? 'border-red-400 bg-red-50/30' : 'border-slate-300 dark:border-slate-600'
         }`}

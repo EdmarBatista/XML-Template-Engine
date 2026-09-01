@@ -141,7 +141,7 @@ export const termoReferencia: TemplateItem =
                 <coluna id="item" label="Item" tipo="input" placeholder="Ex: Manutenção de Quadros"/>
                 <coluna id="unidade" label="Unidade" tipo="input" placeholder="Ex: Mês, UN, Horas"/>
                 <coluna id="quantidade" label="Qtd" tipo="number" min="1"/>
-                <coluna id="valor_unitario" label="Valor Unitário" tipo="input" validar="moeda" placeholder="Ex: 2.500,00"/>
+                <coluna id="valor_unitario" label="Valor Unitário" tipo="moeda" placeholder="0,00"/>
             </tabela>
             <input id="itens_csv" label="Itens separados por vírgula" tipo="lista_csv" descricao="Lista utilizada pelo foreach. Exemplo: Elétrica, Hidráulica, Pintura"/>
             <number id="quantidade_total" label="Quantidade total de itens" min="1" step="1" descricao="Quantidade total de itens"/>

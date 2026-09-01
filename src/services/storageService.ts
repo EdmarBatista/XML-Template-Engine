@@ -19,6 +19,7 @@ export interface UserPreferences {
   modoA4: boolean;
   zoomA4: number;
   zoomFluido: number;
+  activeModelModalTab: string;
 }
 
 export const DEFAULT_USER_PREFERENCES: UserPreferences = {
@@ -34,6 +35,7 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   modoA4: true,
   zoomA4: 100,
   zoomFluido: 100,
+  activeModelModalTab: 'vars-edit',
 };
 
 // Chaves de armazenamento LocalStorage

@@ -47,7 +47,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
   const clickTimerRef = React.useRef<any>(null);
 
   const tipoMascara = (campo?.tipoInput || filtro || '').toLowerCase();
-  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep'].includes(tipoMascara);
+  const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(tipoMascara);
 
   React.useEffect(() => {
     if (!editando) {
@@ -299,7 +299,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
       );
     }
 
-    const isNumberField = campo?.tipo === 'number' || filtro === 'numero' || filtro === 'inteiro';
+    const isNumberField = campo?.tipo === 'number' || filtro === 'number';
 
     return (
       <span

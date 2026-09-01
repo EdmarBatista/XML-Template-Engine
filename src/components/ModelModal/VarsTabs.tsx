@@ -36,7 +36,7 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
           const campo = campos[id];
           const valor = dados[id];
           const mascara = (campo?.tipoInput || '').toLowerCase();
-          const isMasked = ['moeda', 'cnpj', 'cep'].includes(mascara);
+          const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(mascara);
           const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara) : valor ?? '';
 
           return (
@@ -142,9 +142,9 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
                                 <tr key={rIdx} className="hover:bg-slate-50/70 dark:hover:bg-slate-700/40">
                                   {(campo.colunas || []).map(col => {
                                     const val = rowObj[col.id] ?? '';
-                                    const colTipo = obterTipoEfetivoColuna(col.tipo, col.validar);
-                                    const isNumber = ['number', 'inteiro', 'numero', 'decimal'].includes(colTipo);
-                                    const isMaskedCol = ['moeda', 'cpf', 'cnpj', 'cep'].includes(colTipo);
+                                    const colTipo = obterTipoEfetivoColuna(col.tipo);
+                                    const isNumber = colTipo === 'number';
+                                    const isMaskedCol = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipo);
                                     const valorColuna = isMaskedCol ? aplicarMascaraCampo(val, colTipo) : val;
                                     return (
                                       <td key={col.id} className="px-2 py-1">

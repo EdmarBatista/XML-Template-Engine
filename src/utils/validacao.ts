@@ -74,25 +74,39 @@ export function validarCEP(valor: any): boolean {
  * Extraído de Sidebar.tsx (sugestão B de modularização).
  */
 export function validarCampo(
-  campo: { validar?: string; tipoInput?: string },
+  campo: { tipo?: string; tipoInput?: string },
   valor: any
 ): { valido: boolean; msg?: string } {
   const v = String(valor ?? '').trim();
   if (!v) {
     return { valido: true };
   }
-  const valType = (campo.validar || campo.tipoInput || '').toLowerCase();
-  if (valType === 'email' && !validarEmail(v)) {
-    return { valido: false, msg: 'E-mail em formato inválido' };
+  const tipoCampo = (campo.tipo || '').toLowerCase();
+  const tipoInput = (campo.tipoInput || '').toLowerCase();
+
+  // Para <input>, valida apenas formato de e-mail
+  if (tipoCampo === 'input') {
+    if (tipoInput === 'email' && !validarEmail(v)) {
+      return { valido: false, msg: 'E-mail em formato inválido' };
+    }
+    return { valido: true };
   }
-  if (valType === 'cpf' && !validarCPF(v)) {
+
+  // Para <number>, valida CPF, CNPJ, CEP
+  if (tipoInput === 'cpf' && !validarCPF(v)) {
     return { valido: false, msg: 'CPF inválido (verifique os dígitos verificadores)' };
   }
-  if (valType === 'cnpj' && !validarCNPJ(v)) {
+  if (tipoInput === 'cnpj' && !validarCNPJ(v)) {
     return { valido: false, msg: 'CNPJ inválido (verifique os dígitos verificadores)' };
   }
-  if (valType === 'cep' && !validarCEP(v)) {
+  if (tipoInput === 'cep' && !validarCEP(v)) {
     return { valido: false, msg: 'CEP deve conter 8 dígitos' };
+  }
+  if (tipoInput === 'telefone' && v) {
+    const digitos = normalizarDigitos(v);
+    if (digitos.length < 10 || digitos.length > 11) {
+      return { valido: false, msg: 'Telefone deve conter 10 ou 11 dígitos' };
+    }
   }
   return { valido: true };
 }

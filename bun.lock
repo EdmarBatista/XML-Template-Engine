@@ -5,6 +5,7 @@
     "": {
       "name": "xml-template-engine",
       "dependencies": {
+        "@codemirror/autocomplete": "^6.20.3",
         "@codemirror/lang-json": "^6.0.2",
         "@codemirror/lang-xml": "^6.1.0",
         "@codemirror/state": "^6.7.1",

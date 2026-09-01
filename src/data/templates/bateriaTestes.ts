@@ -9,34 +9,34 @@ export const bateriaTestes: TemplateItem =
     xml: `<documento>
     <formulario>
         <grupo titulo="1. Campos de texto">
-            <input id="texto" label="Texto [tipo=&quot;texto&quot;]" tipo="texto" descricao="Campo de texto simples" exemplo="Contratação de Tecnologia"/>
-            <textarea id="texto_multilinha" label="Texto multilinha [tipo=&quot;texto_multilinha&quot;]" descricao="Campo de texto com várias linhas"/>
-            <input id="email" label="E-mail [tipo=&quot;email&quot;]" tipo="email" descricao="Campo de e-mail" exemplo="contato@empresa.com.br"/>
+            <input id="texto" label="Texto [tipo=&quot;texto&quot;]" tipo="texto" placeholder="Contratação de Tecnologia" descricao="Campo de texto simples"/>
+            <textarea id="texto_multilinha" label="Texto multilinha" placeholder="Digite o texto detalhado aqui..." descricao="Campo de texto com várias linhas"/>
+            <input id="email" label="E-mail [tipo=&quot;email&quot;]" tipo="email" placeholder="contato@empresa.com.br" descricao="Campo de e-mail"/>
         </grupo>
 
         <grupo titulo="2. Data e documentos">
-            <date id="data" label="Data [tipo=&quot;data&quot;]" descricao="Campo de data"/>
-            <number id="cnpj" label="CNPJ [tipo=&quot;cnpj&quot;]" tipo="cnpj" descricao="Campo com máscara de CNPJ" exemplo="12345678000199"/>
-            <number id="cep" label="CEP [tipo=&quot;cep&quot;]" tipo="cep" descricao="Campo com máscara de CEP" exemplo="30123456"/>
+            <date id="data" label="Data" descricao="Campo de data"/>
+            <number id="cnpj" label="CNPJ [tipo=&quot;cnpj&quot;]" tipo="cnpj" placeholder="00.000.000/0000-00" descricao="Campo com máscara de CNPJ"/>
+            <number id="cep" label="CEP [tipo=&quot;cep&quot;]" tipo="cep" placeholder="00000-000" descricao="Campo com máscara de CEP"/>
         </grupo>
 
         <grupo titulo="3. Números">
-            <number id="numero" label="Número [sem tipo]" min="0" step="1" descricao="Número sem tipo especial"/>
-            <number id="inteiro" label="Número inteiro" min="0" step="1" descricao="Número inteiro"/>
-            <number id="moeda" label="Valor [tipo=&quot;moeda&quot;]" min="0" step="0.01" tipo="moeda" descricao="Campo monetário"/>
+            <number id="numero" label="Número [sem tipo]" min="0" step="1" placeholder="0" descricao="Número sem tipo especial"/>
+            <number id="inteiro" label="Número inteiro" min="0" step="1" placeholder="0" descricao="Número inteiro"/>
+            <number id="moeda" label="Valor [tipo=&quot;moeda&quot;]" min="0" step="0.01" tipo="moeda" placeholder="0,00" descricao="Campo monetário"/>
         </grupo>
 
         <grupo titulo="4. Seleções">
-            <select id="selecao" label="Seleção [tipo=&quot;selecao&quot;]" descricao="Campo select">
+            <select id="selecao" label="Seleção" descricao="Campo select">
                 <option>Opção A</option>
                 <option>Opção B</option>
                 <option>Opção C</option>
             </select>
-            <radio id="radio" label="Radio [tipo=&quot;radio&quot;]" descricao="Campo radio">
+            <radio id="radio" label="Radio" descricao="Campo radio">
                 <option>Sim</option>
                 <option>Não</option>
             </radio>
-            <checkbox id="checkbox" label="Checkbox [sem tipo]" descricao="Campo checkbox"/>
+            <checkbox id="checkbox" label="Checkbox" descricao="Campo checkbox"/>
 
             <radio id="divisao_objeto" label="Nota Explicativa sobre o Objeto">
                 <option valor="varios">Vários itens</option>
@@ -52,9 +52,9 @@ export const bateriaTestes: TemplateItem =
                 <coluna id="codigo" label="Código" tipo="input" placeholder="Ex: COD-01"/>
                 <coluna id="descricao" label="Descrição" tipo="input" placeholder="Ex: Servidor Cloud"/>
                 <coluna id="quantidade" label="Qtd" tipo="number" min="1"/>
-                <coluna id="valor_unitario" label="Valor Unitário" tipo="input" validar="moeda" placeholder="Ex: 3.500,00"/>
+                <coluna id="valor_unitario" label="Valor Unitário" tipo="moeda" placeholder="0,00"/>
             </tabela>
-            <input id="lista" label="Lista [tipo=&quot;lista_csv&quot;]" tipo="lista_csv" descricao="Lista usada pelo foreach" exemplo="Servidores Cloud, Banco de Dados, Segurança de Rede, Backup Diário"/>
+            <input id="lista" label="Lista [tipo=&quot;lista_csv&quot;]" tipo="lista_csv" placeholder="Servidores Cloud, Banco de Dados, Segurança de Rede, Backup Diário" descricao="Lista usada pelo foreach"/>
         </grupo>
     </formulario>
 
