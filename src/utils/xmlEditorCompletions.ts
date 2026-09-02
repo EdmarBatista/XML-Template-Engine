@@ -141,7 +141,7 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
     });
   }
 
-  // 3. Extrai referências em tags de loop (<foreach lista="..."> ou <tabela de="...">)
+  // 3. Extrai referências em tags de loop (<foreach lista="...">)
   const regexLoopLista = /<(?:foreach|tabela)\b[^>]*?\b(?:lista|de)\s*=\s*["']([^"']+)["']/gi;
   let listaMatch: RegExpExecArray | null;
   while ((listaMatch = regexLoopLista.exec(xmlString)) !== null) {
@@ -397,7 +397,14 @@ const TAGS_XML_COMPLETION: Completion[] = [
     type: 'class',
     detail: 'Tabela no Documento',
     info: 'Tabela formatada no corpo do documento gerado',
-    apply: snippet('<tabela de="${1:tabela_itens}">\n\t<cabecalho>\n\t\t<celula>Descrição</celula>\n\t\t<celula>Qtd</celula>\n\t\t<celula>Valor Unit.</celula>\n\t</cabecalho>\n\t<linhas var="linha">\n\t\t<celula>{{linha.${2:descricao}}}</celula>\n\t\t<celula>{{linha.${3:quantidade}}}</celula>\n\t\t<celula>R$ {{linha.${4:valor_unitario} | moeda}}</celula>\n\t</linhas>\n</tabela>'),
+    apply: snippet('<tabela>\n\t<cabecalho>\n\t\t<celula>Descrição</celula>\n\t\t<celula>Qtd</celula>\n\t\t<celula>Valor Unit.</celula>\n\t</cabecalho>\n\t<foreach lista="${1:tabela_itens}" var="${2:item}">\n\t\t<linha>\n\t\t\t<celula>{{${2}.${3:descricao}}}</celula>\n\t\t\t<celula>{{${2}.${4:quantidade}}}</celula>\n\t\t\t<celula>R$ {{${2}.${5:valor_unitario} | moeda}}</celula>\n\t\t</linha>\n\t</foreach>\n</tabela>'),
+  },
+  {
+    label: 'lista_numerada',
+    type: 'class',
+    detail: 'Lista Numerada',
+    info: 'Lista ordenada numericamente (1., 2., 3...)',
+    apply: snippet('<lista_numerada>\n\t<item>${1:Texto do item 1}</item>\n\t<item>${2:Texto do item 2}</item>\n</lista_numerada>'),
   },
   {
     label: 'lista',

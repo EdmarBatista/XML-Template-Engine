@@ -37,14 +37,24 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
 
       if (savedId) {
         const foundCustom = customList.find(t => t.id === savedId);
-        if (foundCustom) return foundCustom;
+        if (foundCustom) {
+          try {
+            parseXmlDocument(foundCustom.xml);
+            return foundCustom;
+          } catch {}
+        }
 
         const foundDefault = DEFAULT_TEMPLATES.find(t => t.id === savedId);
         if (foundDefault) return foundDefault;
       }
 
       if (customList.length > 0) {
-        return customList[0];
+        for (const t of customList) {
+          try {
+            parseXmlDocument(t.xml);
+            return t;
+          } catch {}
+        }
       }
     } catch {}
     return DEFAULT_TEMPLATES[0];
@@ -61,8 +71,13 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
       const doc = parseXmlDocument(currentTemplate.xml);
       return criarModeloIntermediario(doc, currentTemplate.nome, currentTemplate.xmlParts);
     } catch (e: any) {
-      console.error(e);
-      return null;
+      console.warn('Erro ao compilar template inicial, revertendo para template padrão:', e);
+      try {
+        const fallbackDoc = parseXmlDocument(DEFAULT_TEMPLATES[0].xml);
+        return criarModeloIntermediario(fallbackDoc, DEFAULT_TEMPLATES[0].nome);
+      } catch {
+        return null;
+      }
     }
   });
 
@@ -139,6 +154,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
           });
         }
         const jsonStrNovo = JSON.stringify(novoEstado, null, 2);
+        StorageService.saveJsonHistory(nomeFinal, jsonStrNovo);
 
         setRawXml(novoXml);
         setXmlName(nomeFinal);
@@ -218,7 +234,10 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
   const carregarXmlEJson = React.useCallback(
     (novoXml: string, nomeArquivoXml: string, jsonPayload?: any, partesCarregadas?: XmlPart[]) => {
       try {
-        let nomeLimpo = nomeArquivoXml.trim() || 'Modelo Personalizado.xml';
+        let nomeLimpo = (nomeArquivoXml || '').trim() || 'Modelo Personalizado.xml';
+        if (nomeLimpo.includes('<') || nomeLimpo.includes('\n') || nomeLimpo.length > 80) {
+          nomeLimpo = 'Modelo Personalizado.xml';
+        }
         if (!nomeLimpo.toLowerCase().endsWith('.xml')) {
           nomeLimpo += '.xml';
         }
@@ -226,7 +245,18 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         const doc = parseXmlDocument(novoXml);
         const novoModelo = criarModeloIntermediario(doc, nomeLimpo, partesCarregadas);
 
-        const jsonPayloadStr = jsonPayload ? JSON.stringify(jsonPayload.dados ? jsonPayload.dados : jsonPayload, null, 2) : undefined;
+        let jsonPayloadStr = jsonPayload ? JSON.stringify(jsonPayload.dados ? jsonPayload.dados : jsonPayload, null, 2) : undefined;
+        
+        if (jsonPayloadStr) {
+          StorageService.saveJsonHistory(nomeLimpo, jsonPayloadStr);
+        } else {
+          // If no json provided, try to load from history
+          const historico = StorageService.loadJsonHistory(nomeLimpo);
+          if (historico) {
+            jsonPayloadStr = historico;
+          }
+        }
+
         let targetTemplate: TemplateItem = {
           id: 'custom-' + Date.now(),
           nome: nomeLimpo,
@@ -337,23 +367,41 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
     }
   }, []);
 
-  // Remover Template Customizado
+  // Remover Template Customizado e/ou Dados
   const handleRemoveCustomTemplate = React.useCallback(
-    (id: string) => {
+    (t: TemplateItem, removeXml: boolean, removeJson: boolean) => {
+      if (removeJson) {
+        StorageService.removeJsonHistory(t.nome);
+      }
+
       setCustomTemplates(prev => {
-        const next = prev.filter(t => t.id !== id);
+        let next = [...prev];
+        
+        if (removeXml) {
+          next = next.filter(item => item.id !== t.id);
+        } else if (removeJson) {
+          // Mantém o XML mas limpa o JSON atrelado
+          const idx = next.findIndex(item => item.id === t.id);
+          if (idx >= 0) {
+            next[idx] = { ...next[idx], json: undefined };
+          }
+        }
+        
         StorageService.saveCustomTemplates(next);
 
-        if (currentTemplate.id === id) {
+        if (removeXml && currentTemplate.id === t.id) {
           if (next.length > 0) {
             handleSelectTemplate(next[0]);
           } else {
             handleSelectTemplate(DEFAULT_TEMPLATES[0]);
           }
+        } else if (!removeXml && removeJson && currentTemplate.id === t.id) {
+          setCurrentTemplate(prevTpl => ({ ...prevTpl, json: undefined }));
         }
+        
         return next;
       });
-      showToast('Template removido com sucesso.');
+      showToast('Ação concluída com sucesso.');
     },
     [currentTemplate.id, handleSelectTemplate, showToast]
   );

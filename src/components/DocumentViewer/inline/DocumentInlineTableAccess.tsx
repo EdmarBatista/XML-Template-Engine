@@ -137,7 +137,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
     if (isCheckbox) {
       valFinal = Boolean(raw);
     } else if (isMasked) {
-      valFinal = normalizarValorCampo(raw, maskName);
+      valFinal = normalizarValorCampo(raw, maskName as any);
     } else if (isNumberField && !ehColunaInteira) {
       valFinal = raw === '' || raw === null ? '' : Number(String(raw).replace(/[^\d.-]/g, ''));
     }
@@ -252,7 +252,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
         initialVal = Boolean(valorBruto);
       } else {
         initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
-        if (isMasked) initialVal = aplicarMascaraCampo(initialVal, maskName);
+        if (isMasked) initialVal = aplicarMascaraCampo(initialVal, maskName as any);
       }
     }
     setValorTemp(initialVal);
@@ -452,7 +452,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
           }}
           onChange={e => {
             if (isMasked) {
-              setValorTemp(aplicarMascaraCampo(e.target.value, maskName));
+              setValorTemp(aplicarMascaraCampo(e.target.value, maskName as any));
             } else {
               setValorTemp(e.target.value);
             }

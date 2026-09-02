@@ -1,6 +1,6 @@
 /**
  * Serviço de consultas externas (CNPJ/CEP) com cache simples, timeout e debounce.
- * Extraído de Sidebar.tsx (sugestão B de modularização — padrão da versão antiga js/core/api.js).
+ .
  */
 
 const cache = new Map<string, { expira: number; data: any }>();

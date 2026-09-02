@@ -37,7 +37,7 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
           const valor = dados[id];
           const mascara = (campo?.tipoInput || '').toLowerCase();
           const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(mascara);
-          const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara) : valor ?? '';
+          const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara as any) : valor ?? '';
 
           return (
             <div
@@ -145,7 +145,7 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
                                     const colTipo = obterTipoEfetivoColuna(col.tipo);
                                     const isNumber = colTipo === 'number';
                                     const isMaskedCol = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipo);
-                                    const valorColuna = isMaskedCol ? aplicarMascaraCampo(val, colTipo) : val;
+                                    const valorColuna = isMaskedCol ? aplicarMascaraCampo(val, colTipo as any) : val;
                                     return (
                                       <td key={col.id} className="px-2 py-1">
                                         <input
@@ -159,8 +159,8 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
                                             if (isNumber) {
                                               valFinal = valFinal === '' ? '' : Number(String(valFinal).replace(/[^\d.-]/g, ''));
                                             } else if (isMaskedCol) {
-                                              const fmt = aplicarMascaraCampo(valFinal, colTipo);
-                                              valFinal = normalizarValorCampo(fmt, colTipo);
+                                              const fmt = aplicarMascaraCampo(valFinal, colTipo as any);
+                                              valFinal = normalizarValorCampo(fmt, colTipo as any);
                                             }
                                             linhaAtual[col.id] = valFinal;
                                             linhasAtuais[rIdx] = linhaAtual;
@@ -223,8 +223,8 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
                     onChange={e => {
                       const raw = e.target.value;
                       if (isMasked) {
-                        const f = aplicarMascaraCampo(raw, mascara);
-                        const b = normalizarValorCampo(f, mascara);
+                        const f = aplicarMascaraCampo(raw, mascara as any);
+                        const b = normalizarValorCampo(f, mascara as any);
                         onUpdateField(id, b);
                       } else {
                         onUpdateField(id, raw);

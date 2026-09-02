@@ -1,4 +1,4 @@
-// Gerado a partir de documentUtils.ts (fatoracao)
+
 
 import { converterFormatoData, dataPorExtenso, formatarMoeda, numeroPorExtenso, moedaPorExtenso, converterParaRomano } from './formatacao';
 
@@ -69,7 +69,7 @@ export function formatarTelefone(valor: any): string {
 }
 
 
-export function aplicarMascaraCampo(valor: any, tipo: string): string {
+export function aplicarMascaraCampo(valor: any, tipo: import('../types').ColumnType | import('../types').FieldType | 'data' | 'dataPorExtenso' | 'numeroPorExtenso' | 'moedaPorExtenso' | 'romano'): string {
   if (!tipo) return valor ?? '';
   const nome = String(tipo).toLowerCase().trim();
   switch (nome) {
@@ -89,7 +89,7 @@ export function aplicarMascaraCampo(valor: any, tipo: string): string {
 }
 
 
-export function normalizarValorCampo(valor: any, tipo: string): any {
+export function normalizarValorCampo(valor: any, tipo: import('../types').ColumnType | import('../types').FieldType | 'data' | 'dataPorExtenso' | 'numeroPorExtenso' | 'moedaPorExtenso' | 'romano'): any {
   const nome = String(tipo || '').toLowerCase().trim();
   if (valor === null || valor === undefined || valor === '') {
     return '';
@@ -130,7 +130,7 @@ export function normalizarValorCampo(valor: any, tipo: string): any {
 }
 
 
-export function aplicarFiltroDocumento(valor: any, filtro: string): string {
+export function aplicarFiltroDocumento(valor: any, filtro: import('../types').ColumnType | import('../types').FieldType | 'data' | 'dataPorExtenso' | 'numeroPorExtenso' | 'moedaPorExtenso' | 'romano' | string): string {
   if (valor === null || valor === undefined || valor === '') {
     return '';
   }

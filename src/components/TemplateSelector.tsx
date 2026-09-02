@@ -6,13 +6,13 @@ interface TemplateSelectorProps {
   currentXmlName: string;
   customTemplates: TemplateItem[];
   onSelectTemplate: (t: TemplateItem) => void;
-  onRemoveCustomTemplate: (id: string) => void;
+  onRemoveCustomTemplate: (t: TemplateItem) => void;
   onLoadJson?: (jsonStr: string) => void;
 }
 
 /**
  * Seletor de templates (customizados + modelos prontos) com dropdown.
- * Extraído de SidebarToolbar (sugestão G de modularização).
+ .
  */
 export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   currentXmlName,
@@ -34,11 +34,16 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const currentLabel =
+  const rawLabel =
     DEFAULT_TEMPLATES.find(t => t.nome === currentXmlName)?.nome ||
     customTemplates.find(t => t.nome === currentXmlName)?.nome ||
     currentXmlName ||
     'Selecione um modelo...';
+
+  const currentLabel =
+    rawLabel.length > 60 || rawLabel.includes('<') || rawLabel.includes('\n')
+      ? (rawLabel.split('\n')[0].replace(/<[^>]*>/g, '').trim().substring(0, 50) || 'Modelo Selecionado') + '...'
+      : rawLabel;
 
   return (
     <div className="relative flex-1" ref={dropdownRef}>
@@ -61,7 +66,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             </div>
             {customTemplates.length === 0 ? (
               <div className="px-3 py-2 text-[11px] text-slate-500 italic">
-                Nenhum template salvo ainda. Arraste ou abra um arquivo XML/ZIP.
+                Nenhum modelo salvo ainda. Arraste ou carregue um arquivo de Modelo ou Pacote.
               </div>
             ) : (
               customTemplates.map(t => (
@@ -95,7 +100,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       className="p-1 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
                       onClick={e => {
                         e.stopPropagation();
-                        onRemoveCustomTemplate(t.id);
+                        onRemoveCustomTemplate(t);
                       }}
                       title="Remover template"
                     >

@@ -1,8 +1,7 @@
-// Gerado a partir de documentUtils.ts (fatoracao)
+
+import { ColumnType } from '../types';
 
 const TIPOS_COLUNA_GENERICOS = new Set(['', 'input', 'texto']);
-
-
 const TIPOS_COLUNA_MASCARA = new Set(['moeda', 'cpf', 'cnpj', 'cep', 'email', 'telefone']);
 
 /**
@@ -10,13 +9,21 @@ const TIPOS_COLUNA_MASCARA = new Set(['moeda', 'cpf', 'cnpj', 'cep', 'email', 't
  * `tipo` quanto o `validar`. Uma coluna com `tipo="input"` e `validar="moeda"`
  * é tratada como moeda (formatada/justada na edição e na exportação).
  */
-
-export function obterTipoEfetivoColuna(tipo?: string): string {
+export function obterTipoEfetivoColuna(tipo?: string): ColumnType {
   const rawTipo = String(tipo || '').toLowerCase().trim();
   if (rawTipo === 'texto') return 'input';
-  return rawTipo || 'input';
+  
+  const validTypes = new Set<string>([
+    'input', 'texto', 'number', 'moeda', 'date', 'select', 
+    'radio', 'textarea', 'checkbox', 'cpf', 'cnpj', 'cep', 'telefone', 'email'
+  ]);
+  
+  if (validTypes.has(rawTipo)) {
+    return rawTipo as ColumnType;
+  }
+  
+  return 'input';
 }
-
 
 export function obterValorPorCaminho(dados: Record<string, any>, caminho: string): any {
   if (!caminho) return '';
@@ -74,5 +81,3 @@ export function obterValorPorCaminho(dados: Record<string, any>, caminho: string
 
   return '';
 }
-
-

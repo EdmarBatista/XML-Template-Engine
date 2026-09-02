@@ -21,20 +21,22 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 - ✏️ **Edição e Interatividade**:
   - **Variáveis Interativas**: Destaque e sincronização bidirecional entre o campo do formulário e o texto no documento.
   - **Edição Inline**: Alterne para o modo de edição direta no corpo do documento.
-  - **Editor XML Integrado**: Editor CodeMirror 6 com syntax highlighting, autocompletar inteligente (sugere tags, atributos e variáveis), validação de schema, alertas de variáveis em tempo real e numeração de linhas.
+  - **Editor XML Integrado**: Editor CodeMirror 6 com syntax highlighting, autocompletar inteligente (sugere tags, atributos e variáveis), **linter de sintaxe em tempo real (bloqueia e alerta visualmente sobre tags inválidas)** e numeração de linhas.
   - **Inspetor de Variáveis e Modelo**: Painel para visualização da árvore AST, lista de variáveis detectadas e alertas de validação de escopo.
 - 🌐 **Consultas e Máscaras Automáticas**:
   - Máscaras para **telefone** (fixo e celular), monetária (`moeda`), CPF, CNPJ e CEP, com validação rigorosa integrada.
   - Consulta automática de CEP via **ViaCEP** e CNPJ via **ReceitaWS/OpenCNPJ**.
   - Formatação de valores e datas por extenso em português.
 - 💾 **Persistência Local**: Todo o estado (modelos customizados, dados preenchidos, zoom, preferências de barra lateral e exibição) é persistido no `localStorage`.
-- 📥 **Gestão de Templates, Drag & Drop e Dados**:
-  - **Criação Rápida**: Opção "Novo Modelo Em Branco" no seletor de templates para iniciar projetos com a estrutura base pronta (`<documento>`, `<formulario>`, `<conteudo>`).
-  - **Arrastar XML + JSON juntos**: Cria o modelo customizado e armazena o JSON como seu conjunto de dados de exemplo.
-  - **Arrastar `.json` isolado**: Preenche imediatamente os dados do formulário ativo.
-  - **Arrastar `.xml` isolado**: Importa o novo modelo de documento.
-  - **Botão `+` (Dados de Exemplo)**: Modelos que possuem um conjunto de dados de exemplo associado exibem um botão verde `+` no seletor de modelos. Clicar no botão restaura instantaneamente os dados de exemplo pré-configurados para o formulário.
-  - **Limpeza Segura do Formulário**: A ação de limpar formulário reseta apenas os dados preenchidos da sessão atual no `localStorage`, preservando o modelo e seu atalho `+` para recarregar dados de exemplo quando desejar.
+- 📥 **Gestão de Modelos, Drag & Drop e Histórico**:
+  - **Criação Rápida**: Opção "Novo Modelo Em Branco" no seletor para iniciar projetos com a estrutura base pronta (`<documento>`, `<formulario>`, `<conteudo>`).
+  - **Arrastar Documento Word (.docx)**: Converte automaticamente a estrutura do arquivo Word (títulos H1-H6, parágrafos, listas com marcadores/numeradas e tabelas) em um novo modelo XML editável (`<documento><formulario/><conteudo>...`), com diálogo de confirmação prévio e extração semântica de comentários de revisão (`word/comments.xml`).
+  - **Arrastar Modelo + Dados juntos**: Cria o modelo customizado e armazena os dados de preenchimento como histórico atrelado àquele modelo.
+  - **Arrastar arquivo de Dados isolado**: Preenche imediatamente os dados do formulário ativo.
+  - **Arrastar Modelo (XML) isolado**: Importa o novo modelo de documento. Se já houver um histórico de dados com o mesmo nome na memória do navegador, ele será automaticamente vinculado!
+  - **Botão `+` (Restaurar Dados Históricos)**: Modelos que possuem dados históricos associados exibem um botão verde `+` no seletor de modelos. Clicar no botão restaura instantaneamente os dados de preenchimento predefinidos.
+  - **Exclusão Granular de Modelos**: Ao excluir um modelo, um painel interativo pergunta se você deseja: **Apagar apenas o Modelo** (mantendo os dados para uso futuro), **Apagar apenas os Dados** (mantendo o modelo na lista, mas limpando o histórico) ou **Apagar Tudo (Modelo e Dados)**.
+  - **Limpeza Segura do Formulário**: A ação de limpar formulário reseta apenas os dados preenchidos da sessão atual, preservando o modelo e seu histórico atrelado.
 
 ---
 
@@ -45,7 +47,7 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 | **Framework & UI** | React 19, TypeScript, Vite 6, Tailwind CSS v4 |
 | **Animações & Ícones** | Lucide React, Motion |
 | **Editor de Código** | CodeMirror 6 (`@uiw/react-codemirror`, `@codemirror/lang-xml`, `@codemirror/lang-json`) |
-| **Geração de Documentos** | `docx` (Word), `pdfmake` (PDF), `jszip` |
+| **Geração e Conversão de Documentos** | `docx` (Word), `pdfmake` (PDF), `jszip`, `mammoth` (Conversão DOCX -> XML) |
 | **Parsing & AST** | Parser XML customizado para árvore sintática intermediária (AST) |
 
 ---
@@ -81,6 +83,7 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 │   │   │   └── logic/                      # Avaliação e renderização condicional
 │   │   │       ├── DocumentConditionalNode.tsx # Avaliação interativa de <if expr="...">
 │   │   │       └── index.ts                    # Barrel de lógica condicional
+│   │   ├── ImportWordModal.tsx     # Modal de confirmação e conversão de arquivos Word (.docx)
 │   │   ├── ModelModal.tsx          # Inspetor de variáveis e modelo AST
 │   │   ├── ModelModal/VarsTabs.tsx # Abas de Variáveis (edição + resumo)
 │   │   ├── Sidebar.tsx             # Formulário dinâmico com grupos e campos
@@ -112,6 +115,7 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 │   │   └── storageService.ts       # Gerenciamento unificado de LocalStorage (preferências e dados)
 │   ├── utils/              # Motores de conversão e utilitários
 │   │   ├── documentUtils.ts        # Barrel de formatacao/mascaras/validacao/listas/caminhos
+│   │   ├── docxToXmlConverter.ts   # Conversor semântico Word (.docx) para Modelo XML e extração de comentários
 │   │   ├── formatacao.ts           # Moeda, datas, números por extenso, romano
 │   │   ├── mascaras.ts             # Máscaras de CPF/CNPJ/CEP/moeda e filtros de documento
 │   │   ├── validacao.ts            # Validações (email/CPF/CNPJ/CEP) e validarCampo
@@ -182,7 +186,7 @@ Campos são organizados dentro de `<grupo titulo="...">`:
 | Tag | Atributos Principais | Descrição e Tipos Válidos |
 |---|---|---|
 | `<input>` | `id`, `label`, `tipo`, `placeholder`, `descricao` | Campo de texto de linha única. Atributos de `tipo`: `texto` (padrão), `email` (com validação de formato) e `lista_csv` (lista para loops `<foreach>`). |
-| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step`, `placeholder`, `descricao` | Campo numérico e de dados com máscara/dígitos. Atributos de `tipo`: `number` (numérico com setas), `moeda` (R$ com máscara monetária), `cpf` (máscara e validação de dígitos), `cnpj` (máscara, validação e consulta OpenCNPJ), `cep` (máscara, validação e consulta ViaCEP). |
+| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step`, `placeholder`, `descricao` | Campo numérico e de dados com máscara/dígitos. Atributos de `tipo`: `number` (numérico com setas), `moeda` (R$ com máscara monetária), `cpf` (máscara e validação de dígitos), `cnpj` (máscara, validação e consulta OpenCNPJ), `cep` (máscara, validação e consulta ViaCEP), `telefone` (máscara com DDD). |
 | `<textarea>` | `id`, `label`, `rows`, `placeholder`, `descricao` | Campo de texto com múltiplas linhas (altura configurável via `rows="N"`, padrão: 4). |
 | `<date>` | `id`, `label`, `descricao` | Seletor nativo de data (formato ISO YYYY-MM-DD / exibição DD/MM/AAAA). |
 | `<select>` | `id`, `label`, `descricao` + filhos `<option>` | Caixa de seleção suspensa (dropdown). Cada `<option>` aceita texto e atributo opcional `valor="..."`. |
@@ -199,7 +203,7 @@ Campos são organizados dentro de `<grupo titulo="...">`:
   <coluna id="categoria" label="Categoria" tipo="select" opcoes="Hardware, Software, Serviço" />
 </tabela>
 ```
-- **Tipos suportados em `<coluna>`**: `texto` (padrão), `number`, `moeda`, `date`, `select`, `radio`, `textarea`, `checkbox`.
+- **Tipos suportados em `<coluna>`**: `texto` (padrão), `number`, `moeda`, `date`, `select`, `radio`, `textarea`, `checkbox`, `cpf`, `cnpj`, `cep`, `telefone`, `email`.
 - **Atributos de `<coluna>`**: `id` (obrigatório), `label`, `tipo`, `placeholder`, `min`, `max`, `step`, `opcoes` (valores separados por vírgula ou tags `<option>` filhas).
 
 #### Condicionais no Formulário (`<if>`):
@@ -267,6 +271,80 @@ O documento suporta interpolação de variáveis, aplicação de filtros via sin
 | | `<celula>` | — | Célula individual da tabela. Suporta tags inline e variáveis. |
 
 ---
+
+
+### Importação Inteligente de Documentos Word (DOCX)
+
+O sistema suporta a importação direta de arquivos Word (DOCX) mantendo a estrutura de títulos, parágrafos, tabelas, e listas. Mais do que isso, o sistema é capaz de gerar **automaticamente** o formulário inteligente através do reconhecimento de marcações `{{ ... }}` no documento original.
+
+Basta inserir as variáveis diretamente no texto do Word. O sistema compilará as variáveis, inferindo o tipo correto, rótulo e eventuais restrições.
+
+#### Sintaxe Universal no Word:
+
+```
+{{ Nome do Campo | tipo_ou_filtro(args) | atributo=valor }}
+```
+
+**Regras de Extração e Inferência:**
+- **Variáveis Básicas**: Se você digitar `{{ Nome do Fornecedor }}`, o sistema criará um campo de texto no formulário lateral. O nome da variável será normalizado (`nome_do_fornecedor`) para uso interno, mas o rótulo legível é preservado.
+- **Tipos e Filtros**:
+  - `{{ Valor do Contrato | moeda }}` → Cria um campo tipo Moeda no formulário, que já inclui formatação R$.
+  - `{{ Data de Assinatura | data }}` → Cria um seletor de data (*date picker*).
+  - `{{ Descrição do Objeto | longo }}` ou `textarea` → Cria uma caixa de texto com múltiplas linhas.
+  - `{{ CNPJ da Empresa | cnpj }}` → Cria um campo numérico formatado como CNPJ.
+- **Campos Numéricos com Atributos**:
+  - `{{ Quantidade | number(min=1, max=100, step=1) }}` → Campo numérico com limites restritos e incremento de 1.
+- **Múltipla Escolha**:
+  - `{{ Modalidade | select(Pregão, Dispensa, Concorrência) }}` → Cria um menu suspenso (Dropdown) com 3 opções.
+  - `{{ Documentação | checkbox(Aprovada, Pendente) }}` → Cria caixas de seleção.
+  - `{{ Regime | radio(Integral, Parcial) }}` → Cria botões de opção.
+- **Atributos de Apresentação**:
+  - `{{ E-mail | email | placeholder=exemplo@email.com | desc=Informe o e-mail corporativo }}` → Cria campo com dica visual no formulário.
+
+#### Controle Estrutural e Lógico (If / Foreach)
+Você pode usar lógica diretamente no arquivo do Word:
+
+- **Condicionais**:
+  ```word
+  {{ if Modalidade == 'Dispensa' }}
+  Este parágrafo só aparecerá se a modalidade for Dispensa.
+  {{ /if }}
+  ```
+- **Listas e Repetições (Foreach)**:
+  Para criar uma lista dinâmica (por exemplo, dentro de uma tabela do Word ou tópicos), você pode fazer:
+  ```word
+  {{ foreach itens_orcamento }}
+  - {{ item.descricao }} - {{ item.valor_unitario | moeda }}
+  {{ /foreach }}
+  ```
+*(Nota: Tabelas nativas do Word são convertidas automaticamente e os seus cabeçalhos também se tornam campos do formulário para o usuário preencher múltiplas linhas).*
+
+
+#### De Para (Word vs. XML)
+
+Aqui está o paralelo exato do que você digita no Word e como o sistema compila estruturalmente no XML da aplicação:
+
+| O que você digita no Word (DOCX) | O que o motor gera no Formulario XML | O que o motor gera no Conteúdo XML |
+|:---|:---|:---|
+| `{{ Nome da Mãe }}` | `<input id="nome_da_mae" tipo="texto" rotulo="Nome da Mãe" />` | `<p>{{nome_da_mae}}</p>` |
+| `{{ Valor | moeda }}` | `<number id="valor" tipo="moeda" rotulo="Valor" />` | `<p>{{valor | moeda}}</p>` |
+| `{{ Nasc. | data }}` | `<date id="nasc" rotulo="Nasc." />` | `<p>{{nasc | data}}</p>` |
+| `{{ Resumo | longo }}` | `<textarea id="resumo" rotulo="Resumo" />` | `<p>{{resumo}}</p>` |
+| `{{ UF | select(AC, AL, AP) }}` | `<select id="uf" rotulo="UF"><option>AC</option>...</select>` | `<p>{{uf}}</p>` |
+| `{{ CNH | radio(Sim, Não) }}` | `<radio id="cnh" rotulo="CNH"><option>Sim</option>...</radio>` | `<p>{{cnh}}</p>` |
+| `{{ if UF == 'SP' }}` | *(Nenhum campo criado, apenas lógica)* | `<if expr="uf == 'SP'">` |
+| `{{ /if }}` | *(Fechamento de condicional)* | `</if>` |
+| `{{ foreach dependentes }}` | *(Inicia lista dinâmica)* | `<foreach lista="dependentes" var="item">` |
+| `{{ item.nome }}` | `<coluna id="nome" rotulo="Nome" />` (inserido na tabela dependentes) | `{{item.nome}}` |
+| `{{ /foreach }}` | *(Fechamento da lista dinâmica)* | `</foreach>` |
+
+#### Tabelas Nativas do Word
+O sistema também converte **Tabelas do Word** perfeitamente:
+1. Ele cria automaticamente um grupo de `<tabela>` no formulário para preenchimento de múltiplas linhas.
+2. Cada cabeçalho da tabela do Word vira uma `<coluna>` desta tabela do formulário.
+3. No conteúdo, ele envolve as linhas com `<foreach>` para renderizar todos os dados que o usuário preencher.
+
+
 
 ### 3. Flexibilidade de Modelos e Particionamento
 
@@ -360,6 +438,35 @@ O documento suporta interpolação de variáveis, aplicação de filtros via sin
 | `<tabela>` | Tabelas com suporte a `<cabecalho>`, `<linha>` e `<celula>` |
 | `<if expr="...">` | Exibição condicional de parágrafos ou blocos inteiros |
 | `<foreach var="..." lista="...">` | Repetição dinâmica a partir de listas CSV ou quebras de linha |
+
+---
+
+## ⌨️ Atalhos de Teclado
+
+A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchimento, edição e navegação:
+
+### Globais (Tela Principal)
+| Atalho | Ação |
+|---|---|
+| <kbd>Ctrl</kbd> + <kbd>S</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> | Salvar / exportar os dados preenchidos (`.json`) |
+| <kbd>Ctrl</kbd> + <kbd>P</kbd> / <kbd>Cmd</kbd> + <kbd>P</kbd> | Imprimir documento / gerar visualização de impressão A4 |
+| <kbd>Ctrl</kbd> + <kbd>M</kbd> / <kbd>Cmd</kbd> + <kbd>M</kbd> | Abrir ou fechar o **Painel de Variáveis e Modelo** |
+| <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Cmd</kbd> + <kbd>Z</kbd> | Desfazer (*Undo*) a última alteração nos campos |
+| <kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | Refazer (*Redo*) a alteração desfeita |
+| <kbd>Esc</kbd> | Fechar modais, painéis ou cancelar edição ativa |
+
+### No Painel de Código (XML e JSON)
+| Atalho | Ação |
+|---|---|
+| <kbd>Ctrl</kbd> + <kbd>S</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> | **Atualizar Documento** imediatamente com o código editado |
+| <kbd>Tab</kbd> | Indentação inteligente de 2 espaços no editor de código |
+
+### Na Edição Direta no Documento (*Inline Editing*)
+| Atalho | Ação |
+|---|---|
+| <kbd>Enter</kbd> | Salvar e confirmar valor (em campos simples, data ou numéricos) |
+| <kbd>Ctrl</kbd> + <kbd>Enter</kbd> / <kbd>Cmd</kbd> + <kbd>Enter</kbd> | Salvar e confirmar valor em áreas de texto multilinhas (*textarea*) |
+| <kbd>Esc</kbd> | Cancelar edição rápida e restaurar o valor anterior |
 
 ---
 

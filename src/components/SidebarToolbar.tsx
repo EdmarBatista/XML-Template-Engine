@@ -6,7 +6,7 @@ import { TemplateSelector } from './TemplateSelector';
 interface SidebarToolbarProps {
   currentXmlName: string;
   customTemplates: TemplateItem[];
-  onRemoveCustomTemplate: (id: string) => void;
+  onRemoveCustomTemplate: (t: TemplateItem) => void;
   onSelectTemplate: (t: TemplateItem) => void;
   onNewTemplate?: () => void;
   onLoadJson?: (jsonStr: string) => void;
@@ -105,20 +105,20 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
         <input ref={zipInputRef} type="file" accept=".zip,application/zip,application/x-zip-compressed" onChange={onUploadZip} className="hidden" />
       )}
 
-      <button type="button" onClick={() => xmlInputRef.current?.click()} className="btn-toolbar" title="Abrir XML / Pacote ZIP">
+      <button type="button" onClick={() => xmlInputRef.current?.click()} className="btn-toolbar" title="Abrir Modelo (.xml, .zip)">
         <Upload className="w-4 h-4 text-blue-400" />
       </button>
       
-      <button type="button" onClick={() => jsonInputRef.current?.click()} className="btn-toolbar" title="Carregar Dados JSON">
+      <button type="button" onClick={() => jsonInputRef.current?.click()} className="btn-toolbar" title="Carregar Dados Preenchidos (.json)">
         <FileDown className="w-4 h-4 text-amber-400" />
       </button>
       
-      <button type="button" onClick={onSaveJson} className="btn-toolbar" title="Salvar Dados JSON">
+      <button type="button" onClick={onSaveJson} className="btn-toolbar" title="Salvar Dados Preenchidos (.json) (Ctrl + S)">
         <Download className="w-4 h-4 text-emerald-400" />
       </button>
 
       {onSaveZip && (
-        <button type="button" onClick={onSaveZip} className="btn-toolbar" title="Baixar Pacote ZIP (XML + JSON juntos)">
+        <button type="button" onClick={onSaveZip} className="btn-toolbar" title="Baixar Pacote Completo (Modelo e Dados em .zip)">
           <Archive className="w-4 h-4 text-cyan-400" />
         </button>
       )}
@@ -177,7 +177,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
          A4
       </button>
 
-      <button type="button" onClick={onOpenModelModal} className="btn-toolbar" title="Painel de Variáveis">
+      <button type="button" onClick={onOpenModelModal} className="btn-toolbar" title="Painel de Variáveis e Modelo (Ctrl + M)">
         <Sliders className="w-4 h-4 text-cyan-400" />
       </button>
 
@@ -189,7 +189,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
         <FileText className="w-4 h-4 text-rose-400" />
       </button>
       
-      <button type="button" onClick={onPrint} className="btn-toolbar" title="Imprimir">
+      <button type="button" onClick={onPrint} className="btn-toolbar" title="Imprimir (Ctrl + P)">
         <Printer className="w-4 h-4 text-slate-300" />
       </button>
 

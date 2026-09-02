@@ -5,6 +5,8 @@ import { json } from '@codemirror/lang-json';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { autocompletion } from '@codemirror/autocomplete';
 import { xmlTemplateCompletions } from '../utils/xmlEditorCompletions';
+import { xmlLinter } from '../utils/xmlLinter';
+import { lintKeymap, lintGutter } from '@codemirror/lint';
 import {
   EditorView,
   MatchDecorator,
@@ -129,6 +131,8 @@ export const CodeMirrorEditor: React.FC<CodeMirrorEditorProps> = ({
 
     if (language === 'xml') {
       ext.push(variableHighlightPlugin);
+      ext.push(lintGutter());
+      ext.push(xmlLinter);
       ext.push(
         autocompletion({
           override: [xmlTemplateCompletions],

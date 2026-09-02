@@ -44,6 +44,7 @@ const STORAGE_KEYS = {
   CUSTOM_TEMPLATES: 'edm_custom_templates',
   LAST_TEMPLATE_ID: 'edm_last_template_id',
   SAVED_FORM_DATA: 'edm_saved_form_data',
+  JSON_HISTORY: 'edm_json_history',
 } as const;
 
 export const StorageService = {
@@ -167,6 +168,52 @@ export const StorageService = {
       localStorage.setItem(STORAGE_KEYS.SAVED_FORM_DATA, JSON.stringify(allData));
     } catch (e) {
       console.warn('Erro ao limpar dados do formulário no LocalStorage:', e);
+    }
+  },
+
+  /**
+   * Carrega o JSON histórico atrelado ao nome de um arquivo.
+   */
+  loadJsonHistory(fileName: string): string | undefined {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.JSON_HISTORY);
+      if (raw) {
+        const allHistory = JSON.parse(raw);
+        return allHistory[fileName];
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar histórico de JSON:', e);
+    }
+    return undefined;
+  },
+
+  /**
+   * Salva o JSON histórico atrelado ao nome de um arquivo.
+   */
+  saveJsonHistory(fileName: string, jsonStr: string): void {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.JSON_HISTORY);
+      const allHistory = raw ? JSON.parse(raw) : {};
+      allHistory[fileName] = jsonStr;
+      localStorage.setItem(STORAGE_KEYS.JSON_HISTORY, JSON.stringify(allHistory));
+    } catch (e) {
+      console.warn('Erro ao salvar histórico de JSON:', e);
+    }
+  },
+
+  /**
+   * Remove o JSON histórico atrelado ao nome de um arquivo.
+   */
+  removeJsonHistory(fileName: string): void {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.JSON_HISTORY);
+      if (raw) {
+        const allHistory = JSON.parse(raw);
+        delete allHistory[fileName];
+        localStorage.setItem(STORAGE_KEYS.JSON_HISTORY, JSON.stringify(allHistory));
+      }
+    } catch (e) {
+      console.warn('Erro ao remover histórico de JSON:', e);
     }
   },
 };

@@ -107,6 +107,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   const [selectedPartIndex, setSelectedPartIndex] = React.useState<number>(0);
   const [editXmlName, setEditXmlName] = React.useState('');
   const [isEditingXmlName, setIsEditingXmlName] = React.useState(false);
+  const [isEditingXml, setIsEditingXml] = React.useState(false);
   const [erroSintaxeXml, setErroSintaxeXml] = React.useState<string | null>(null);
   const [sucessoXml, setSucessoXml] = React.useState(false);
 
@@ -275,6 +276,15 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     return () => clearTimeout(timer);
   }, [xmlCode, isOpen, tab, validarXml]);
 
+  const totalPreenchidos = React.useMemo(() => {
+    return chaves.filter(k => {
+      const valor = dados[k];
+      return valor !== '' && valor !== null && valor !== undefined && valor !== false;
+    }).length;
+  }, [chaves, dados]);
+
+  const totalPendentes = chaves.length - totalPreenchidos;
+
   if (!isOpen) return null;
 
   // Alterna entre partes individuais no editor XML
@@ -415,7 +425,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold tracking-tight text-slate-100">Painel de Variáveis & Modelo</h2>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 max-w-[240px] truncate" title={xmlName}>
                   {xmlName}
                 </span>
               </div>
@@ -585,7 +595,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   filtroStatus === 'todos' ? 'bg-slate-800 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
-                Todos ({chaves.length})
+                Todas ({chaves.length})
               </button>
               <button
                 type="button"
@@ -594,7 +604,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   filtroStatus === 'preenchidos' ? 'bg-emerald-700 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
-                Preenchidos
+                Preenchidos ({totalPreenchidos})
               </button>
               <button
                 type="button"
@@ -603,7 +613,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   filtroStatus === 'vazios' ? 'bg-amber-700 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
-                Pendentes
+                Pendentes ({totalPendentes})
               </button>
             </div>
           </div>
@@ -637,23 +647,14 @@ export const ModelModal: React.FC<ModelModalProps> = ({
 
               <div className="flex-1 min-h-[360px] relative rounded-lg overflow-hidden border border-slate-800 bg-slate-950 flex flex-col shadow-inner">
                 <div className="px-3 py-2 bg-slate-900/90 border-b border-slate-800 text-[11px] text-emerald-400/90 flex items-center justify-between shrink-0 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    {isEditingJson ? (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="font-semibold text-emerald-300">Modo de Edição Ativo (JSON de Dados)</span>
-                        <span className="text-slate-500 font-mono text-[10px] hidden sm:inline">(Ctrl + S para aplicar)</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                        <span className="font-mono text-slate-300">{xmlName.replace(/\.xml$/i, '')}_dados.json</span>
-                        <span className="text-slate-500 text-[10px] hidden sm:inline">(Modo de leitura com cores ativas)</span>
-                      </>
-                    )}
+                  <div className="flex flex-col justify-center">
+                    <span className="text-[11px] text-slate-400 font-medium leading-tight">Arquivo de Dados:</span>
+                    <span className="text-xs font-mono bg-slate-800 text-emerald-300 px-2 py-0.5 mt-0.5 rounded border border-slate-700 w-fit">
+                      {xmlName.replace(/\.xml$/i, '')}_dados.json
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     {isEditingJson ? (
                       <>
                         <button
@@ -680,10 +681,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           type="button"
                           onClick={handleApplyJson}
                           className="flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded shadow-xs transition"
-                          title="Aplicar dados ao formulário (Ctrl + S)"
+                          title="Atualizar Documento (Ctrl + S)"
                         >
                           {sucessoJson ? <Check className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 fill-white" />}
-                          <span>{sucessoJson ? 'Aplicado!' : 'Aplicar Dados'}</span>
+                          <span>{sucessoJson ? 'Atualizado!' : 'Atualizar Documento'}</span>
                         </button>
                       </>
                     ) : (
@@ -787,6 +788,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                         setXmlCode(TEMPLATE_NOVO_DOCUMENTO);
                         setEditXmlName('Novo Documento');
                         setLocalParts([]);
+                        setIsEditingXml(true);
                       }}
                       className="flex items-center gap-1 text-xs px-2.5 py-1 bg-emerald-600/20 text-emerald-400 border border-emerald-500/50 rounded hover:bg-emerald-600/30 transition mr-2"
                       title="Criar novo modelo em branco"
@@ -814,25 +816,47 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       </div>
                     )}
 
-                    <button
-                      type="button"
-                      onClick={handleFormatXml}
-                      className="flex items-center gap-1 text-xs px-2.5 py-1 bg-slate-800 border border-slate-700 rounded text-slate-200 hover:bg-slate-700 transition"
-                      title="Formatar tags do XML"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Formatar</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleApplyXml}
-                      className="flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded shadow-xs transition"
-                      title="Compilar e aplicar modelo XML (Ctrl + S)"
-                    >
-                      {sucessoXml ? <Check className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 fill-white" />}
-                      <span>{sucessoXml ? 'Compilado!' : 'Compilar & Aplicar'}</span>
-                    </button>
+                    {isEditingXml ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleFormatXml}
+                          className="flex items-center gap-1 text-xs px-2.5 py-1 bg-slate-800 border border-slate-700 rounded text-slate-200 hover:bg-slate-700 transition"
+                          title="Formatar tags do XML"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Formatar</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingXml(false)}
+                          className="flex items-center gap-1 text-xs px-2.5 py-1 bg-slate-800 border border-slate-700 rounded text-slate-300 hover:bg-slate-700 transition"
+                          title="Voltar ao modo de visualização"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Visualizar</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleApplyXml}
+                          className="flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded shadow-xs transition"
+                          title="Atualizar Documento (Ctrl + S)"
+                        >
+                          {sucessoXml ? <Check className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 fill-white" />}
+                          <span>{sucessoXml ? 'Atualizado!' : 'Atualizar Documento'}</span>
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingXml(true)}
+                        className="flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded shadow-xs transition"
+                        title="Habilitar edição do modelo XML"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Habilitar Edição</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -840,10 +864,13 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   <CodeMirrorEditor
                     value={xmlCode}
                     onChange={code => {
-                      setXmlCode(code);
+                      if (isEditingXml) {
+                        setXmlCode(code);
+                      }
                     }}
                     language="xml"
-                    onSave={handleApplyXml}
+                    readOnly={!isEditingXml}
+                    onSave={isEditingXml ? handleApplyXml : undefined}
                     placeholder="<!-- Insira o código XML do modelo aqui -->"
                   />
                 </div>

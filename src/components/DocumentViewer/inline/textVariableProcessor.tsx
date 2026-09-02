@@ -56,7 +56,7 @@ export function processarTextoComVariaveis({
     const filtro = match[2]?.trim();
     const isLocalVar = ctxLocal && Object.prototype.hasOwnProperty.call(ctxLocal, chave);
     let valorBruto = escopo[chave] !== undefined ? escopo[chave] : obterValorPorCaminho(escopo, chave);
-    const valorFormatado = filtro ? aplicarFiltroDocumento(valorBruto, filtro) : valorBruto;
+    const valorFormatado = filtro ? aplicarFiltroDocumento(valorBruto, filtro as any) : valorBruto;
 
     const primeiroSegmentoCaminho = chave.includes('.') ? chave.split('.')[0] : chave;
     const ehCelulaForeachPorPonto =

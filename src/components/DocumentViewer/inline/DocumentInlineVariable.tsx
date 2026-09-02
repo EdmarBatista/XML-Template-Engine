@@ -70,7 +70,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
     const handlePointerDownOutside = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         const valFinal = isMasked
-          ? normalizarValorCampo(valorTempRef.current, tipoMascara)
+          ? normalizarValorCampo(valorTempRef.current, tipoMascara as any)
           : valorTempRef.current;
         onUpdateField(id, valFinal, 'inline');
         setEditando(false);
@@ -87,7 +87,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
 
   const salvar = () => {
     const valFinal = isMasked
-      ? normalizarValorCampo(valorTempRef.current, tipoMascara)
+      ? normalizarValorCampo(valorTempRef.current, tipoMascara as any)
       : valorTempRef.current;
     onUpdateField(id, valFinal, 'inline');
     setEditando(false);
@@ -124,7 +124,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
     }
     if (edicaoInline) {
       const valInicial = isMasked
-        ? aplicarMascaraCampo(valorBruto ?? '', tipoMascara)
+        ? aplicarMascaraCampo(valorBruto ?? '', tipoMascara as any)
         : valorBruto ?? '';
       setValorTemp(valInicial);
       setEditando(true);
@@ -330,7 +330,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
           onChange={e => {
             const raw = e.target.value;
             if (isMasked) {
-              const formatado = aplicarMascaraCampo(raw, tipoMascara);
+              const formatado = aplicarMascaraCampo(raw, tipoMascara as any);
               setValorTemp(formatado);
             } else {
               setValorTemp(raw);

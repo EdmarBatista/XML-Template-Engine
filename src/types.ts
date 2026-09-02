@@ -17,7 +17,8 @@ export type ColumnType =
   | 'cpf'        // máscara CPF
   | 'cnpj'       // máscara CNPJ
   | 'cep'        // máscara CEP
-  | 'telefone';
+  | 'telefone'
+  | 'email';
 
 export interface TableColumnMetadata {
   id: string;

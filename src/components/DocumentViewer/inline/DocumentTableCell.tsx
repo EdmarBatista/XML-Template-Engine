@@ -123,14 +123,14 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     let valFinal: any = valTexto;
 
     if (isCurrency) {
-      valFinal = normalizarValorCampo(valTexto, 'moeda');
+      valFinal = normalizarValorCampo(valTexto, 'moeda' as any);
     } else if (isNumber) {
       const clean = String(valTexto).replace(/[^\d.-]/g, '');
       valFinal = clean === '' ? '' : Number(clean);
     } else if (isCheckbox) {
       valFinal = Boolean(valTexto);
     } else if (isMasked) {
-      valFinal = normalizarValorCampo(valTexto, maskName);
+      valFinal = normalizarValorCampo(valTexto, maskName as any);
     }
 
     aplicarValorNaTabela(valFinal);
@@ -199,7 +199,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
       } else {
         initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
         if (isMasked) {
-          initialVal = aplicarMascaraCampo(initialVal, maskName);
+          initialVal = aplicarMascaraCampo(initialVal, maskName as any);
         }
       }
       setValorTemp(initialVal);
@@ -422,7 +422,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
               value={String(valorTemp)}
               placeholder={placeholderText}
               onChange={e => {
-                const fmt = aplicarMascaraCampo(e.target.value, maskName);
+                const fmt = aplicarMascaraCampo(e.target.value, maskName as any);
                 setValorTemp(fmt);
               }}
               onBlur={salvar}

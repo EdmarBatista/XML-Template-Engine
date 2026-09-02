@@ -38,7 +38,7 @@ export interface PrefsSetters {
 /**
  * Hook de preferências de interface: carrega os valores iniciais,
  * mantém os estados e persiste automaticamente no localStorage.
- * Extraído de App.tsx (sugestão A de modularização).
+ .
  */
 export function usePreferencias(): PrefsState & PrefsSetters {
   const initialPrefs = React.useMemo(() => StorageService.loadPreferences(), []);

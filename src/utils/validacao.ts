@@ -1,4 +1,4 @@
-// Gerado a partir de documentUtils.ts (fatoracao)
+
 
 import { normalizarDigitos } from './mascaras';
 
@@ -71,10 +71,10 @@ export function validarCEP(valor: any): boolean {
 
 /**
  * Valida um campo do formulário conforme o tipo/validar e devolve o status+mensagem.
- * Extraído de Sidebar.tsx (sugestão B de modularização).
+ .
  */
 export function validarCampo(
-  campo: { tipo?: string; tipoInput?: string },
+  campo: import('../types').FieldMetadata | import('../types').TableColumnMetadata,
   valor: any
 ): { valido: boolean; msg?: string } {
   const v = String(valor ?? '').trim();
@@ -82,27 +82,24 @@ export function validarCampo(
     return { valido: true };
   }
   const tipoCampo = (campo.tipo || '').toLowerCase();
-  const tipoInput = (campo.tipoInput || '').toLowerCase();
+  const tipoInput = (('tipoInput' in campo ? campo.tipoInput : '') || '').toLowerCase();
+  
+  // O tipo final considera tanto o macro quanto o micro, já que nas tabelas eles se fundem
+  const tipoEfetivo = tipoInput || tipoCampo;
 
-  // Para <input>, valida apenas formato de e-mail
-  if (tipoCampo === 'input') {
-    if (tipoInput === 'email' && !validarEmail(v)) {
-      return { valido: false, msg: 'E-mail em formato inválido' };
-    }
-    return { valido: true };
+  if (tipoEfetivo === 'email' && !validarEmail(v)) {
+    return { valido: false, msg: 'E-mail em formato inválido' };
   }
-
-  // Para <number>, valida CPF, CNPJ, CEP
-  if (tipoInput === 'cpf' && !validarCPF(v)) {
+  if (tipoEfetivo === 'cpf' && !validarCPF(v)) {
     return { valido: false, msg: 'CPF inválido (verifique os dígitos verificadores)' };
   }
-  if (tipoInput === 'cnpj' && !validarCNPJ(v)) {
+  if (tipoEfetivo === 'cnpj' && !validarCNPJ(v)) {
     return { valido: false, msg: 'CNPJ inválido (verifique os dígitos verificadores)' };
   }
-  if (tipoInput === 'cep' && !validarCEP(v)) {
+  if (tipoEfetivo === 'cep' && !validarCEP(v)) {
     return { valido: false, msg: 'CEP deve conter 8 dígitos' };
   }
-  if (tipoInput === 'telefone' && v) {
+  if (tipoEfetivo === 'telefone' && v) {
     const digitos = normalizarDigitos(v);
     if (digitos.length < 10 || digitos.length > 11) {
       return { valido: false, msg: 'Telefone deve conter 10 ou 11 dígitos' };
@@ -110,5 +107,3 @@ export function validarCampo(
   }
   return { valido: true };
 }
-
-

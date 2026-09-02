@@ -5,7 +5,7 @@ import { AstNode } from '../types';
  * presente no texto do XML ou a cada <br>. Restaura o comportamento da versão
  * que funcionava, em que cada linha virava um parágrafo separado no documento.
  *
- * Extraído de DocumentNodeRenderer.tsx (sugestão D de modularização).
+ .
  */
 export function dividirEmLinhas(nos: AstNode[]): AstNode[][] {
   const linhas: AstNode[][] = [];

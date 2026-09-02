@@ -1,4 +1,4 @@
-// Gerado a partir de documentUtils.ts (fatoracao)
+
 
 export function formatarItemForeach(valor: any): any {
   if (valor === null || valor === undefined) return '';

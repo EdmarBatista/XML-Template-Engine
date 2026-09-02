@@ -1,4 +1,4 @@
-// Gerado a partir de documentUtils.ts (fatoracao)
+
 
 export function formatarMoeda(valor: any): string {
   if (valor === null || valor === undefined || valor === '') {

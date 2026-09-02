@@ -27,9 +27,10 @@
  */
 
 import React from 'react';
-import { AlertTriangle, RotateCcw, X } from 'lucide-react';
+import { AlertTriangle, RotateCcw, X, Trash2 } from 'lucide-react';
 import { DocumentViewer } from './components/DocumentViewer';
 import { ModelModal } from './components/ModelModal';
+import { ImportWordModal } from './components/ImportWordModal';
 import { SidebarToolbar } from './components/SidebarToolbar';
 import { Sidebar } from './components/Sidebar';
 import { useToast } from './hooks/useToast';
@@ -44,7 +45,7 @@ import {
   useFilePackageActions,
   useSidebarResizer,
 } from './hooks_App';
-import { DEFAULT_TEMPLATES } from './data/defaultTemplates';
+import { DEFAULT_TEMPLATES, TemplateItem } from './data/defaultTemplates';
 import { StorageService } from './services/storageService';
 import { construirEstadoInicial } from './utils/xmlParser';
 
@@ -229,10 +230,34 @@ export default function App() {
     onPrint: handlePrint,
     onUndo: undo,
     onRedo: redo,
-    onToggleXmlEditor: toggleXmlEditor,
     onToggleModelModal: toggleModelModal,
     onEscape: closeAllModals,
   });
+
+  const [wordFileToConvert, setWordFileToConvert] = React.useState<File | null>(null);
+  const [isConvertingWord, setIsConvertingWord] = React.useState(false);
+
+  const handleConvertWord = async () => {
+    if (!wordFileToConvert) return;
+    setIsConvertingWord(true);
+    try {
+      const { converterDocxParaModeloXml } = await import('./utils/docxToXmlConverter');
+      const { xml, jsonInicial, comentariosXml, nomeSugerido } = await converterDocxParaModeloXml(wordFileToConvert);
+      
+      // Armazena ou apenas logs comentariosXml por enquanto conforme solicitado
+      console.log('Comentários extraídos (para uso futuro):', comentariosXml);
+      
+      carregarXmlEJson(xml, nomeSugerido, jsonInicial, undefined);
+      showToast(`Modelo importado com sucesso: ${nomeSugerido}`);
+      setWordFileToConvert(null);
+      openModelModal(); // Abre o painel para edição imediata
+    } catch (error: any) {
+      console.error(error);
+      alert('Erro ao converter o documento Word: ' + error.message);
+    } finally {
+      setIsConvertingWord(false);
+    }
+  };
 
   // F. Hook de Drag & Drop e Uploads de Pacotes de Arquivos
   const {
@@ -251,6 +276,7 @@ export default function App() {
     setDados,
     carregarXmlEJson,
     adicionarTemplateSilencioso,
+    onWordFileDropped: (file: File) => setWordFileToConvert(file),
     showToast,
   });
 
@@ -283,6 +309,9 @@ export default function App() {
 
   // Estado do modal de confirmação de limpeza
   const [showClearConfirmModal, setShowClearConfirmModal] = React.useState(false);
+
+  // Estado do modal de exclusão de template
+  const [templateToDelete, setTemplateToDelete] = React.useState<TemplateItem | null>(null);
 
   // Solicitar limpeza de formulário
   const handleClearForm = React.useCallback(() => {
@@ -347,7 +376,7 @@ export default function App() {
             </div>
             <h3 className="text-base font-bold text-slate-800">Solte os arquivos aqui</h3>
             <p className="text-xs text-slate-500">
-              Arraste XML, JSON, ambos juntos (XML + JSON) ou um Pacote ZIP (.zip) para carregamento automático.
+              Arraste Modelo, Dados, ambos juntos ou um Pacote ZIP para carregamento automático.
             </p>
           </div>
         </div>
@@ -374,7 +403,7 @@ export default function App() {
                 headerActions={
                   <SidebarToolbar
                     customTemplates={customTemplates}
-                    onRemoveCustomTemplate={handleRemoveCustomTemplate}
+                    onRemoveCustomTemplate={setTemplateToDelete}
                     currentXmlName={xmlName}
                     onSelectTemplate={handleSelectTemplate}
                     onNewTemplate={handleNewTemplate}
@@ -499,17 +528,26 @@ export default function App() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500">
-            <p className="text-sm font-semibold text-slate-700">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
               {xmlError ? `Erro ao carregar template: ${xmlError}` : 'Erro ao carregar o template XML.'}
             </p>
-            <p className="text-xs mt-1">Abra o editor de código para verificar e corrigir a estrutura.</p>
-            <button
-              type="button"
-              onClick={openModelModal}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md text-xs font-semibold hover:bg-blue-500 transition"
-            >
-              Abrir Painel de Variáveis / Editor XML
-            </button>
+            <p className="text-xs mt-1 text-slate-400">Abra o editor de código para verificar e corrigir a estrutura ou restaure um modelo padrão.</p>
+            <div className="flex items-center gap-3 mt-4">
+              <button
+                type="button"
+                onClick={openModelModal}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md text-xs font-semibold hover:bg-blue-500 transition shadow-xs"
+              >
+                Abrir Painel de Variáveis / Editor XML
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSelectTemplate(DEFAULT_TEMPLATES[0])}
+                className="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-md text-xs font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              >
+                Restaurar Modelo Padrão
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -585,6 +623,125 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação para Excluir Template */}
+      {templateToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 text-slate-800 dark:text-slate-100 space-y-5">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-lg shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                  Excluir Modelo
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  O que você deseja excluir do modelo{' '}
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">
+                    "{templateToDelete.nome}"
+                  </span>
+                  ?
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTemplateToDelete(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded transition shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {templateToDelete.json ? (
+                <>
+                  <button
+                    onClick={() => {
+                      handleRemoveCustomTemplate(templateToDelete, true, false);
+                      setTemplateToDelete(null);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition group"
+                  >
+                    <div className="font-medium text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 text-sm">
+                      Apagar Modelo
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Remove o documento da lista, mas mantêm os dados prepreenchidos salvo para usar depois.
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      handleRemoveCustomTemplate(templateToDelete, false, true);
+                      setTemplateToDelete(null);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition group"
+                  >
+                    <div className="font-medium text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 text-sm">
+                      Apagar Dados
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Mantém o modelo na lista, mas remove os dados preenchidos históricos.
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      handleRemoveCustomTemplate(templateToDelete, true, true);
+                      setTemplateToDelete(null);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition group"
+                  >
+                    <div className="font-medium text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 text-sm">
+                      Apagar Tudo (Modelo e Dados)
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Remove o modelo da lista e deleta todos os dados associados.
+                    </div>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleRemoveCustomTemplate(templateToDelete, true, false);
+                    setTemplateToDelete(null);
+                  }}
+                  className="w-full text-left px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition group flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-medium text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 text-sm">
+                      Excluir Modelo
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Remove o modelo XML selecionado da sua lista.
+                    </div>
+                  </div>
+                  <Trash2 className="w-5 h-5 text-slate-400 group-hover:text-red-500" />
+                </button>
+              )}
+            </div>
+            
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setTemplateToDelete(null)}
+                className="px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <ImportWordModal 
+        file={wordFileToConvert}
+        isOpen={!!wordFileToConvert}
+        onClose={() => setWordFileToConvert(null)}
+        onConfirm={handleConvertWord}
+        isConverting={isConvertingWord}
+      />
     </div>
   );
 }

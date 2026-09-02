@@ -28,6 +28,7 @@ interface UseFilePackageActionsProps {
     partesCarregadas?: XmlPart[]
   ) => void;
   adicionarTemplateSilencioso: (nome: string, xml: string) => void;
+  onWordFileDropped?: (file: File) => void;
   showToast: (msg: string) => void;
 }
 
@@ -39,6 +40,7 @@ export function useFilePackageActions({
   setDados,
   carregarXmlEJson,
   adicionarTemplateSilencioso,
+  onWordFileDropped,
   showToast,
 }: UseFilePackageActionsProps) {
   const [isDraggingFile, setIsDraggingFile] = React.useState(false);
@@ -70,6 +72,17 @@ export function useFilePackageActions({
   // Processa lista de múltiplos arquivos XML e/ou JSON (Drop ou File Input)
   const processarMultiplosArquivos = React.useCallback(
     async (files: File[]) => {
+      // 0. Caso haja arquivo Word (.docx)
+      const docxFile = files.find(
+        f => f.name.toLowerCase().endsWith('.docx') || f.type.includes('wordprocessingml')
+      );
+      if (docxFile) {
+        if (onWordFileDropped) {
+          onWordFileDropped(docxFile);
+        }
+        return;
+      }
+
       // 1. Caso haja um arquivo ZIP
       const zipFile = files.find(
         f => f.name.toLowerCase().endsWith('.zip') || f.type.includes('zip')

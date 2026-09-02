@@ -1,38 +1,173 @@
 import { AstNode, ColumnType, FieldMetadata, FieldOption, FormGroup, FormItem, FormStructure, IntermediateModel, TableColumnMetadata, XmlPart } from '../types';
 
 export function sanitizarXmlParaParser(xmlString: string): string {
-  // Converte temporariamente caracteres como < e > dentro de expr="..." para &lt; e &gt;
-  return String(xmlString).replace(/(\bexpr\s*=\s*)(["'])([\s\S]*?)\2/g, (match, prefix, quote, expr) => {
+  let res = String(xmlString || '');
+
+  // 1. Remove declarações <?xml ... ?> para controle uniforme de raiz
+  res = res.replace(/<\?xml[^>]*\?>/gi, '');
+
+  // 2. Converte entidades HTML comuns para entidades XML válidas ou caracteres literais
+  const htmlEntities: Record<string, string> = {
+    '&nbsp;': '&#160;',
+    '&copy;': '&#169;',
+    '&reg;': '&#174;',
+    '&trade;': '&#8482;',
+    '&ldquo;': '"',
+    '&rdquo;': '"',
+    '&lsquo;': "'",
+    '&rsquo;': "'",
+    '&mdash;': '—',
+    '&ndash;': '–',
+    '&hellip;': '…',
+    '&bull;': '•',
+    '&deg;': '°',
+    '&plusmn;': '±',
+    '&times;': '×',
+    '&divide;': '÷',
+    '&euro;': '€',
+    '&pound;': '£',
+    '&yen;': '¥',
+    '&sect;': '§',
+  };
+  for (const [entity, replacement] of Object.entries(htmlEntities)) {
+    res = res.replaceAll(entity, replacement);
+  }
+
+  // 3. Converte caracteres & soltos (que não formam entidades válidas) para &amp;
+  res = res.replace(/&(?!(?:[a-zA-Z][a-zA-Z0-9]*|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
+
+  // 4. Converte temporariamente caracteres como < e > dentro de expr="..." para &lt; e &gt;
+  res = res.replace(/(\bexpr\s*=\s*)(["'])([\s\S]*?)\2/g, (match, prefix, quote, expr) => {
     const exprSeguro = expr
       .replace(/&(?!lt;|gt;|amp;|quot;|apos;)/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
     return `${prefix}${quote}${exprSeguro}${quote}`;
   });
+
+  return res.trim();
+}
+
+function reconstructXmlFromHtmlNode(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return (node.textContent || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) return '';
+
+  const el = node as HTMLElement;
+  const tagName = el.tagName.toLowerCase();
+
+  // Ignora o próprio body se for a raiz
+  if (tagName === 'body') {
+    const childrenStr = Array.from(el.childNodes).map(reconstructXmlFromHtmlNode).join('\n');
+    return `<documento>\n${childrenStr}\n</documento>`;
+  }
+
+  let attrs = '';
+  Array.from(el.attributes).forEach(attr => {
+    const val = attr.value
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    attrs += ` ${attr.name}="${val}"`;
+  });
+
+  const children = Array.from(el.childNodes).map(reconstructXmlFromHtmlNode).join('');
+  if (!children && ['input', 'number', 'date', 'textarea', 'br', 'hr', 'coluna'].includes(tagName)) {
+    return `<${tagName}${attrs} />`;
+  }
+  return `<${tagName}${attrs}>${children}</${tagName}>`;
 }
 
 export function parseXmlDocument(xmlString: string): Document {
-  let xmlTratado = (xmlString || '').trim();
+  let xmlTratado = sanitizarXmlParaParser(xmlString || '');
 
   // Se o XML estiver totalmente vazio, inicializa como documento vazio
   if (!xmlTratado) {
     xmlTratado = '<documento></documento>';
-  } else if (!xmlTratado.startsWith('<documento>') && !xmlTratado.startsWith('<?xml')) {
-    // Se o XML não começa com <documento>, mas possui tags ou conteúdo solto, envolve automaticamente
-    if (xmlTratado.includes('<formulario>') || xmlTratado.includes('<conteudo>')) {
-      xmlTratado = `<documento>\n${xmlTratado}\n</documento>`;
+  } else {
+    // Verifica se existem múltiplos blocos <documento> ou conteúdo fora da tag raiz <documento>
+    const firstDocStart = xmlTratado.search(/<documento(?:\s|>)/i);
+    const lastDocEnd = xmlTratado.lastIndexOf('</documento>');
+
+    if (firstDocStart === -1) {
+      // Não tem tag <documento> em lugar nenhum
+      if (xmlTratado.includes('<formulario>') || xmlTratado.includes('<conteudo>')) {
+        xmlTratado = `<documento>\n${xmlTratado}\n</documento>`;
+      } else {
+        xmlTratado = `<documento>\n  <conteudo>\n${xmlTratado}\n  </conteudo>\n</documento>`;
+      }
     } else {
-      // É um fragmento de seções, parágrafos ou conteúdo puro
-      xmlTratado = `<documento>\n  <conteudo>\n${xmlTratado}\n  </conteudo>\n</documento>`;
+      // Possui <documento>. Verifica se há múltiplos blocos ou texto antes/depois
+      const countStarts = (xmlTratado.match(/<documento(?:\s|>)/gi) || []).length;
+      const countEnds = (xmlTratado.match(/<\/documento>/gi) || []).length;
+
+      if (countStarts > 1 || countEnds > 1) {
+        // Múltiplos blocos de <documento> concatenados (ex: multi-part colado ou anexado)
+        const formsMatch = xmlTratado.match(/<formulario>([\s\S]*?)<\/formulario>/gi) || [];
+        const contsMatch = xmlTratado.match(/<conteudo>([\s\S]*?)<\/conteudo>/gi) || [];
+
+        const mergedForms = formsMatch
+          .map(f => f.replace(/<\/?formulario>/gi, '').trim())
+          .filter(Boolean)
+          .join('\n\n');
+
+        const mergedConts = contsMatch
+          .map(c => c.replace(/<\/?conteudo>/gi, '').trim())
+          .filter(Boolean)
+          .join('\n\n');
+
+        if (mergedForms || mergedConts) {
+          xmlTratado = `<documento>\n  <formulario>\n${mergedForms}\n  </formulario>\n  <conteudo>\n${mergedConts}\n  </conteudo>\n</documento>`;
+        } else {
+          const inner = xmlTratado.replace(/<\/?documento[^>]*>/gi, '').trim();
+          xmlTratado = `<documento>\n${inner}\n</documento>`;
+        }
+      } else {
+        // Apenas um <documento>...</documento>, mas pode haver texto antes do primeiro <documento> ou depois do </documento>
+        const before = xmlTratado.substring(0, firstDocStart).trim();
+        const after = lastDocEnd !== -1 ? xmlTratado.substring(lastDocEnd + '</documento>'.length).trim() : '';
+
+        if (before || after) {
+          const mainBlock = lastDocEnd !== -1 
+            ? xmlTratado.substring(firstDocStart, lastDocEnd + '</documento>'.length)
+            : `<documento>\n${xmlTratado.substring(firstDocStart)}\n</documento>`;
+          
+          if (after && !after.startsWith('<!--')) {
+            const docSemFechamento = mainBlock.substring(0, mainBlock.lastIndexOf('</documento>'));
+            xmlTratado = `${docSemFechamento}\n${after}\n</documento>`;
+          } else {
+            xmlTratado = mainBlock;
+          }
+        }
+      }
     }
   }
 
-  const xmlSeguro = sanitizarXmlParaParser(xmlTratado);
   const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(xmlSeguro, 'text/xml');
+  const xmlDoc = parser.parseFromString(xmlTratado, 'text/xml');
 
   const parserError = xmlDoc.querySelector('parsererror');
   if (parserError) {
+    // Auto-cura via parser HTML tolerante a falhas
+    try {
+      const htmlDoc = parser.parseFromString(xmlTratado, 'text/html');
+      const body = htmlDoc.body;
+      if (body && body.childNodes.length > 0) {
+        const reconstructed = reconstructXmlFromHtmlNode(body);
+        const healedDoc = parser.parseFromString(reconstructed, 'text/xml');
+        if (!healedDoc.querySelector('parsererror')) {
+          return healedDoc;
+        }
+      }
+    } catch {
+      // Prossegue para erro se auto-cura falhar
+    }
+
     throw new Error(`Erro ao interpretar XML: ${parserError.textContent || 'Sintaxe XML inválida'}`);
   }
 
@@ -60,7 +195,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
     const campo: FieldMetadata = {
       id,
       label,
-      tipo: (tag === 'number' ? 'number' : tag === 'date' ? 'date' : tag === 'textarea' ? 'textarea' : tag === 'checkbox' ? 'checkbox' : tag === 'radio' ? 'radio' : tag === 'select' ? 'select' : tag === 'tabela' ? 'tabela' : 'input') as any,
+      tipo: (tag === 'number' ? 'number' : tag === 'date' ? 'date' : tag === 'textarea' ? 'textarea' : tag === 'checkbox' ? 'checkbox' : tag === 'radio' ? 'radio' : tag === 'select' ? 'select' : tag === 'tabela' ? 'tabela' : 'input') as import('../types').FieldType,
       tipoInput,
       descricao,
       placeholder,
@@ -126,7 +261,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
           colunas.push({
             id: colId,
             label: colLabel,
-            tipo: colTipo as ColumnType,
+            tipo: ['input', 'texto', 'number', 'moeda', 'date', 'select', 'radio', 'textarea', 'checkbox', 'cpf', 'cnpj', 'cep', 'telefone', 'email'].includes(colTipo) ? (colTipo as ColumnType) : 'input',
             placeholder: colPlaceholder,
             min: colMin,
             max: colMax,

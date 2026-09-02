@@ -15,7 +15,7 @@ export interface CamposFocoArgs {
 
 /**
  * Hook de foco/destaque bidirecional entre documento e sidebar.
- * Extraído de App.tsx (sugestão A de modularização).
+ .
  */
 export function useCamposFoco({ sidebarCollapsed, irParaCampoAtivo, setSidebarCollapsed, setDados }: CamposFocoArgs) {
   const bloquearScrollDocAte = React.useRef(0);

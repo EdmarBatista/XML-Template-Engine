@@ -12,8 +12,7 @@
  *    - Ctrl+P / Cmd+P: Imprimir / Exportar documento.
  *    - Ctrl+Z / Cmd+Z: Desfazer alteração no formulário (Undo).
  *    - Ctrl+Y / Cmd+Shift+Z: Refazer alteração no formulário (Redo).
- *    - Ctrl+E / Cmd+E: Abrir/fechar Editor de Código XML.
- *    - Ctrl+M / Cmd+M: Abrir/fechar Inspetor de Modelo.
+ *    - Ctrl+M / Cmd+M: Abrir/fechar Painel de Variáveis e Modelo.
  *    - Esc: Fechar modais abertos.
  */
 
@@ -24,7 +23,6 @@ export interface KeyboardShortcutsHandlers {
   onPrint?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
-  onToggleXmlEditor?: () => void;
   onToggleModelModal?: () => void;
   onEscape?: () => void;
   enabled?: boolean;
@@ -35,7 +33,6 @@ export function useKeyboardShortcuts({
   onPrint,
   onUndo,
   onRedo,
-  onToggleXmlEditor,
   onToggleModelModal,
   onEscape,
   enabled = true,
@@ -83,15 +80,6 @@ export function useKeyboardShortcuts({
           return;
         }
 
-        // Ctrl + E -> Abrir/fechar Editor XML
-        if (key === 'e' && !isTyping) {
-          if (onToggleXmlEditor) {
-            e.preventDefault();
-            onToggleXmlEditor();
-          }
-          return;
-        }
-
         // Ctrl + M -> Abrir/fechar Modal de Modelo
         if (key === 'm' && !isTyping) {
           if (onToggleModelModal) {
@@ -131,7 +119,6 @@ export function useKeyboardShortcuts({
     onPrint,
     onUndo,
     onRedo,
-    onToggleXmlEditor,
     onToggleModelModal,
     onEscape,
   ]);
