@@ -12,6 +12,7 @@ import { DocumentInlineAutoTable } from '../inline/DocumentInlineAutoTable';
 
 export interface BlockDispatcherContext extends InlineRenderContext {
   contextoNumeracao?: NumberingContext;
+  comentarios?: import('../../../types').WordComment[];
 }
 
 export function renderDocumentAstBlocks(
@@ -248,6 +249,7 @@ export function renderDocumentAstBlocks(
           contextoNumeracao: ctxNum,
           fontScale,
           nivel,
+          node,
           alinhamentoPadrao: alinhamento,
           renderInlineNodes: selfRenderInline,
           contextoLocal: ctxLocal,

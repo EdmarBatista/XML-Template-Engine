@@ -388,6 +388,7 @@ function converterElementosBlocoDomPdf(
     // 6. Listas (<ol>, <ul>, <div data-word-type="lista">)
     if (wordType === 'lista' || tag === 'ol' || tag === 'ul') {
       const isOl = tag === 'ol' || el.getAttribute('data-word-numerada') === 'true';
+      const tipoLista = (el.getAttribute('data-word-tipo-lista') || '').toLowerCase();
       const itensEl = Array.from(el.querySelectorAll(':scope > li, :scope > [data-word-type="item"]'));
 
       const itens = itensEl.map(item => {
@@ -399,13 +400,25 @@ function converterElementosBlocoDomPdf(
       const recuoPt = cmParaPt(recuoSecaoCm > 0 ? recuoSecaoCm : DOCUMENT_THEME.margins.indentation.listIndentCm);
 
       if (isOl) {
+        let pdfListType: any = undefined;
+        if (tipoLista === 'upper-roman' || tipoLista === 'romano') pdfListType = 'upper-roman';
+        else if (tipoLista === 'lower-roman' || tipoLista === 'romano_minusculo') pdfListType = 'lower-roman';
+        else if (tipoLista === 'lower-alpha' || tipoLista === 'letra') pdfListType = 'lower-alpha';
+        else if (tipoLista === 'upper-alpha' || tipoLista === 'letra_maiuscula') pdfListType = 'upper-alpha';
+
         resultado.push({
           ol: itens,
+          ...(pdfListType ? { type: pdfListType } : {}),
           margin: [recuoPt + 10, DOCUMENT_THEME.spacing.list.beforePt, 0, DOCUMENT_THEME.spacing.list.afterPt],
         });
       } else {
+        let pdfListType: any = undefined;
+        if (tipoLista === 'circle' || tipoLista === 'circulo') pdfListType = 'circle';
+        else if (tipoLista === 'square' || tipoLista === 'quadrado') pdfListType = 'square';
+
         resultado.push({
           ul: itens,
+          ...(pdfListType ? { type: pdfListType } : {}),
           margin: [recuoPt + 10, DOCUMENT_THEME.spacing.list.beforePt, 0, DOCUMENT_THEME.spacing.list.afterPt],
         });
       }

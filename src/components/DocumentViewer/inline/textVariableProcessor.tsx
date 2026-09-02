@@ -26,6 +26,7 @@ export interface ProcessarTextoOptions {
   edicaoInline: boolean;
   variaveisVermelhasWord: boolean;
   fontScale: number;
+  comentarios?: import('../../../types').WordComment[];
 }
 
 export function processarTextoComVariaveis({
@@ -40,6 +41,7 @@ export function processarTextoComVariaveis({
   edicaoInline,
   variaveisVermelhasWord,
   fontScale,
+  comentarios,
 }: ProcessarTextoOptions): React.ReactNode[] {
   const escopo = { ...dados, ...(ctxLocal || {}) };
   const regex = /\{\{\s*([^}|]+?)\s*(?:\|\s*([^}]+?)\s*)?\}\}/g;

@@ -199,13 +199,25 @@ function converterListaDom(
   contadorListas: { valor: number }
 ): Paragraph[] {
   const isOl = listaEl.tagName.toLowerCase() === 'ol' || listaEl.getAttribute('data-word-numerada') === 'true';
+  const tipoLista = (listaEl.getAttribute('data-word-tipo-lista') || '').toLowerCase();
   const itens = Array.from(listaEl.querySelectorAll(':scope > li, :scope > [data-word-type="item"]'));
   const resultado: Paragraph[] = [];
 
   let refLista = '';
   if (isOl) {
     contadorListas.valor += 1;
-    refLista = `edmlista${Math.min(contadorListas.valor, 30)}`;
+    const idx = Math.min(contadorListas.valor, 50);
+    if (tipoLista === 'upper-roman' || tipoLista === 'romano') {
+      refLista = `edmlista_uroman_${idx}`;
+    } else if (tipoLista === 'lower-roman' || tipoLista === 'romano_minusculo') {
+      refLista = `edmlista_lroman_${idx}`;
+    } else if (tipoLista === 'lower-alpha' || tipoLista === 'letra') {
+      refLista = `edmlista_lalpha_${idx}`;
+    } else if (tipoLista === 'upper-alpha' || tipoLista === 'letra_maiuscula') {
+      refLista = `edmlista_ualpha_${idx}`;
+    } else {
+      refLista = `edmlista_dec_${idx}`;
+    }
   }
 
   itens.forEach(item => {
@@ -640,14 +652,19 @@ function criarOpcoesNumeracao(opcoes: Required<WordExportOptions>) {
   };
 }
 
-function criarOpcoesLista(referencia: string, opcoes: Required<WordExportOptions>) {
+function criarOpcoesLista(
+  referencia: string,
+  opcoes: Required<WordExportOptions>,
+  formato: (typeof LevelFormat)[keyof typeof LevelFormat] = LevelFormat.DECIMAL,
+  textoTemplate: string = '%1.'
+) {
   return {
     reference: referencia,
     levels: [
       {
         level: 0,
-        format: LevelFormat.DECIMAL,
-        text: '%1.',
+        format: formato,
+        text: textoTemplate,
         alignment: AlignmentType.LEFT,
         start: 1,
         style: {
@@ -687,8 +704,13 @@ export async function exportarParaWord(
     numberingConfig.push(criarOpcoesNumeracao(cfg));
   }
 
-  for (let i = 1; i <= 30; i++) {
-    numberingConfig.push(criarOpcoesLista(`edmlista${i}`, cfg));
+  for (let i = 1; i <= 50; i++) {
+    numberingConfig.push(criarOpcoesLista(`edmlista_dec_${i}`, cfg, LevelFormat.DECIMAL, '%1.'));
+    numberingConfig.push(criarOpcoesLista(`edmlista_uroman_${i}`, cfg, LevelFormat.UPPER_ROMAN, '%1)'));
+    numberingConfig.push(criarOpcoesLista(`edmlista_lroman_${i}`, cfg, LevelFormat.LOWER_ROMAN, '%1)'));
+    numberingConfig.push(criarOpcoesLista(`edmlista_lalpha_${i}`, cfg, LevelFormat.LOWER_LETTER, '%1)'));
+    numberingConfig.push(criarOpcoesLista(`edmlista_ualpha_${i}`, cfg, LevelFormat.UPPER_LETTER, '%1.'));
+    numberingConfig.push(criarOpcoesLista(`edmlista${i}`, cfg, LevelFormat.DECIMAL, '%1.'));
   }
 
   const elements = converterElementosBlocoDom(

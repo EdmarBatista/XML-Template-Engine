@@ -26,6 +26,7 @@ export interface DocumentTableCellProps {
   onFocusField?: (fieldId: string) => void;
   onUpdateField?: (fieldId: string, value: any, origem?: string) => void;
   dadosTabela?: any[];
+  actions?: React.ReactNode;
   children?: React.ReactNode;
   fontScale?: number;
   className?: string;
@@ -55,6 +56,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   onFocusField,
   onUpdateField,
   dadosTabela,
+  actions,
   children,
   fontScale = 1,
   className = '',
@@ -458,6 +460,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
           )}
         </>
       )}
+      {actions}
     </CellTag>
   );
 };

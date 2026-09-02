@@ -86,16 +86,27 @@ function avaliarComparacao(expr: string, dados: Record<string, any>): boolean {
   }
 }
 
+export function decodificarEntidadesXml(str: string): string {
+  if (!str) return '';
+  let res = String(str);
+  let prev = '';
+  // Decodifica repetidamente enquanto houver entidades aninhadas (ex: &amp;apos; -> &apos; -> ')
+  while (res !== prev && res.includes('&')) {
+    prev = res;
+    res = res
+      .replace(/&amp;/g, '&')
+      .replace(/&apos;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&gt;/g, '>')
+      .replace(/&lt;/g, '<');
+  }
+  return res;
+}
+
 export function avaliarExpressao(expr: string, dados: Record<string, any>): boolean {
   if (!expr) return true;
 
-  let limpa = String(expr)
-    .replace(/&gt;/g, '>')
-    .replace(/&lt;/g, '<')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .trim();
+  const limpa = decodificarEntidadesXml(expr).trim();
 
   // Tratamento de operadores OR (|| ou OR)
   const ou = dividirExpressao(limpa, '||') || dividirExpressao(limpa, ' OR ');
@@ -114,14 +125,16 @@ export function avaliarExpressao(expr: string, dados: Record<string, any>): bool
 
 export function extrairVariaveisDaExpressao(expr: string): string[] {
   if (!expr) return [];
-  const limpo = expr
+  const decodificado = decodificarEntidadesXml(expr);
+  const limpo = decodificado
     .replace(/'[^']*'/g, '')
     .replace(/"[^"]*"/g, '')
-    .replace(/[=!<>+&|()]+/g, ' ')
-    .replace(/\b(true|false|null|undefined|AND|OR)\b/gi, ' ')
-    .replace(/\d+/g, ' ');
+    .replace(/[=!<>+&|()[\],]+/g, ' ')
+    .replace(/\b(true|false|null|undefined|AND|OR|and|or|not)\b/gi, ' ')
+    .replace(/\b\d+(\.\d+)?\b/g, ' ');
 
   return limpo
     .split(/\s+/)
-    .filter(token => /^[a-zA-Z_]\w*$/.test(token));
+    .map(token => token.trim())
+    .filter(token => /^[a-zA-Z_][a-zA-Z0-9_\.]*$/.test(token));
 }

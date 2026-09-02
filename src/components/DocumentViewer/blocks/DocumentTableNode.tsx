@@ -174,7 +174,14 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
         if (!celula) return;
         const celulaKey = `${parentKey}_c${cellCounter++}_${cIdx}`;
 
-        if (celula.tipo === 'celula') {
+        const isCellTag =
+          celula.tipo === 'celula' ||
+          celula.tipo === 'coluna' ||
+          celula.tipo === 'td' ||
+          celula.tipo === 'th' ||
+          celula.tipo === 'item';
+
+        if (isCellTag) {
           celulasValidas.push({
             celula,
             celulaKey,
@@ -199,15 +206,34 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
 
     coletarCelulas(linhaNode.filhos || [], rKey, rowCondContext);
 
+    // Pré-computa informações da linha inteira
     let linhaVarInfo: { listaNome?: string; rowIndex?: number } | null = null;
+    if (!isHeader) {
+      for (const item of celulasValidas) {
+        const vInfo = extrairVarInfoDaCelula(item.celula, ctx);
+        if (vInfo?.listaNome && vInfo?.rowIndex !== undefined) {
+          linhaVarInfo = { listaNome: vInfo.listaNome, rowIndex: vInfo.rowIndex };
+          break;
+        }
+      }
+      if (!linhaVarInfo && ctx.__edmLoopIndex) {
+        const loopVars = Object.keys(ctx.__edmLoopIndex);
+        if (loopVars.length > 0) {
+          const lVar = loopVars[0];
+          const rIdx = ctx.__edmLoopIndex[lVar];
+          const lNome = ctx.__edmListaOrigem?.[lVar] || listaPrincipal;
+          if (rIdx !== undefined) {
+            linhaVarInfo = { listaNome: lNome, rowIndex: rIdx };
+          }
+        }
+      }
+    }
 
     celulasValidas.forEach(({ celula, celulaKey, activeCond }, itemIdx) => {
       const isUltimaCelula = itemIdx === celulasValidas.length - 1;
       const cellVarInfo = !isHeader ? extrairVarInfoDaCelula(celula, ctx) : null;
-      if (cellVarInfo && !linhaVarInfo) {
-        linhaVarInfo = { listaNome: cellVarInfo.listaNome, rowIndex: cellVarInfo.rowIndex };
-      }
-      const targetLista = cellVarInfo?.listaNome || linhaVarInfo?.listaNome;
+      const targetLista = cellVarInfo?.listaNome || linhaVarInfo?.listaNome || listaPrincipal;
+      const targetRowIndex = cellVarInfo?.rowIndex !== undefined ? cellVarInfo.rowIndex : linhaVarInfo?.rowIndex;
       const dadosLista = targetLista ? dados?.[targetLista] : undefined;
 
       // Placeholder específico da coluna
@@ -220,7 +246,21 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
         (targetLista && cellVarInfo?.colKey && destaquesAtivos[`${targetLista}.${cellVarInfo.colKey}`])
       );
 
-      const targetRowIndex = cellVarInfo?.rowIndex !== undefined ? cellVarInfo.rowIndex : linhaVarInfo?.rowIndex;
+      const removeAction =
+        !isHeader && isUltimaCelula && edicaoInline && Boolean(onUpdateField) && targetLista && targetRowIndex !== undefined ? (
+          <button
+            type="button"
+            data-ignore-export="true"
+            data-word-ignore="true"
+            onClick={e => handleRemoveRow(targetLista, targetRowIndex, e)}
+            onMouseDown={e => e.stopPropagation()}
+            onDoubleClick={e => e.stopPropagation()}
+            title={`Remover linha ${targetRowIndex + 1}`}
+            className="absolute top-1 right-1 opacity-0 group-hover/row:opacity-100 transition-opacity z-20 pointer-events-auto p-1 text-slate-400 hover:text-rose-600 bg-white/95 dark:bg-slate-800/95 hover:bg-rose-50 dark:hover:bg-rose-950/80 border border-slate-200 dark:border-slate-700 hover:border-rose-300 rounded shadow-xs transition-all cursor-pointer flex items-center justify-center"
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        ) : undefined;
 
       cells.push(
         <DocumentTableCell
@@ -244,22 +284,9 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
           onFocusField={onFocusField}
           onUpdateField={onUpdateField}
           fontScale={fontScale}
+          actions={removeAction}
         >
           {renderInlineNodes(celula.filhos || [], celulaKey, ctx)}
-          {!isHeader && isUltimaCelula && edicaoInline && Boolean(onUpdateField) && targetLista && targetRowIndex !== undefined && (
-            <button
-              type="button"
-              data-ignore-export="true"
-              data-word-ignore="true"
-              onClick={e => handleRemoveRow(targetLista, targetRowIndex, e)}
-              onMouseDown={e => e.stopPropagation()}
-              onDoubleClick={e => e.stopPropagation()}
-              title={`Remover linha ${targetRowIndex + 1}`}
-              className="absolute top-1 right-1 opacity-0 group-hover/row:opacity-100 transition-opacity z-20 pointer-events-auto p-1 text-slate-400 hover:text-rose-600 bg-white/95 dark:bg-slate-800/95 hover:bg-rose-50 dark:hover:bg-rose-950/80 border border-slate-200 dark:border-slate-700 hover:border-rose-300 rounded shadow-xs transition-all cursor-pointer flex items-center justify-center"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          )}
         </DocumentTableCell>
       );
     });
@@ -294,11 +321,11 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
       const childKey = `${pathKey}_${child.tipo}_${idx}`;
       const escopoAtual = { ...escopoBase, ...ctx };
 
-      if (child.tipo === 'cabecalho') {
-        const temLinhasInternas = (child.filhos || []).some(f => f.tipo === 'linha');
+      if (child.tipo === 'cabecalho' || child.tipo === 'thead') {
+        const temLinhasInternas = (child.filhos || []).some(f => f.tipo === 'linha' || f.tipo === 'tr');
         if (temLinhasInternas) {
           (child.filhos || []).forEach((linhaF, lIdx) => {
-            if (linhaF.tipo === 'linha') {
+            if (linhaF.tipo === 'linha' || linhaF.tipo === 'tr') {
               processarLinha(linhaF, `${childKey}_l_${lIdx}`, ctx, true, parentCondContext);
             } else if (linhaF.tipo === 'if') {
               processarFilhos([linhaF], `${childKey}_if_${lIdx}`, ctx, parentCondContext);
@@ -307,8 +334,10 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
         } else {
           processarLinha(child, childKey, ctx, true, parentCondContext);
         }
-      } else if (child.tipo === 'linha') {
+      } else if (child.tipo === 'linha' || child.tipo === 'tr') {
         processarLinha(child, childKey, ctx, false, parentCondContext);
+      } else if (child.tipo === 'corpo' || child.tipo === 'tbody' || child.tipo === 'rodape' || child.tipo === 'tfoot') {
+        processarFilhos(child.filhos || [], childKey, ctx, parentCondContext);
       } else if (child.tipo === 'if') {
         const expr = child.atributos?.expr || '';
         if (avaliarExpressao(expr, escopoAtual)) {
@@ -332,7 +361,12 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
               ? escopoAtual[lNome]
               : obterValorPorCaminho(escopoAtual, lNome);
 
-          const itens = valoresDaLista(valorListaBruto);
+          let itens = valoresDaLista(valorListaBruto);
+
+          // Se a lista não possui dados definidos ainda, fornece 1 linha vazia para exibição do layout da tabela
+          if (itens.length === 0 && (valorListaBruto === undefined || valorListaBruto === null || valorListaBruto === '')) {
+            itens = [{}];
+          }
 
           itens.forEach((it, idxLoop) => {
             const itemFormatado =

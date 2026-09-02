@@ -1,5 +1,5 @@
 import React from 'react';
-import { AstNode } from '../../../types';
+import { AstNode, ListStyleType } from '../../../types';
 import { avaliarExpressao, extrairVariaveisDaExpressao } from '../../../utils/expressionEvaluator';
 import { formatarItemForeach, obterValorPorCaminho, valoresDaLista } from '../../../utils/documentUtils';
 
@@ -47,8 +47,64 @@ export const DocumentListNode: React.FC<DocumentListNodeProps> = ({
   destaquesAtivos = {},
   onFocusField,
 }) => {
-  const numerada = node.tipo === 'lista_numerada';
-  const ListTag = numerada ? 'ol' : 'ul';
+  const rawTipo = (node.atributos?.tipo || node.atributos?.formato || node.atributos?.estilo || '').toLowerCase().trim();
+  const isNumeradaAttr = node.atributos?.numerada === 'true' || node.atributos?.numerado === 'true';
+  const isListaNumeradaTag = node.tipo === 'lista_numerada' || node.tipo === 'ol';
+
+  let listStyleType: ListStyleType = 'disc';
+  let isOrdered = false;
+
+  if (rawTipo.includes('romano_minusculo') || rawTipo === 'lowerroman' || rawTipo === 'romano-minusculo' || rawTipo === 'i') {
+    listStyleType = 'lower-roman';
+    isOrdered = true;
+  } else if (rawTipo.includes('romano') || rawTipo === 'upperroman' || rawTipo === 'romano_maiusculo' || rawTipo === 'romano-maiusculo') {
+    listStyleType = 'upper-roman';
+    isOrdered = true;
+  } else if (rawTipo.includes('letra_maiuscula') || rawTipo === 'upperletter' || rawTipo === 'upper-alpha') {
+    listStyleType = 'upper-alpha';
+    isOrdered = true;
+  } else if (rawTipo.includes('letra') || rawTipo.includes('alfabet') || rawTipo === 'lowerletter' || rawTipo === 'lower-alpha' || rawTipo === 'alinea') {
+    listStyleType = 'lower-alpha';
+    isOrdered = true;
+  } else if (rawTipo === 'circulo' || rawTipo === 'circle') {
+    listStyleType = 'circle';
+    isOrdered = false;
+  } else if (rawTipo === 'quadrado' || rawTipo === 'square') {
+    listStyleType = 'square';
+    isOrdered = false;
+  } else if (rawTipo === 'numerada' || rawTipo === 'decimal' || rawTipo === '1' || isNumeradaAttr || isListaNumeradaTag) {
+    listStyleType = 'decimal';
+    isOrdered = true;
+  } else {
+    // Padrão: bolinhas / bullet
+    listStyleType = 'disc';
+    isOrdered = false;
+  }
+
+  const ListTag = isOrdered ? 'ol' : 'ul';
+
+  const getStyleClass = () => {
+    switch (listStyleType) {
+      case 'upper-roman':
+        return '[list-style-type:upper-roman]';
+      case 'lower-roman':
+        return '[list-style-type:lower-roman]';
+      case 'lower-alpha':
+        return '[list-style-type:lower-alpha]';
+      case 'upper-alpha':
+        return '[list-style-type:upper-alpha]';
+      case 'circle':
+        return '[list-style-type:circle]';
+      case 'square':
+        return '[list-style-type:square]';
+      case 'decimal':
+        return 'list-decimal';
+      case 'disc':
+      default:
+        return 'list-disc';
+    }
+  };
+
   const listItems: React.ReactNode[] = [];
 
   const processarFilhosLista = (
@@ -158,10 +214,9 @@ export const DocumentListNode: React.FC<DocumentListNodeProps> = ({
     <ListTag
       key={blockKey}
       data-word-type="lista"
-      data-word-numerada={numerada ? 'true' : 'false'}
-      className={`text-slate-800 dark:text-slate-200 space-y-1.5 my-3 pl-6 select-text ${
-        numerada ? 'list-decimal' : 'list-disc'
-      }`}
+      data-word-numerada={isOrdered ? 'true' : 'false'}
+      data-word-tipo-lista={listStyleType}
+      className={`text-slate-800 dark:text-slate-200 space-y-1.5 my-3 pl-6 select-text ${getStyleClass()}`}
       style={{ fontSize: `${14 * fontScale}px`, lineHeight: 1.5 }}
     >
       {listItems}

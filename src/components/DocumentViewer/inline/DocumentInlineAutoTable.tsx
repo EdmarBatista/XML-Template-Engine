@@ -132,6 +132,22 @@ export const DocumentInlineAutoTable: React.FC<DocumentInlineAutoTableProps> = (
                   const isCellHighlighted = Boolean(
                     destaquesAtivos[chaveReal] || destaquesAtivos[`${chaveReal}.${col}`]
                   );
+                  const removeAction =
+                    isUltimaColuna && edicaoInline && Boolean(onUpdateField) ? (
+                      <button
+                        type="button"
+                        data-ignore-export="true"
+                        data-word-ignore="true"
+                        onClick={e => handleRemoveRow(rIdx, e)}
+                        onMouseDown={e => e.stopPropagation()}
+                        onDoubleClick={e => e.stopPropagation()}
+                        title={`Remover linha ${rIdx + 1}`}
+                        className="absolute top-1 right-1 opacity-0 group-hover/row:opacity-100 transition-opacity z-20 pointer-events-auto p-1 text-slate-400 hover:text-rose-600 bg-white/95 dark:bg-slate-800/95 hover:bg-rose-50 dark:hover:bg-rose-950/80 border border-slate-200 dark:border-slate-700 hover:border-rose-300 rounded shadow-xs transition-all cursor-pointer flex items-center justify-center"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    ) : undefined;
+
                   return (
                     <DocumentTableCell
                       key={`td_${rIdx}_${col}_${cIdx}`}
@@ -150,22 +166,9 @@ export const DocumentInlineAutoTable: React.FC<DocumentInlineAutoTableProps> = (
                       onFocusField={onFocusField}
                       onUpdateField={onUpdateField}
                       fontScale={fontScale}
+                      actions={removeAction}
                     >
                       {formattedVal || ''}
-                      {isUltimaColuna && edicaoInline && Boolean(onUpdateField) && (
-                        <button
-                          type="button"
-                          data-ignore-export="true"
-                          data-word-ignore="true"
-                          onClick={e => handleRemoveRow(rIdx, e)}
-                          onMouseDown={e => e.stopPropagation()}
-                          onDoubleClick={e => e.stopPropagation()}
-                          title={`Remover linha ${rIdx + 1}`}
-                          className="absolute top-1 right-1 opacity-0 group-hover/row:opacity-100 transition-opacity z-20 pointer-events-auto p-1 text-slate-400 hover:text-rose-600 bg-white/95 dark:bg-slate-800/95 hover:bg-rose-50 dark:hover:bg-rose-950/80 border border-slate-200 dark:border-slate-700 hover:border-rose-300 rounded shadow-xs transition-all cursor-pointer flex items-center justify-center"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      )}
                     </DocumentTableCell>
                   );
                 })}

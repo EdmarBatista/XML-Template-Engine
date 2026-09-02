@@ -524,6 +524,7 @@ export default function App() {
                 nomeDocumento={xmlName}
                 zoom={modoA4 ? zoomA4 : zoomFluido}
                 modoA4={modoA4}
+                comentarios={modelo.comentarios}
               />
           </>
         ) : (

@@ -326,17 +326,17 @@ Aqui está o paralelo exato do que você digita no Word e como o sistema compila
 
 | O que você digita no Word (DOCX) | O que o motor gera no Formulario XML | O que o motor gera no Conteúdo XML |
 |:---|:---|:---|
-| `{{ Nome da Mãe }}` | `<input id="nome_da_mae" tipo="texto" rotulo="Nome da Mãe" />` | `<p>{{nome_da_mae}}</p>` |
-| `{{ Valor | moeda }}` | `<number id="valor" tipo="moeda" rotulo="Valor" />` | `<p>{{valor | moeda}}</p>` |
-| `{{ Nasc. | data }}` | `<date id="nasc" rotulo="Nasc." />` | `<p>{{nasc | data}}</p>` |
-| `{{ Resumo | longo }}` | `<textarea id="resumo" rotulo="Resumo" />` | `<p>{{resumo}}</p>` |
-| `{{ UF | select(AC, AL, AP) }}` | `<select id="uf" rotulo="UF"><option>AC</option>...</select>` | `<p>{{uf}}</p>` |
-| `{{ CNH | radio(Sim, Não) }}` | `<radio id="cnh" rotulo="CNH"><option>Sim</option>...</radio>` | `<p>{{cnh}}</p>` |
-| `{{ if UF == 'SP' }}` | *(Nenhum campo criado, apenas lógica)* | `<if expr="uf == 'SP'">` |
-| `{{ /if }}` | *(Fechamento de condicional)* | `</if>` |
-| `{{ foreach dependentes }}` | *(Inicia lista dinâmica)* | `<foreach lista="dependentes" var="item">` |
-| `{{ item.nome }}` | `<coluna id="nome" rotulo="Nome" />` (inserido na tabela dependentes) | `{{item.nome}}` |
-| `{{ /foreach }}` | *(Fechamento da lista dinâmica)* | `</foreach>` |
+| `{{ Nome da Mãe }}`                | `<input id="nome_da_mae" tipo="texto" rotulo="Nome da Mãe" />` | `<p>{{nome_da_mae}}</p>` |
+| <code>{{ Valor &#124; moeda }}</code>              | <code>&lt;number id="valor" tipo="moeda" rotulo="Valor" /&gt;</code>            | <code>&lt;p&gt;{{valor &#124; moeda}}&lt;/p&gt;</code> |
+| <code>{{ Nasc. &#124; data }}</code>               | <code>&lt;date id="nasc" rotulo="Nasc." /&gt;</code>                            | <code>&lt;p&gt;{{nasc &#124; data}}&lt;/p&gt;</code> |
+| <code>{{ Resumo &#124; longo }}</code>              | <code>&lt;textarea id="resumo" rotulo="Resumo" /&gt;</code>                     | `<p>{{resumo}}</p>` |
+| <code>{{ UF &#124; select(AC, AL) }}</code>        | <code>&lt;select id="uf" rotulo="UF"&gt;&lt;option&gt;AC&lt;/option&gt;...&lt;/select&gt;</code> | `<p>{{uf}}</p>` |
+| <code>{{ CNH &#124; radio(Sim, Não) }}</code>      | <code>&lt;radio id="cnh" rotulo="CNH"&gt;&lt;option&gt;Sim&lt;/option&gt;...&lt;/radio&gt;</code> | `<p>{{cnh}}</p>` |
+| `{{ if UF == 'SP' }}`              | *(Nenhum campo criado, apenas lógica)*                       | `<if expr="uf == 'SP'">` |
+| `{{ /if }}`                        | *(Fechamento de condicional)*                                | `</if>` |
+| `{{ foreach dependentes }}`        | *(Inicia lista dinâmica na tabela)*                          | `<foreach lista="dependentes" var="item">` |
+| `{{ item.nome }}`                  | `<coluna id="nome" rotulo="Nome" />` (na tabela)           | `{{item.nome}}` |
+| `{{ /foreach }}`                   | *(Fechamento da lista dinâmica)*                             | `</foreach>` |
 
 #### Tabelas Nativas do Word
 O sistema também converte **Tabelas do Word** perfeitamente:
@@ -356,6 +356,38 @@ O sistema também converte **Tabelas do Word** perfeitamente:
   - Arquivos sem o padrão de colchetes numéricos no final são tratados como documentos independentes e não sofrem fusão acidental.
 
 > **Nota sobre Numeração:** Ao utilizar `<secao titulo="DO VALOR E PAGAMENTO" numerar="true">` (ou simplesmente sem o atributo, já que a numeração é habilitada por padrão), o motor calcula e renderiza automaticamente o prefixo sequencial (ex.: `1.`, `2.`, `3.`, `3.1.`, etc.). Portanto, **não adicione números manuais** no atributo `titulo`. Para seções que não devem ser numeradas (como blocos de assinaturas ou anexos), use `numerar="false"`.
+
+### 4. Sistema de Numeração Hierárquica Multinível (Níveis 1 a 8)
+
+O motor conta com um algoritmo avançado de numeração hierárquica contínua que suporta até **8 níveis de profundidade** (tanto em seções `<secao>` quanto em parágrafos com atributo `nivel="2"` a `nivel="8"` ou importados do Word).
+
+#### Tabela de Níveis e Exemplos:
+
+| Nível | Identificação | Exemplo de Saída | Tag XML Típica | Recuo no Word/PDF |
+|:---:|:---|:---|:---|:---:|
+| **1** | Seção Primária | `1.` ou `2.` | `<secao titulo="...">` | 0,0 cm (margem) |
+| **2** | Seção / Item Secundário | `1.1.` | `<secao>` filha ou `<p nivel="2">` / `<p numerado="true">` | 0,5 cm |
+| **3** | Subitem Terciário | `1.1.1.` | `<secao>` neta ou `<p nivel="3">` | 1,0 cm |
+| **4** | Subitem Quaternário | `1.1.1.1.` | `<p nivel="4">` | 1,5 cm |
+| **5** | Subitem Quinário | `1.1.1.1.1.` | `<p nivel="5">` | 2,0 cm |
+| **6** | Subitem Senário | `1.1.1.1.1.1.` | `<p nivel="6">` | 2,5 cm |
+| **7** | Subitem Septenário | `1.1.1.1.1.1.1.` | `<p nivel="7">` | 3,0 cm |
+| **8** | Subitem Octonário | `1.1.1.1.1.1.1.1.` | `<p nivel="8">` | 3,5 cm |
+
+#### Como Funciona a Lógica:
+1. **É recursivo?**
+   - **Sim, na propagação de contexto estrutural da árvore AST**: cada `<secao>` aninhada gera um `subContexto` isolado derivado do prefixo do nó pai (`subPrefix`), propagando a numeração para todos os seus nós filhos sem risco de colisão entre capítulos distintos.
+   - **Iterativo e dinâmico no estado de contadores**: internamente, a contagem utiliza um mapa indexado (`levelCounters: Record<number, number>`) e um mapa de prefixos acumulados (`levelNumbers: Record<number, string>`). Isso evita chamadas recursivas profundas em lote e elimina qualquer risco de estouro de pilha (*stack overflow*).
+2. **Síntese Automática de Níveis Intermediários (Saltos de Nível)**:
+   - Se o documento tiver um parágrafo de Nível 2 (`1.1.`) e, em seguida, um parágrafo saltar diretamente para o Nível 4 (`<p nivel="4">`), o motor detecta a ausência do Nível 3 e sintetiza automaticamente o ramo intermediário como `1.1.1.1.`, registrando os contadores corretos.
+3. **Reinicialização Automática de Subcontadores**:
+   - Ao avançar ou retornar para um nível superior (por exemplo, de um parágrafo `1.1.2.1.` para outro parágrafo de nível 2), todos os contadores dos níveis inferiores (> 2) são automaticamente reiniciados para `1`, e suas referências em cache são apagadas, garantindo que o próximo subitem reinicie em `1.2.1.` e não com numeração residual.
+4. **O que Limita a Quantidade de Níveis (Por que até 8)?**
+   - **Largura Física da Folha A4 e Legibilidade**: A folha A4 possui 21,0 cm de largura. Com margens padrão de 2,0 cm em cada lado, a área útil de impressão é de 17,0 cm. Como cada nível hierárquico aplica um recuo progressivo de 0,5 cm (`(nivel - 1) * 0.5 cm`), no Nível 8 o recuo atinge **3,5 cm**, restando 13,5 cm para o texto. Níveis acima de 8 esmagariam tabelas, listas e blocos de texto no canto direito da página.
+   - **Compatibilidade com o Padrão Microsoft Word (OOXML)**: O padrão internacional OpenXML do Word define em sua especificação de listas multiníveis (`w:numPr`) um limite de 9 níveis (`ilvl 0` a `ilvl 8`). A adoção de até 8 níveis garante aderência total sem distorções no Word nativo (`.docx`) e no gerador PDF (`pdfmake`).
+   - **Normas Técnicas (ABNT NBR 6024)**: Recomenda a numeração progressiva de seções até no máximo o 5º nível (seção quinária). O suporte a 8 níveis ultrapassa com folga as exigências mais complexas de editais, termos de referência e contratos públicos.
+5. **Integração com Importação de Word (.docx)**:
+   - Ao arrastar um arquivo `.docx`, o conversor reconhece estilos de títulos e parágrafos `Nivel 01` a `Nivel 08` (ou `Heading 1` a `Heading 8`), mapeando-os diretamente para `<secao>` ou `<p nivel="2">` ... `<p nivel="8">`.
 
 #### Modos de Usar Tabelas no Documento:
 

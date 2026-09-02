@@ -69,7 +69,9 @@ export function formatarTelefone(valor: any): string {
 }
 
 
-export function aplicarMascaraCampo(valor: any, tipo: import('../types').ColumnType | import('../types').FieldType | 'data' | 'dataPorExtenso' | 'numeroPorExtenso' | 'moedaPorExtenso' | 'romano'): string {
+import { DocumentFilterType } from '../types';
+
+export function aplicarMascaraCampo(valor: any, tipo: DocumentFilterType | string): string {
   if (!tipo) return valor ?? '';
   const nome = String(tipo).toLowerCase().trim();
   switch (nome) {
@@ -89,7 +91,7 @@ export function aplicarMascaraCampo(valor: any, tipo: import('../types').ColumnT
 }
 
 
-export function normalizarValorCampo(valor: any, tipo: import('../types').ColumnType | import('../types').FieldType | 'data' | 'dataPorExtenso' | 'numeroPorExtenso' | 'moedaPorExtenso' | 'romano'): any {
+export function normalizarValorCampo(valor: any, tipo: DocumentFilterType | string): any {
   const nome = String(tipo || '').toLowerCase().trim();
   if (valor === null || valor === undefined || valor === '') {
     return '';
@@ -130,7 +132,7 @@ export function normalizarValorCampo(valor: any, tipo: import('../types').Column
 }
 
 
-export function aplicarFiltroDocumento(valor: any, filtro: import('../types').ColumnType | import('../types').FieldType | 'data' | 'dataPorExtenso' | 'numeroPorExtenso' | 'moedaPorExtenso' | 'romano' | string): string {
+export function aplicarFiltroDocumento(valor: any, filtro: DocumentFilterType | string): string {
   if (valor === null || valor === undefined || valor === '') {
     return '';
   }

@@ -48,14 +48,17 @@ export function sanitizarXmlParaParser(xmlString: string): string {
   return res.trim();
 }
 
+const TEXT_NODE = 3;
+const ELEMENT_NODE = 1;
+
 function reconstructXmlFromHtmlNode(node: Node): string {
-  if (node.nodeType === Node.TEXT_NODE) {
+  if (node.nodeType === TEXT_NODE) {
     return (node.textContent || '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
   }
-  if (node.nodeType !== Node.ELEMENT_NODE) return '';
+  if (node.nodeType !== ELEMENT_NODE) return '';
 
   const el = node as HTMLElement;
   const tagName = el.tagName.toLowerCase();
@@ -81,6 +84,18 @@ function reconstructXmlFromHtmlNode(node: Node): string {
     return `<${tagName}${attrs} />`;
   }
   return `<${tagName}${attrs}>${children}</${tagName}>`;
+}
+
+function getXmlParser(): DOMParser {
+  if (typeof DOMParser !== 'undefined') {
+    return new DOMParser();
+  }
+  try {
+    const { JSDOM } = require('jsdom');
+    return new (new JSDOM().window.DOMParser)();
+  } catch {
+    throw new Error('DOMParser is not available');
+  }
 }
 
 export function parseXmlDocument(xmlString: string): Document {
@@ -148,7 +163,7 @@ export function parseXmlDocument(xmlString: string): Document {
     }
   }
 
-  const parser = new DOMParser();
+  const parser = getXmlParser();
   const xmlDoc = parser.parseFromString(xmlTratado, 'text/xml');
 
   const parserError = xmlDoc.querySelector('parsererror');
@@ -187,7 +202,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
     const id = campoEl.getAttribute('id');
     if (!id) return null;
 
-    const label = campoEl.getAttribute('label') || id;
+    const label = campoEl.getAttribute('label') || campoEl.getAttribute('rotulo') || campoEl.getAttribute('titulo') || id;
     const descricao = campoEl.getAttribute('descricao') || '';
     const tipoInput = (campoEl.getAttribute('tipo') || (tag === 'number' ? 'number' : 'texto')).toLowerCase().trim();
     const placeholder = campoEl.getAttribute('placeholder') || '';
@@ -208,7 +223,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
         .forEach(colEl => {
           const colId = colEl.getAttribute('id');
           if (!colId) return;
-          const colLabel = colEl.getAttribute('label') || colId;
+          const colLabel = colEl.getAttribute('label') || colEl.getAttribute('rotulo') || colEl.getAttribute('titulo') || colId;
           const rawTipo = (colEl.getAttribute('tipo') || 'input').toLowerCase().trim();
           
           // Mapeamento unificado (um nome canônico por conceito)
@@ -339,7 +354,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
   };
 
   const processarItemFormulario = (el: Element, herdaExpr = ''): FormItem | null => {
-    if (!el || el.nodeType !== Node.ELEMENT_NODE) return null;
+    if (!el || el.nodeType !== ELEMENT_NODE) return null;
     const tag = el.tagName.toLowerCase();
 
     if (tag === 'if') {
@@ -430,11 +445,11 @@ export function extrairCampos(formularioNode: Element): FormStructure {
 }
 
 export function converterNoParaAst(node: Node): AstNode | null {
-  if (node.nodeType === Node.TEXT_NODE) {
+  if (node.nodeType === TEXT_NODE) {
     return { tipo: 'texto', texto: node.textContent || '' };
   }
 
-  if (node.nodeType !== Node.ELEMENT_NODE) {
+  if (node.nodeType !== ELEMENT_NODE) {
     return null;
   }
 
@@ -508,6 +523,20 @@ export function criarModeloIntermediario(
 
   const dados = construirEstadoInicial(formulario.campos);
 
+  const comentariosNode = xmlDoc.querySelector('comentarios');
+  const comentarios: import('../types').WordComment[] = [];
+  if (comentariosNode) {
+    const comentarioNodes = comentariosNode.querySelectorAll('comentario');
+    comentarioNodes.forEach(node => {
+      const id = node.getAttribute('id') || '';
+      const trecho = node.querySelector('trecho')?.textContent || '';
+      const texto = node.querySelector('texto')?.textContent || '';
+      if (id && texto) {
+        comentarios.push({ id, trecho, texto });
+      }
+    });
+  }
+
   let conteudo: AstNode;
   if (conteudoNode && conteudoNode.tagName.toLowerCase() === 'conteudo') {
     const rawAst = converterConteudoParaAst(conteudoNode);
@@ -523,10 +552,10 @@ export function criarModeloIntermediario(
   } else if (conteudoNode) {
     const filhosFiltrados = Array.from(conteudoNode.childNodes)
       .filter(n => {
-        if (n.nodeType === Node.ELEMENT_NODE) {
+        if (n.nodeType === ELEMENT_NODE) {
           return (n as Element).tagName.toLowerCase() !== 'formulario';
         }
-        if (n.nodeType === Node.TEXT_NODE) {
+        if (n.nodeType === TEXT_NODE) {
           return (n.textContent || '').trim().length > 0;
         }
         return false;
@@ -624,7 +653,7 @@ export function concatenarXmlsParticionados(
         if (!innerHtml) {
           // Fallback caso innerHTML não esteja disponível no parser XML
           innerHtml = Array.from(contNode.childNodes)
-            .map(n => (n.nodeType === Node.ELEMENT_NODE ? (n as Element).outerHTML : n.textContent || ''))
+            .map(n => (n.nodeType === ELEMENT_NODE ? (n as Element).outerHTML : n.textContent || ''))
             .join('\n');
         }
         conteudosXml.push(innerHtml.trim());

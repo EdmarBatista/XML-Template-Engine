@@ -14,27 +14,32 @@
     <div id="root"></div>
     <!--
       =====================================================================
-      pdfmake + fontes via CDN (não ficam no bundle)
+      Bibliotecas Pesadas via CDN (pdfmake, docx, mammoth, jszip)
       ---------------------------------------------------------------------
       MOTIVO DA OTIMIZAÇÃO:
-      Antes, `pdfmake` e `vfs_fonts` eram importados via npm e embutiam
-      ~1,9 MB (incluindo as fontes base64) dentro do index.html gerado pelo
+      Antes, bibliotecas como `pdfmake`, `docx`, `mammoth` e `jszip` eram
+      importadas via npm e embutidas diretamente no index.html gerado pelo
       vite-plugin-singlefile.
-        - Antes: index.html ≈ 3,26 MB  (gzip ≈ 1,24 MB)
-        - Depois: index.html ≈ 1,39 MB (gzip ≈ 414 KB)  -> redução ~57%
+        - Antes (sem CDNs): index.html ≈ 3,26 MB
+        - Depois (com CDNs): index.html ≈ 1,36 MB -> redução massiva!
 
       Como o app é distribuído como UM único arquivo HTML autônomo,
-      carregar essas libs via CDN é a saída para não precisar de chunk
-      separado: o pdfmake é baixado pelo navegador só quando necessário.
+      carregar essas libs via CDN é a saída para não inchar o arquivo final.
+      Elas são baixadas pelo navegador só quando necessário.
 
-      OBS: isso exige INTERNET para exportar PDF (o app já usa APIS
-      online como ViaCEP/OpenCNPJ). Versão fixada em 0.3.11 para manter
-      o comportamento estável. Se precisar de modo 100% offline, restaure 
-      os imports npm do pdfExporter (src/utils/pdfExporter.ts).
+      OBS: isso exige INTERNET para manipular PDF, Word e ZIPs (o app
+      também usa APIs online como ViaCEP/OpenCNPJ). Versões fixadas
+      garantem estabilidade. Se precisar do modo 100% offline, remova 
+      estas tags e o plugin `externalGlobals` no vite.config.ts.
       =====================================================================
     -->
     <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/pdfmake.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/vfs_fonts.js"></script>
+
+    <!-- Word Export & Import & ZIP via CDN -->
+    <script src="https://unpkg.com/docx@9.7.1/dist/index.umd.cjs"></script>
+    <script src="https://unpkg.com/mammoth@1.12.2/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

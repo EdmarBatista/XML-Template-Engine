@@ -19,6 +19,7 @@ export interface DocumentNodeRendererProps {
   pathPrefix?: string;
   contextoLocal?: Record<string, any>;
   nivelSecao?: number;
+  comentarios?: import('../../types').WordComment[];
 }
 
 /**
@@ -57,6 +58,8 @@ export const DocumentNodeRenderer: React.FC<DocumentNodeRendererProps> = ({
     lastNumber: contextoNumeracao?.lastNumber || '',
     habilitado: Boolean(contextoNumeracao?.habilitado),
     numerarBlocos: Boolean(contextoNumeracao?.numerarBlocos),
+    levelCounters: contextoNumeracao?.levelCounters ? { ...contextoNumeracao.levelCounters } : undefined,
+    levelNumbers: contextoNumeracao?.levelNumbers ? { ...contextoNumeracao.levelNumbers } : undefined,
   };
 
   const elementos = renderDocumentAstBlocks(

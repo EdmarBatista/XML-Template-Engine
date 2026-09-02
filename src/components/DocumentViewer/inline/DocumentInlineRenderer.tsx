@@ -16,6 +16,7 @@ export interface InlineRenderContext {
   edicaoInline: boolean;
   variaveisVermelhasWord: boolean;
   fontScale: number;
+  comentarios?: import('../../../types').WordComment[];
 }
 
 export function renderInlineAstNodes(
@@ -62,6 +63,7 @@ export function renderInlineAstNodes(
           edicaoInline,
           variaveisVermelhasWord,
           fontScale,
+          comentarios: ctx.comentarios,
         })
       );
     } else if (node.tipo === 'b') {

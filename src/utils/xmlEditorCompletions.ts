@@ -1,4 +1,5 @@
 import { Completion, CompletionContext, CompletionResult, snippet } from '@codemirror/autocomplete';
+import { extrairVariaveisDaExpressao } from './expressionEvaluator';
 
 export const TEMPLATE_NOVO_DOCUMENTO = `<documento>
     <formulario>
@@ -134,7 +135,7 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
   let condMatch: RegExpExecArray | null;
   while ((condMatch = regexCondicao.exec(xmlString)) !== null) {
     const expr = condMatch[1];
-    const tokens: string[] = expr.match(/[a-zA-Z_][a-zA-Z0-9_\.]*/g) || [];
+    const tokens = extrairVariaveisDaExpressao(expr);
     tokens.forEach(t => {
       const limpo = t.replace(/\[\d+\]/g, '');
       variaveisUsadas.add(limpo);
@@ -400,18 +401,46 @@ const TAGS_XML_COMPLETION: Completion[] = [
     apply: snippet('<tabela>\n\t<cabecalho>\n\t\t<celula>Descrição</celula>\n\t\t<celula>Qtd</celula>\n\t\t<celula>Valor Unit.</celula>\n\t</cabecalho>\n\t<foreach lista="${1:tabela_itens}" var="${2:item}">\n\t\t<linha>\n\t\t\t<celula>{{${2}.${3:descricao}}}</celula>\n\t\t\t<celula>{{${2}.${4:quantidade}}}</celula>\n\t\t\t<celula>R$ {{${2}.${5:valor_unitario} | moeda}}</celula>\n\t\t</linha>\n\t</foreach>\n</tabela>'),
   },
   {
+    label: 'lista (romano)',
+    type: 'class',
+    detail: 'Lista Romana (I, II, III...)',
+    info: 'Lista ordenada em algarismos romanos maiúsculos',
+    apply: snippet('<lista tipo="romano">\n\t<item>${1:Primeiro item}</item>\n\t<item>${2:Segundo item}</item>\n</lista>'),
+  },
+  {
+    label: 'lista (letra)',
+    type: 'class',
+    detail: 'Lista Alfabética (a, b, c...)',
+    info: 'Lista ordenada alfabeticamente / alíneas',
+    apply: snippet('<lista tipo="letra">\n\t<item>${1:Primeiro item}</item>\n\t<item>${2:Segundo item}</item>\n</lista>'),
+  },
+  {
     label: 'lista_numerada',
     type: 'class',
-    detail: 'Lista Numerada',
-    info: 'Lista ordenada numericamente (1., 2., 3...)',
+    detail: 'Lista Numerada (<lista_numerada>)',
+    info: 'Lista ordenada numericamente (1., 2., 3...) com a tag <lista_numerada>',
     apply: snippet('<lista_numerada>\n\t<item>${1:Texto do item 1}</item>\n\t<item>${2:Texto do item 2}</item>\n</lista_numerada>'),
+  },
+  {
+    label: 'lista (numerada)',
+    type: 'class',
+    detail: 'Lista Numerada (tipo="numerada")',
+    info: 'Lista ordenada numericamente (1., 2., 3...) usando atributo tipo',
+    apply: snippet('<lista tipo="numerada">\n\t<item>${1:Texto do item 1}</item>\n\t<item>${2:Texto do item 2}</item>\n</lista>'),
+  },
+  {
+    label: 'lista (bolinhas)',
+    type: 'class',
+    detail: 'Lista com Marcadores / Bolinhas (•)',
+    info: 'Lista com marcadores de ponto (bullet points)',
+    apply: snippet('<lista tipo="bullet">\n\t<item>${1:Primeiro item}</item>\n\t<item>${2:Segundo item}</item>\n</lista>'),
   },
   {
     label: 'lista',
     type: 'class',
     detail: 'Lista de Itens',
-    info: 'Lista ordenada ou com marcadores',
-    apply: snippet('<lista tipo="${1:bullet}">\n\t<item>${2:Primeiro item}</item>\n\t<item>${3:Segundo item}</item>\n</lista>'),
+    info: 'Lista com marcadores ou numeração (tipo="romano|letra|numerada|bullet")',
+    apply: snippet('<lista tipo="${1:romano}">\n\t<item>${2:Primeiro item}</item>\n\t<item>${3:Segundo item}</item>\n</lista>'),
   },
   {
     label: 'item',

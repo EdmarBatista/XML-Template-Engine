@@ -5,6 +5,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 import path from 'path';
 import fs from 'fs';
 import { defineConfig, Plugin } from 'vite';
+import externalGlobals from 'rollup-plugin-external-globals';
 
 function standaloneRootPlugin(): Plugin {
   return {
@@ -24,6 +25,18 @@ function standaloneRootPlugin(): Plugin {
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), nodePolyfills(), viteSingleFile(), standaloneRootPlugin()],
+    build: {
+      rollupOptions: {
+        external: ['docx', 'mammoth', 'jszip'],
+        plugins: [
+          externalGlobals({
+            docx: 'docx',
+            mammoth: 'mammoth',
+            jszip: 'JSZip'
+          })
+        ]
+      }
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

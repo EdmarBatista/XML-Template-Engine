@@ -18,6 +18,7 @@ import { DocumentA4Canvas } from './DocumentViewer/DocumentA4Canvas';
 import { DocumentNodeRenderer, extrairTooltip } from './DocumentViewer/DocumentNodeRenderer';
 
 export { extrairTooltip };
+import { WordComment } from '../types';
 
 interface DocumentViewerProps {
   conteudo: AstNode;
@@ -37,6 +38,7 @@ interface DocumentViewerProps {
   nomeDocumento?: string;
   zoom: number;
   modoA4: boolean;
+  comentarios?: WordComment[];
 }
 
 export const DocumentViewer: React.FC<DocumentViewerProps> = ({
@@ -57,6 +59,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
   nomeDocumento = 'Documento',
   zoom,
   modoA4,
+  comentarios,
 }) => {
   const [destaquesAtivos, setDestaquesAtivos] = React.useState<Record<string, number>>({});
   const docRef = React.useRef<HTMLDivElement>(null);
@@ -125,6 +128,8 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
     lastNumber: '',
     habilitado: numeracaoAtiva,
     numerarBlocos: numeracaoAtiva,
+    levelCounters: { 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 },
+    levelNumbers: {},
   };
 
   const temConteudo = Boolean(
@@ -142,6 +147,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
     >
         {temConteudo ? (
           <DocumentNodeRenderer
+            comentarios={comentarios}
             nodes={conteudo.filhos || []}
             dados={dados}
             estrutura={estrutura}

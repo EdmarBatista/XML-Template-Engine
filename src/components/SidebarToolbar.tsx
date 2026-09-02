@@ -53,7 +53,6 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
   irParaDocumentoAtivo, onToggleIrParaDocumento, modoA4, onToggleModoA4, darkMode, onToggleDarkMode, onCopiarTexto, copiado, zoom, onZoomIn, onZoomOut, onResetZoom, onToggleSidebar, onDoubleToggleSidebar, collapsed
 }) => {
   const xmlInputRef = React.useRef<HTMLInputElement>(null);
-  const jsonInputRef = React.useRef<HTMLInputElement>(null);
   const zipInputRef = React.useRef<HTMLInputElement>(null);
   const clickTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -92,7 +91,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
 
   const actionButtons = (
     <>
-      <input ref={xmlInputRef} type="file" multiple accept=".xml,text/xml,application/xml,.zip,application/zip" onChange={(e) => {
+      <input ref={xmlInputRef} type="file" multiple accept=".xml,text/xml,application/xml,.zip,application/zip,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.json,application/json" onChange={(e) => {
         const f = e.target.files?.[0];
         if (f && (f.name.toLowerCase().endsWith('.zip') || f.type.includes('zip')) && onUploadZip) {
           onUploadZip(e);
@@ -100,18 +99,15 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
           onUploadXml(e);
         }
       }} className="hidden" />
-      <input ref={jsonInputRef} type="file" accept=".json,application/json" onChange={onUploadJson} className="hidden" />
       {onUploadZip && (
         <input ref={zipInputRef} type="file" accept=".zip,application/zip,application/x-zip-compressed" onChange={onUploadZip} className="hidden" />
       )}
 
-      <button type="button" onClick={() => xmlInputRef.current?.click()} className="btn-toolbar" title="Abrir Modelo (.xml, .zip)">
+      <button type="button" onClick={() => xmlInputRef.current?.click()} className="btn-toolbar" title="Abrir Modelo ou Dados (.xml, .zip, .docx, .json)">
         <Upload className="w-4 h-4 text-blue-400" />
       </button>
       
-      <button type="button" onClick={() => jsonInputRef.current?.click()} className="btn-toolbar" title="Carregar Dados Preenchidos (.json)">
-        <FileDown className="w-4 h-4 text-amber-400" />
-      </button>
+
       
       <button type="button" onClick={onSaveJson} className="btn-toolbar" title="Salvar Dados Preenchidos (.json) (Ctrl + S)">
         <Download className="w-4 h-4 text-emerald-400" />
