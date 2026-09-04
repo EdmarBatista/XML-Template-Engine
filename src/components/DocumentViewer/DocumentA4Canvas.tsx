@@ -28,7 +28,7 @@ export const DocumentA4Canvas: React.FC<DocumentA4CanvasProps> = ({
         className={`flex-1 overflow-y-auto select-text print:p-0 print:bg-white ${
           modoA4
             ? 'p-4 md:p-8'
-            : 'p-6 md:p-10 w-full'
+            : 'p-[4px] md:p-10 w-full'
         }`}
       >
         <div
