@@ -59,6 +59,11 @@ export function renderDocumentParagraphNodes({
   const effectiveNivel = explicitNivel !== undefined ? explicitNivel : nivel;
 
   linhas.forEach((linha, li) => {
+    // Linha vazia ou composta somente por espaços/quebras não deve ser numerada nem renderizada como parágrafo vazio
+    const isWhitespaceOnly = linha.every(n => n.tipo === 'texto' && !(n.texto || '').trim());
+    if (isWhitespaceOnly) return;
+
+    const numeroWord = node?.atributos?.numero;
     let prefixoNum = '';
     const isExplicitlyDisabled = node?.atributos?.numerado === 'false';
     const isExplicitlyEnabled = node?.atributos?.numerado === 'true';
@@ -67,14 +72,18 @@ export function renderDocumentParagraphNodes({
     // Um parágrafo recebe numeração se:
     // 1. A numeração estiver habilitada no contexto
     // 2. Não estiver explicitamente desabilitada (numerado="false")
-    // 3. Tiver nível explícito (nivel="2", "3", etc.) OU estiver dentro de bloco onde todos parágrafos são numerados por padrão
+    // 3. Tiver nível explícito (nivel="2", "3", etc.) OU estiver explicitamente habilitado (numerado="true")
+    //    OU estiver em uma seção numerada no nível 2 ou superior (contextoNumeracao.numerarBlocos && effectiveNivel >= 2)
     const shouldNumber =
       contextoNumeracao.habilitado &&
       !isExplicitlyDisabled &&
-      (hasNivel || isExplicitlyEnabled || (contextoNumeracao.numerarBlocos && effectiveNivel >= 2));
+      (hasNivel || isExplicitlyEnabled || (contextoNumeracao.numerarBlocos && effectiveNivel >= 2) || !!numeroWord);
 
     if (shouldNumber) {
-      if (!contextoNumeracao.levelCounters) {
+      if (numeroWord) {
+        prefixoNum = numeroWord.endsWith('.') || numeroWord.endsWith(')') ? numeroWord : `${numeroWord}.`;
+      } else {
+        if (!contextoNumeracao.levelCounters) {
         contextoNumeracao.levelCounters = {
           2: contextoNumeracao.next || 1,
           3: contextoNumeracao.subNext || 1,
@@ -154,17 +163,18 @@ export function renderDocumentParagraphNodes({
       contextoNumeracao.lastLevel8Number = contextoNumeracao.levelNumbers[8] || '';
 
       prefixoNum = `${num}.`;
+      }
     }
 
-    // Verifica se algum comentario pertence a esta linha
-    const linhaText = linha.map(n => n.texto || '').join('');
+    // Verifica se algum comentário pertence a esta linha
+    const linhaText = linha.map(n => n.texto || '').join('').trim();
     const comentariosLinha = (comentarios || []).filter(c => linhaText.includes(c.trecho) || (c.trecho && c.trecho.includes(linhaText)));
 
     paragrafos.push(
       <div
         key={`${pPath}_p_${li}`}
         data-word-type="paragrafo"
-        data-word-level={effectiveNivel}
+        
         data-word-align={alinhamentoPadrao}
         data-word-numerado={prefixoNum ? 'true' : 'false'}
         className={`text-slate-800 dark:text-slate-200 my-2 leading-relaxed select-text ${alignClass} relative group`}

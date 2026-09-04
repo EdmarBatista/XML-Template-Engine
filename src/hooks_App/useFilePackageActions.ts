@@ -190,12 +190,12 @@ export function useFilePackageActions({
 
       if (files.length === 1 && (files[0].name.toLowerCase().endsWith('.zip') || files[0].type.includes('zip'))) {
         await processarArquivoZip(files[0]);
-        e.target.value = '';
+        // e.target.value = '';
         return;
       }
 
       await processarMultiplosArquivos(files);
-      e.target.value = '';
+      // e.target.value = '';
     },
     [processarArquivoZip, processarMultiplosArquivos]
   );
@@ -206,7 +206,7 @@ export function useFilePackageActions({
       const file = e.target.files?.[0];
       if (!file) return;
       processarArquivoZip(file);
-      e.target.value = '';
+      // e.target.value = '';
     },
     [processarArquivoZip]
   );
@@ -227,7 +227,7 @@ export function useFilePackageActions({
       } catch (err: any) {
         alert('Arquivo JSON inválido: ' + err.message);
       }
-      e.target.value = '';
+      // e.target.value = '';
     },
     [setDados, showToast]
   );

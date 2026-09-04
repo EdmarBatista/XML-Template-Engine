@@ -629,7 +629,50 @@ export const termoReferencia: TemplateItem =
         </if>
         </secao>
 
-        <secao titulo="TESTES DE NUMERAÇÃO HIERÁRQUICA">Primeiro parágrafo do nível principal.Segundo parágrafo do nível principal.<secao titulo="SUBNÍVEL COM TÍTULO">Parágrafo do segundo nível.<secao titulo="TERCEIRO NÍVEL">Parágrafo do terceiro nível.<secao>Bloco sem título que cria um nível adicional.<secao titulo="QUARTO NÍVEL APÓS BLOCO SEM TÍTULO">Texto do quarto nível.</secao></secao></secao></secao><secao titulo="BLOCO SEM NUMERAÇÃO" numerar="false">Bloco visível sem numeração.<secao titulo="FILHO DO BLOCO SEM NUMERAÇÃO">Filho também sem numeração.</secao></secao><secao titulo="SUBSEÇÃO CONDICIONAL"><if expr="urgente == true"><secao titulo="CONDIÇÃO VERDADEIRA">Esta seção aparece quando urgente for verdadeiro.</secao></if><if expr="urgente == false"><secao titulo="CONDIÇÃO FALSA">Esta seção aparece quando urgente for falso.</secao></if></secao></secao></secao><secao titulo="FIM DO MODELO DE TESTES">
+        <secao titulo="TESTES DE NUMERAÇÃO HIERÁRQUICA">
+        Primeiro parágrafo do nível principal.
+        Segundo parágrafo do nível principal.
+
+        <secao titulo="SUBNÍVEL COM TÍTULO">
+        Parágrafo do segundo nível.
+
+        <secao titulo="TERCEIRO NÍVEL">
+        Parágrafo do terceiro nível.
+
+        <secao>
+        Bloco sem título que cria um nível adicional.
+
+        <secao titulo="QUARTO NÍVEL APÓS BLOCO SEM TÍTULO">
+        Texto do quarto nível.
+        </secao>
+        </secao>
+        </secao>
+        </secao>
+
+        <secao titulo="BLOCO SEM NUMERAÇÃO" numerar="false">
+        Bloco visível sem numeração.
+
+        <secao titulo="FILHO DO BLOCO SEM NUMERAÇÃO">
+        Filho também sem numeração.
+        </secao>
+        </secao>
+
+        <secao titulo="SUBSEÇÃO CONDICIONAL">
+        <if expr="urgente == true">
+            <secao titulo="CONDIÇÃO VERDADEIRA">
+            Esta seção aparece quando urgente for verdadeiro.
+            </secao>
+        </if>
+        <if expr="urgente == false">
+            <secao titulo="CONDIÇÃO FALSA">
+            Esta seção aparece quando urgente for falso.
+            </secao>
+        </if>
+        </secao>
+        </secao>
+        </secao>
+
+        <secao titulo="FIM DO MODELO DE TESTES">
         Este bloco reúne exemplos de variáveis simples, variáveis com filtros, formatação monetária, datas, números por extenso, números romanos, e-mail, CNPJ, CEP, listas, foreach, tabelas, condições booleanas, comparações numéricas, condições aninhadas e combinações entre diferentes campos.
     </secao></conteudo>
 </documento>`,

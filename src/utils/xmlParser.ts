@@ -90,12 +90,10 @@ function getXmlParser(): DOMParser {
   if (typeof DOMParser !== 'undefined') {
     return new DOMParser();
   }
-  try {
-    const { JSDOM } = require('jsdom');
-    return new (new JSDOM().window.DOMParser)();
-  } catch {
-    throw new Error('DOMParser is not available');
+  if (typeof window !== 'undefined' && window.DOMParser) {
+    return new window.DOMParser();
   }
+  throw new Error('DOMParser is not available');
 }
 
 export function parseXmlDocument(xmlString: string): Document {

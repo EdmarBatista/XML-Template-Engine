@@ -23,6 +23,7 @@ import {
 import { IntermediateModel, XmlPart } from '../types';
 import { TEMPLATE_NOVO_DOCUMENTO } from '../utils/xmlEditorCompletions';
 import { concatenarXmlsParticionados, parseXmlDocument } from '../utils/xmlParser';
+import { formatarXmlString } from '../utils/xmlFormatter';
 import { verificarVariaveisXml } from '../utils/xmlEditorCompletions';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { VarsTabEditor, VarsTableResumo } from './ModelModal/VarsTabs';
@@ -43,33 +44,6 @@ export interface ModelModalProps {
 }
 
 export type TabType = 'vars-edit' | 'vars-readonly' | 'json-dados' | 'xml-edit' | 'json-modelo' | 'comentarios';
-
-function formatarXmlString(xmlStr: string): string {
-  try {
-    let formatted = '';
-    let indent = '';
-    const tab = '  ';
-    xmlStr.split(/>\s*</).forEach(node => {
-      if (node.match(/^\/\w/)) {
-        indent = indent.substring(tab.length);
-      }
-      formatted += indent + '<' + node + '>\r\n';
-      if (
-        node.match(/^<?\w[^>]*[^\/]$/) &&
-        !node.startsWith('input') &&
-        !node.startsWith('number') &&
-        !node.startsWith('hr') &&
-        !node.startsWith('br') &&
-        !node.startsWith('meta')
-      ) {
-        indent += tab;
-      }
-    });
-    return formatted.substring(1, formatted.length - 3).trim();
-  } catch {
-    return xmlStr;
-  }
-}
 
 export const ModelModal: React.FC<ModelModalProps> = ({
   isOpen,
@@ -414,7 +388,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-5xl h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-5xl h-[88vh] lg:w-[90vw] lg:max-w-[90vw] lg:h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         
         {/* Modal Header */}
         <div className="px-4 sm:px-5 py-3 bg-slate-950 text-white flex items-start sm:items-center justify-between border-b border-slate-800 shrink-0 gap-3">

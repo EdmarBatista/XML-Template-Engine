@@ -139,8 +139,14 @@ export const FilePackageService = {
     const jsonFilename = `${baseName}_dados.json`;
     zip.file(jsonFilename, JSON.stringify(jsonPayload, null, 2));
 
-    // Gera o blob do ZIP e dispara download
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    // Gera o blob do ZIP com compactação máxima (DEFLATE nível 9) e dispara download
+    const zipBlob = await zip.generateAsync({
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: {
+        level: 9,
+      },
+    });
     this.downloadBlob(zipBlob, `${baseName}_pacote.zip`);
   },
 

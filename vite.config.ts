@@ -7,6 +7,63 @@ import fs from 'fs';
 import { defineConfig, Plugin } from 'vite';
 import externalGlobals from 'rollup-plugin-external-globals';
 
+function devCdnExternalsPlugin(): Plugin {
+  return {
+    name: 'dev-cdn-externals',
+    enforce: 'pre',
+    apply: 'serve',
+    resolveId(id) {
+      if (id === 'jszip') return '\0virtual:jszip';
+      if (id === 'mammoth') return '\0virtual:mammoth';
+      if (id === 'docx') return '\0virtual:docx';
+      return null;
+    },
+    load(id) {
+      if (id === '\0virtual:jszip') {
+        return `
+const JSZip = (typeof window !== 'undefined' && window.JSZip) ? window.JSZip : undefined;
+export default JSZip;
+export { JSZip };
+`;
+      }
+      if (id === '\0virtual:mammoth') {
+        return `
+const mammoth = (typeof window !== 'undefined' && window.mammoth) ? window.mammoth : undefined;
+export default mammoth;
+export { mammoth };
+`;
+      }
+      if (id === '\0virtual:docx') {
+        return `
+const d = (typeof window !== 'undefined' && window.docx) ? window.docx : {};
+export default d;
+export const AlignmentType = d.AlignmentType;
+export const BorderStyle = d.BorderStyle;
+export const Document = d.Document;
+export const LevelFormat = d.LevelFormat;
+export const Packer = d.Packer;
+export const Paragraph = d.Paragraph;
+export const Table = d.Table;
+export const TableCell = d.TableCell;
+export const TableRow = d.TableRow;
+export const TextRun = d.TextRun;
+export const WidthType = d.WidthType;
+export const HeadingLevel = d.HeadingLevel;
+export const Header = d.Header;
+export const Footer = d.Footer;
+export const ShadingType = d.ShadingType;
+export const PageNumber = d.PageNumber;
+export const NumberFormat = d.NumberFormat;
+export const ExternalHyperlink = d.ExternalHyperlink;
+export const ImageRun = d.ImageRun;
+export const SymbolRun = d.SymbolRun;
+`;
+      }
+      return null;
+    },
+  };
+}
+
 function standaloneRootPlugin(): Plugin {
   return {
     name: 'standalone-root-output',
@@ -24,7 +81,17 @@ function standaloneRootPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), nodePolyfills(), viteSingleFile(), standaloneRootPlugin()],
+    plugins: [
+      devCdnExternalsPlugin(),
+      react(),
+      tailwindcss(),
+      nodePolyfills(),
+      viteSingleFile(),
+      standaloneRootPlugin()
+    ],
+    optimizeDeps: {
+      exclude: ['docx', 'mammoth', 'jszip', 'jsdom', 'puppeteer', 'undici'],
+    },
     build: {
       rollupOptions: {
         external: ['docx', 'mammoth', 'jszip'],

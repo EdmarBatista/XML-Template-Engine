@@ -1,0 +1,7 @@
+{
+  "name": "teste",
+  "type": "module",
+  "dependencies": {
+    "puppeteer": "^25.10.0"
+  }
+}

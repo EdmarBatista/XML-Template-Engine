@@ -54,18 +54,26 @@ export function renderDocumentAstBlocks(
 
   const flushInlineBuffer = (idx: number) => {
     if (inlineBuffer.length > 0) {
-      const key = `${prefix}_p_buffered_${idx}`;
-      elementos.push(
-        ...renderDocumentParagraphNodes({
-          nos: inlineBuffer,
-          pPath: key,
-          contextoNumeracao: ctxNum,
-          fontScale,
-          nivel,
-          renderInlineNodes: selfRenderInline,
-          contextoLocal: ctxLocal,
-        })
-      );
+      // Ignora se o buffer contiver apenas espaços em branco entre tags
+      const hasMeaningfulContent = inlineBuffer.some(n => {
+        if (n.tipo === 'texto') return Boolean((n.texto || '').trim());
+        return true;
+      });
+
+      if (hasMeaningfulContent) {
+        const key = `${prefix}_p_buffered_${idx}`;
+        elementos.push(
+          ...renderDocumentParagraphNodes({
+            nos: inlineBuffer,
+            pPath: key,
+            contextoNumeracao: ctxNum,
+            fontScale,
+            nivel,
+            renderInlineNodes: selfRenderInline,
+            contextoLocal: ctxLocal,
+          })
+        );
+      }
       inlineBuffer = [];
     }
   };
@@ -232,7 +240,7 @@ export function renderDocumentAstBlocks(
         <HeadingTag
           key={blockKey}
           data-word-type="titulo"
-          data-word-level={tag === 'h1' ? '1' : '2'}
+          
           data-word-align={alinhamento}
           className={`font-bold text-slate-900 dark:text-slate-100 my-4 tracking-tight uppercase select-text ${alignClass}`}
           style={{ fontSize: `${fontSize}px`, lineHeight: 1.3 }}

@@ -1,0 +1,302 @@
+abstractNum 0
+   ilvl=0 start=1 fmt=bullet txt= lgl=-
+abstractNum 1
+   ilvl=0 start=1 fmt=decimal txt=%1. lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2. lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4. lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5. lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7. lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8. lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9. lgl=-
+abstractNum 2
+   ilvl=0 start=5 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 3
+   ilvl=0 start=1 fmt=decimal txt=%1. lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2. lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4. lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5. lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7. lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8. lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9. lgl=-
+abstractNum 4
+   ilvl=0 start=1 fmt=upperRoman txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2. lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%4. lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=%5. lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 5
+   ilvl=0 start=1 fmt=decimal txt=%1. lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2. lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4. lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5. lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7. lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8. lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9. lgl=-
+abstractNum 6
+   ilvl=0 start=1 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 7
+   ilvl=0 start=1 fmt=decimal txt=%1. lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2. lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4. lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5. lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7. lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8. lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9. lgl=-
+abstractNum 8
+   ilvl=0 start=6 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 9
+   ilvl=0 start=3 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 10
+   ilvl=0 start=9 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2. lgl=Y
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3. lgl=Y
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4. lgl=Y
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5. lgl=Y
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6. lgl=Y
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7. lgl=Y
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8. lgl=Y
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9. lgl=Y
+abstractNum 11
+   ilvl=0 start=1 fmt=decimal txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2) lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3) lgl=-
+   ilvl=3 start=1 fmt=decimal txt=(%4) lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=(%5) lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=(%6) lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 12
+   ilvl=0 start=6 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 13
+   ilvl=0 start=1 fmt=upperRoman txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2. lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%4. lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=%5. lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 14
+   ilvl=0 start=1 fmt=decimal txt=%1. lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2. lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4. lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5. lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7. lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8. lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9. lgl=-
+abstractNum 15
+   ilvl=0 start=6 fmt=decimal txt=8.%1 lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2. lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%4. lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=%5. lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 16
+   ilvl=0 start=2 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 17
+   ilvl=0 start=1 fmt=upperRoman txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2. lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%4. lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=%5. lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 18
+   ilvl=0 start=8 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 19
+   ilvl=0 start=1 fmt=upperRoman txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2. lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%4. lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=%5. lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 20
+   ilvl=0 start=3 fmt=decimal txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2) lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3) lgl=-
+   ilvl=3 start=1 fmt=decimal txt=(%4) lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=(%5) lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=(%6) lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 21
+   ilvl=0 start=9 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 22
+   ilvl=0 start=7 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 23
+   ilvl=0 start=4 fmt=decimal txt=%1 lgl=-
+   ilvl=1 start=1 fmt=decimal txt=%1.%2 lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3 lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4 lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5 lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6 lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7 lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8 lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9 lgl=-
+abstractNum 24
+   ilvl=0 start=61 fmt=decimal txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2) lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3) lgl=-
+   ilvl=3 start=1 fmt=decimal txt=(%4) lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=(%5) lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=(%6) lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 25
+   ilvl=0 start=1 fmt=lowerLetter txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2. lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%4. lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=%5. lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+abstractNum 26
+   ilvl=0 start=8 fmt=decimal txt=%1. lgl=-
+   ilvl=1 start=3 fmt=decimal txt=%1.%2. lgl=-
+   ilvl=2 start=1 fmt=decimal txt=%1.%2.%3. lgl=-
+   ilvl=3 start=1 fmt=decimal txt=%1.%2.%3.%4. lgl=-
+   ilvl=4 start=1 fmt=decimal txt=%1.%2.%3.%4.%5. lgl=-
+   ilvl=5 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6. lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7. lgl=-
+   ilvl=7 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8. lgl=-
+   ilvl=8 start=1 fmt=decimal txt=%1.%2.%3.%4.%5.%6.%7.%8.%9. lgl=-
+abstractNum 27
+   ilvl=0 start=1 fmt=decimal txt=%1) lgl=-
+   ilvl=1 start=1 fmt=lowerLetter txt=%2) lgl=-
+   ilvl=2 start=1 fmt=lowerRoman txt=%3) lgl=-
+   ilvl=3 start=1 fmt=decimal txt=(%4) lgl=-
+   ilvl=4 start=1 fmt=lowerLetter txt=(%5) lgl=-
+   ilvl=5 start=1 fmt=lowerRoman txt=(%6) lgl=-
+   ilvl=6 start=1 fmt=decimal txt=%7. lgl=-
+   ilvl=7 start=1 fmt=lowerLetter txt=%8. lgl=-
+   ilvl=8 start=1 fmt=lowerRoman txt=%9. lgl=-
+== num -> abstract + overrides ==
+ num 1 -> abstract 0 overrides=[]
+ num 2 -> abstract 26 overrides=[]
+ num 3 -> abstract 27 overrides=[]
+ num 4 -> abstract 15 overrides=[]
+ num 5 -> abstract 11 overrides=[]
+ num 6 -> abstract 20 overrides=[]
+ num 7 -> abstract 24 overrides=[]
+ num 8 -> abstract 17 overrides=[]
+ num 9 -> abstract 3 overrides=[]
+ num 10 -> abstract 3 overrides=[]
+ num 11 -> abstract 25 overrides=[]
+ num 12 -> abstract 19 overrides=[]
+ num 13 -> abstract 13 overrides=[]
+ num 14 -> abstract 4 overrides=[]
+ num 15 -> abstract 14 overrides=[]
+ num 16 -> abstract 5 overrides=[]
+ num 17 -> abstract 6 overrides=[]
+ num 18 -> abstract 16 overrides=[]
+ num 19 -> abstract 9 overrides=[]
+ num 20 -> abstract 23 overrides=[]
+ num 21 -> abstract 2 overrides=[]
+ num 22 -> abstract 8 overrides=[]
+ num 23 -> abstract 22 overrides=[]
+ num 24 -> abstract 18 overrides=[]
+ num 25 -> abstract 21 overrides=[]
+ num 26 -> abstract 3 overrides=[('0', '1'), ('1', '1'), ('2', '1'), ('3', '1'), ('4', '1'), ('5', '1'), ('6', '1'), ('7', '1'), ('8', '1')]
+ num 27 -> abstract 7 overrides=[]
+ num 28 -> abstract 10 overrides=[]
+ num 29 -> abstract 7 overrides=[('1', '2')]
