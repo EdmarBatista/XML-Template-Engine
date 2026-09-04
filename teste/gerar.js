@@ -18,13 +18,13 @@ async function main() {
   const filePath = path.resolve(__dirname, '../modelo-de-termo-de-referencia-servicos-e-obras-lei-no-14-133-mai-26.docx');
   const buffer = fs.readFileSync(filePath);
   
-  console.log("1. Gerando XML e HTML via conversor interno (CLI)...");
+  console.log("1. Gerando XML via conversor nativo OpenXML (CLI)...");
   try {
     const file = new File([buffer], 'modelo.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-    const { xml, html } = await converterDocxParaModeloXml(file);
+    const { xml, jsonInicial } = await converterDocxParaModeloXml(file);
     fs.writeFileSync(path.join(__dirname, 'output.xml'), xml);
-    if (html) {
-       fs.writeFileSync(path.join(__dirname, 'output.html'), html);
+    if (jsonInicial && Object.keys(jsonInicial).length > 0) {
+      fs.writeFileSync(path.join(__dirname, 'output_json.json'), JSON.stringify(jsonInicial, null, 2));
     }
     console.log("-> output.xml gerado com sucesso.");
   } catch(e) {

@@ -181,7 +181,7 @@ export function renderDocumentParagraphNodes({
         style={{ fontSize: `${fontScale}rem` }}
       >
         {prefixoNum && (
-          <span data-word-num="true" data-num-prefix="true" className="font-bold mr-2 text-slate-900 dark:text-slate-100">{prefixoNum}</span>
+          <span data-word-num="true" data-num-prefix="true" className="font-bold pr-1 text-slate-900 dark:text-slate-100">{prefixoNum} </span>
         )}
         {renderInlineNodes(linha, `${pPath}_inline_${li}`, contextoLocal)}
         

@@ -41,6 +41,30 @@ export function renderDocumentSectionNode(
   const titulo = String(node.atributos?.titulo || '').trim();
   const numerarSecao = node.atributos?.numerar !== 'false';
   const numerar = numerarSecao && contextoNumeracao.habilitado;
+  const reiniciar = node.atributos?.reiniciar === 'true' || node.atributos?.reiniciar === '1';
+
+  if (reiniciar) {
+    contextoNumeracao.next = 1;
+    contextoNumeracao.subNext = 1;
+    contextoNumeracao.subSubNext = 1;
+    contextoNumeracao.lastLevel2Number = '';
+    contextoNumeracao.lastLevel3Number = '';
+    contextoNumeracao.lastLevel4Number = '';
+    contextoNumeracao.lastLevel5Number = '';
+    contextoNumeracao.lastLevel6Number = '';
+    contextoNumeracao.lastLevel7Number = '';
+    contextoNumeracao.lastLevel8Number = '';
+    contextoNumeracao.levelCounters = { 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 };
+    contextoNumeracao.levelNumbers = {};
+  } else if (node.atributos?.inicio) {
+    const v = parseInt(node.atributos.inicio, 10);
+    if (!isNaN(v) && v > 0) {
+      contextoNumeracao.next = v;
+      contextoNumeracao.levelCounters = { 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 };
+      contextoNumeracao.levelNumbers = {};
+    }
+  }
+
   // Número EXIBIDO do Word (quando o conversor o marcou via <secao numero=X>); tem prioridade
   // sobre o contador automático do painel e mantém numeração dinâmica/desabilitável.
   const numeroWord =
@@ -142,14 +166,14 @@ export function renderDocumentSectionNode(
     <div
       key={blockKey}
       data-word-type="secao"
-      
+      data-word-reiniciar={reiniciar ? 'true' : undefined}
       data-word-numerar={numerarSecao ? 'true' : 'false'}
       className={containerClass}
     >
       {titulo && (
         <h3
           data-word-type="secao-titulo"
-          
+          data-word-outline-level={String(nivelEfetivo || 1)}
           data-word-numerar={numerarSecao ? 'true' : 'false'}
           className={titleClass}
           style={{

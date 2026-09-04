@@ -31,6 +31,8 @@ export interface DocumentTableCellProps {
   fontScale?: number;
   className?: string;
   style?: React.CSSProperties;
+  colSpan?: number;
+  rowSpan?: number;
 }
 
 /**
@@ -61,6 +63,8 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   fontScale = 1,
   className = '',
   style = {},
+  colSpan,
+  rowSpan,
 }) => {
   const [editando, setEditando] = React.useState(false);
   const [valorTemp, setValorTemp] = React.useState<any>('');
@@ -260,6 +264,8 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   return (
     <CellTag
       ref={containerRef}
+      colSpan={colSpan}
+      rowSpan={rowSpan}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       data-vars={!isHeader && listaNome && hasValue ? `${listaNome} ${listaNome}.${colKey || ''}` : (conditionalFocusVar || undefined)}

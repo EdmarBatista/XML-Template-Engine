@@ -8,6 +8,7 @@ import {
   AlignmentType,
   BorderStyle,
   Document,
+  HeadingLevel,
   LevelFormat,
   Packer,
   Paragraph,
@@ -33,6 +34,18 @@ import {
 const WORD_PADROES: Required<WordExportOptions> = {
   ...DOCUMENT_THEME.word.defaultOptions,
 };
+
+function obterNivelOutline(nivelNum: number): { heading: (typeof HeadingLevel)[keyof typeof HeadingLevel]; outlineLevel: number } {
+  const map: Record<number, { heading: (typeof HeadingLevel)[keyof typeof HeadingLevel]; outlineLevel: number }> = {
+    1: { heading: HeadingLevel.HEADING_1, outlineLevel: 0 },
+    2: { heading: HeadingLevel.HEADING_2, outlineLevel: 1 },
+    3: { heading: HeadingLevel.HEADING_3, outlineLevel: 2 },
+    4: { heading: HeadingLevel.HEADING_4, outlineLevel: 3 },
+    5: { heading: HeadingLevel.HEADING_5, outlineLevel: 4 },
+    6: { heading: HeadingLevel.HEADING_6, outlineLevel: 5 },
+  };
+  return map[nivelNum] || { heading: HeadingLevel.HEADING_2, outlineLevel: 1 };
+}
 
 function segmentosParaRuns(segmentos: SegmentoDom[], opcoes: Required<WordExportOptions>): TextRun[] {
   return (segmentos || []).map(segmento => {
@@ -82,6 +95,8 @@ function criarParagrafo(
     espacoDepois?: number;
     numbering?: { reference: string; level: number };
     bullet?: { level: number };
+    heading?: (typeof HeadingLevel)[keyof typeof HeadingLevel];
+    outlineLevel?: number;
   } = {}
 ): Paragraph {
   const alinhamento = alinhamentoWord(ajustes.alinhamento || opcoes.alinhamento);
@@ -95,6 +110,8 @@ function criarParagrafo(
     spacing: espacoParagrafo(opcoes, ajustes),
     numbering: ajustes.numbering,
     bullet: ajustes.bullet,
+    heading: ajustes.heading,
+    outlineLevel: ajustes.outlineLevel,
     children: runs.length ? runs : [new TextRun({ text: '' })],
   });
 }
@@ -286,6 +303,8 @@ function converterElementosBlocoDom(
       resultado.push(
         criarParagrafo(runs, opcoesTitulo, {
           alinhamento: 'centro',
+          heading: HeadingLevel.TITLE,
+          outlineLevel: 0,
           espacoAntes: DOCUMENT_THEME.spacing.title.beforePt,
           espacoDepois: DOCUMENT_THEME.spacing.title.afterPt,
         })
@@ -295,7 +314,13 @@ function converterElementosBlocoDom(
 
     // 2. Subtítulo (<subtitulo> ou <h2 data-word-type="subtitulo">)
     if (wordType === 'subtitulo' || tag === 'h2') {
+      const rawOutline = el.getAttribute('data-word-outline-level');
+      const nivelOutline = rawOutline ? parseInt(rawOutline, 10) : 2;
+      const { heading, outlineLevel } = obterNivelOutline(nivelOutline);
+
+      const alinhamento = el.getAttribute('data-word-align') || 'esquerda';
       const segmentos = extrairSegmentosDeDom(el, {
+        bold: true,
         italic: true,
         tamanhoFonte: DOCUMENT_THEME.typography.sizes.subtitlePt,
         cor: DOCUMENT_THEME.colors.textSecondaryHex,
@@ -304,7 +329,9 @@ function converterElementosBlocoDom(
 
       resultado.push(
         criarParagrafo(runs, opcoes, {
-          alinhamento: 'centro',
+          alinhamento,
+          heading,
+          outlineLevel,
           espacoAntes: DOCUMENT_THEME.spacing.subtitle.beforePt,
           espacoDepois: DOCUMENT_THEME.spacing.subtitle.afterPt,
         })
@@ -318,6 +345,12 @@ function converterElementosBlocoDom(
       const currentLevel = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
       const numerarAttr = el.getAttribute('data-word-numerar');
       const numerarSecao = numerarAttr !== 'false';
+      const reiniciarAttr = el.getAttribute('data-word-reiniciar') === 'true' || el.getAttribute('data-word-reiniciar') === '1';
+
+      if (reiniciarAttr && numbering) {
+        (numbering as any).indiceAtual = ((numbering as any).indiceAtual || 0) + 1;
+        numbering.reference = `edmsecoes_${(numbering as any).indiceAtual}`;
+      }
 
       const tituloH3 = el.querySelector(':scope > [data-word-type="secao-titulo"], :scope > h3') as HTMLElement | null;
 
@@ -328,6 +361,10 @@ function converterElementosBlocoDom(
           corVariavel: DOCUMENT_THEME.colors.textHex,
           variaveisVermelhas: false,
         };
+
+        const rawOutline = tituloH3.getAttribute('data-word-outline-level');
+        const nivelSecaoNum = rawOutline ? parseInt(rawOutline, 10) : (currentLevel + 1);
+        const { heading, outlineLevel } = obterNivelOutline(nivelSecaoNum);
 
         const deveUsarNumeracaoNativa = Boolean(numbering && numerarSecao);
         const segmentos = extrairSegmentosDeDom(tituloH3, {
@@ -345,6 +382,8 @@ function converterElementosBlocoDom(
             criarParagrafo(runs, opcoesTitulo, {
               alinhamento: 'esquerda',
               recuoEsquerdo: recuoTitulo,
+              heading,
+              outlineLevel,
               numbering: {
                 reference: numbering!.reference,
                 level: Math.min(currentLevel, (opcoes.nivelMaximoNumeracao || 9) - 1),
@@ -358,6 +397,8 @@ function converterElementosBlocoDom(
             criarParagrafo(runs, opcoesTitulo, {
               alinhamento: 'esquerda',
               recuoEsquerdo: recuoTitulo,
+              heading,
+              outlineLevel,
               espacoAntes: currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
               espacoDepois: DOCUMENT_THEME.spacing.sectionTitle.afterPt,
             })
@@ -622,9 +663,9 @@ function converterElementosBlocoDom(
   return resultado;
 }
 
-function criarOpcoesNumeracao(opcoes: Required<WordExportOptions>) {
+function criarOpcoesNumeracao(opcoes: Required<WordExportOptions>, referencia = 'edmsecoes') {
   return {
-    reference: 'edmsecoes',
+    reference: referencia,
     levels: Array.from({ length: 9 }, (_, level) => {
       const recuo = calcularRecuoHierarquicoCm(level);
       return {
@@ -701,7 +742,10 @@ export async function exportarParaWord(
   const numberingConfig: any[] = [];
 
   if (cfg.ativarNumeracaoDocumento) {
-    numberingConfig.push(criarOpcoesNumeracao(cfg));
+    numberingConfig.push(criarOpcoesNumeracao(cfg, 'edmsecoes'));
+    for (let s = 1; s <= 20; s++) {
+      numberingConfig.push(criarOpcoesNumeracao(cfg, `edmsecoes_${s}`));
+    }
   }
 
   for (let i = 1; i <= 50; i++) {
@@ -713,11 +757,15 @@ export async function exportarParaWord(
     numberingConfig.push(criarOpcoesLista(`edmlista${i}`, cfg, LevelFormat.DECIMAL, '%1.'));
   }
 
+  const numberingState = cfg.ativarNumeracaoDocumento
+    ? { reference: 'edmsecoes', indiceAtual: 0 }
+    : null;
+
   const elements = converterElementosBlocoDom(
     documentElement,
     cfg,
     0,
-    cfg.ativarNumeracaoDocumento ? { reference: 'edmsecoes' } : null,
+    numberingState,
     contadorListas,
     0
   );

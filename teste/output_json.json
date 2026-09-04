@@ -1,0 +1,50 @@
+{
+  "tb_tabela_contratacao_de_obras_ou_servicos_de_engenhari": [
+    {
+      "item": "1",
+      "especificacao": "",
+      "catser": "",
+      "unidade_de_medida": "",
+      "quantidade": "",
+      "valor_unitario": "R$ .... OU SIGILOSO",
+      "valor_total": "R$ .... OU SIGILOSO"
+    },
+    {
+      "item": "2",
+      "especificacao": "",
+      "catser": "",
+      "unidade_de_medida": "",
+      "quantidade": "",
+      "valor_unitario": "",
+      "valor_total": ""
+    },
+    {
+      "item": "3",
+      "especificacao": "",
+      "catser": "",
+      "unidade_de_medida": "",
+      "quantidade": "",
+      "valor_unitario": "",
+      "valor_total": ""
+    },
+    {
+      "item": "...",
+      "especificacao": "",
+      "catser": "",
+      "unidade_de_medida": "",
+      "quantidade": "",
+      "valor_unitario": "",
+      "valor_total": ""
+    }
+  ],
+  "tb_tabela_estimativas_de_consumo_individualizadas_do_orgao": [
+    {
+      "item": "",
+      "descricao_especif": "",
+      "unidadedemedida": "",
+      "requisicaominima": "",
+      "requisicaomaxima": "",
+      "quantidadetotal": ""
+    }
+  ]
+}

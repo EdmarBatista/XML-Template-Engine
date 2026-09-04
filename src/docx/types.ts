@@ -17,6 +17,10 @@ export interface DocxStyleInfo {
   paragraphLevel?: number;
   numId?: string;
   ilvl?: number;
+  isItalic?: boolean;
+  isBold?: boolean;
+  isUnderline?: boolean;
+  color?: string;
 }
 
 export interface DocxParagraphInfo {

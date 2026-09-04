@@ -236,11 +236,13 @@ export function renderDocumentAstBlocks(
       const HeadingTag = tag as 'h1' | 'h2';
       const fontSize = tag === 'h1' ? 20 * fontScale : 16 * fontScale;
 
+      const outlineLvl = node.atributos?.nivel || (node.tipo === 'titulo' ? '1' : '2');
+
       elementos.push(
         <HeadingTag
           key={blockKey}
-          data-word-type="titulo"
-          
+          data-word-type={node.tipo}
+          data-word-outline-level={outlineLvl}
           data-word-align={alinhamento}
           className={`font-bold text-slate-900 dark:text-slate-100 my-4 tracking-tight uppercase select-text ${alignClass}`}
           style={{ fontSize: `${fontSize}px`, lineHeight: 1.3 }}

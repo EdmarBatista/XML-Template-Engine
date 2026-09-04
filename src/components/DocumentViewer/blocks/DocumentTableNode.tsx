@@ -262,10 +262,23 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
           </button>
         ) : undefined;
 
+      const colSpan = celula.atributos?.colspan
+        ? parseInt(celula.atributos.colspan, 10)
+        : celula.atributos?.colSpan
+        ? parseInt(celula.atributos.colSpan, 10)
+        : undefined;
+      const rowSpan = celula.atributos?.rowspan
+        ? parseInt(celula.atributos.rowspan, 10)
+        : celula.atributos?.rowSpan
+        ? parseInt(celula.atributos.rowSpan, 10)
+        : undefined;
+
       cells.push(
         <DocumentTableCell
           key={celulaKey}
           isHeader={isHeader}
+          colSpan={colSpan}
+          rowSpan={rowSpan}
           valorBruto={cellVarInfo?.valorBruto}
           filtro={cellVarInfo?.filtro}
           colMeta={colMeta}

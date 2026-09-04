@@ -62,6 +62,15 @@ export function limparEspacos(texto: string): string {
   return (texto || '').replace(/\s+/g, ' ').trim();
 }
 
+export function decodificarEntidadesXml(texto: string): string {
+  return (texto || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
+}
+
 export function normalizarIdentificadorValido(texto: string, fallbackPadrao: string): string {
   if (!texto) return fallbackPadrao;
 

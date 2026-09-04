@@ -101,19 +101,53 @@ export async function parseNumbering(zip: JSZip): Promise<Map<string, NumberingS
   return numberingMap;
 }
 
+const ROMAN_NUMERALS: [number, string][] = [
+  [1000, 'M'],
+  [900, 'CM'],
+  [500, 'D'],
+  [400, 'CD'],
+  [100, 'C'],
+  [90, 'XC'],
+  [50, 'L'],
+  [40, 'XL'],
+  [10, 'X'],
+  [9, 'IX'],
+  [5, 'V'],
+  [4, 'IV'],
+  [1, 'I']
+];
+
+export function toRoman(counter: number): string {
+  if (counter <= 0 || counter >= 4000) return counter.toString();
+  let result = '';
+  let val = counter;
+  for (const [num, str] of ROMAN_NUMERALS) {
+    while (val >= num) {
+      result += str;
+      val -= num;
+    }
+  }
+  return result;
+}
+
+export function toLetter(counter: number): string {
+  if (counter <= 0) return counter.toString();
+  let result = '';
+  let n = counter;
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    result = String.fromCharCode(65 + rem) + result;
+    n = Math.floor((n - 1) / 26);
+  }
+  return result;
+}
+
 export function formatNumber(counter: number, format: string): string {
   if (format === 'decimal') return counter.toString();
-  if (format === 'lowerLetter') return String.fromCharCode(96 + counter);
-  if (format === 'upperLetter') return String.fromCharCode(64 + counter);
-  if (format === 'lowerRoman') {
-    // simple roman logic for small numbers
-    const roman = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
-    return roman[counter] || counter.toString();
-  }
-  if (format === 'upperRoman') {
-    const roman = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
-    return roman[counter] || counter.toString();
-  }
+  if (format === 'lowerLetter') return toLetter(counter).toLowerCase();
+  if (format === 'upperLetter') return toLetter(counter);
+  if (format === 'lowerRoman') return toRoman(counter).toLowerCase();
+  if (format === 'upperRoman') return toRoman(counter);
   if (format === 'bullet') return '•';
   return counter.toString();
 }

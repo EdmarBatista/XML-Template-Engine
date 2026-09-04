@@ -248,9 +248,9 @@ O documento suporta interpolação de variáveis, aplicação de filtros via sin
 | Categoria | Tag XML | Atributos Aceitos | Descrição |
 |---|---|---|---|
 | **Títulos** | `<titulo>` | `alinhamento="centro\|esquerda\|direita"` | Título principal do documento (Nível 1 / H1). |
-| | `<subtitulo>` | `alinhamento="centro\|esquerda\|direita"` | Subtítulo do documento (Nível 2 / H2). |
-| **Seções** | `<secao>` | `titulo="..."`, `numerar="true\|false"` | Seção com aninhamento ilimitado, numeração sequencial (1., 1.1, 1.1.1...) e recuo progressivo de 0,5 cm por nível. |
-| **Parágrafos** | `<p>` | `alinhamento="justificar\|esquerda\|centro\|direita"` | Bloco de parágrafo de texto com alinhamento configurável e quebra inteligente. |
+| | `<subtitulo>` | `nivel="1\|2\|3\|..."`, `alinhamento="centro\|esquerda\|direita"` | Subtítulo ou cabeçalho temático de tópico com preservação de nível de tópicos (`outlineLevel`). Padrão: nível 2. |
+| **Seções** | `<secao>` | `titulo="..."`, `numerar="true\|false"`, `reiniciar="true\|false"` | Seção com aninhamento ilimitado, numeração sequencial (1., 1.1, 1.1.1...) e recuo progressivo de 0,5 cm por nível. |
+| **Parágrafos** | `<p>` | `alinhamento="justificar\|esquerda\|centro\|direita"` | Bloco de parágrafo puro de texto (sem atributos de nível ou estado de numeração), com formatação inline e quebra inteligente. |
 | **Divisores** | `<hr>` / `<hr/>` | — | Linha horizontal divisória entre blocos. |
 | **Listas** | `<lista>` | — | Lista com marcadores (bullet points). Contém tags `<item>`. |
 | | `<lista_numerada>` | — | Lista numerada sequencial (1, 2, 3...). Contém tags `<item>`. |
@@ -344,7 +344,15 @@ O sistema também converte **Tabelas do Word** perfeitamente:
 2. Cada cabeçalho da tabela do Word vira uma `<coluna>` desta tabela do formulário.
 3. No conteúdo, ele envolve as linhas com `<foreach>` para renderizar todos os dados que o usuário preencher.
 
+#### Preservação da Estrutura de Tópicos (Outline Levels) no Word
 
+O motor implementa preservação total da hierarquia de tópicos (*Outline Levels*):
+1. **Extração Nativa OpenXML**: Lê o atributo `w:outlineLvl` de estilos e parágrafos do DOCX, percorrendo recursivamente a cadeia de herança de estilos (`w:basedOn`).
+2. **Representação Semântica em XML**:
+   - Títulos de capítulos numerados geram `<secao titulo="...">`.
+   - Subtítulos e títulos de tópicos não numerados (`numId="0"`) geram `<subtitulo nivel="X" alinhamento="...">` (ex.: `<subtitulo nivel="2" alinhamento="esquerda">Especificação da garantia do serviço</subtitulo>`), onde `nivel="2"` corresponde ao Nível 2 do Word.
+   - Parágrafos de texto permanecem sempre limpos como `<p>...</p>`, sem atributos indevidos.
+3. **Fidelidade no Painel de Navegação do Word**: Na exportação para Word (.docx), os nós de `<subtitulo>` e `<secao>` recebem `heading: HeadingLevel.HEADING_X` e `outlineLevel: X - 1`, garantindo que no arquivo DOCX gerado toda a estrutura de tópicos seja visível no **Painel de Navegação do Microsoft Word** (*Navigation Pane*), sem nunca regredir para corpo de texto comum (*Normal / Body Text*).
 
 ### 3. Flexibilidade de Modelos e Particionamento
 
