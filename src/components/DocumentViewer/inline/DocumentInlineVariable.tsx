@@ -19,6 +19,8 @@ export interface DocumentInlineVariableProps {
   onFocusField: (fieldId: string) => void;
   onUpdateField: (fieldId: string, value: any, origem?: string) => void;
   fontScale?: number;
+  numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
+  extraNumbers?: string[];
 }
 
 /**
@@ -38,6 +40,8 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
   onFocusField,
   onUpdateField,
   fontScale = 1,
+  numeracaoInfo,
+  extraNumbers,
 }) => {
   const [editando, setEditando] = React.useState(false);
   const [valorTemp, setValorTemp] = React.useState(valorBruto ?? '');
@@ -345,6 +349,8 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
 
   const hasValue = valorExibido !== '' && valorExibido !== undefined && valorExibido !== null;
 
+  const temQuebra = typeof valorExibido === 'string' && valorExibido.includes('\n');
+
   return (
     <span
       data-vars={id}
@@ -365,7 +371,50 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
           : 'text-amber-700 dark:text-amber-300 bg-amber-100/90 dark:bg-amber-950/50 font-mono text-xs border-amber-300 dark:border-amber-700/60 hover:bg-amber-200 dark:hover:bg-amber-900/60'
       }`}
     >
-      {hasValue ? valorExibido : `{{${id}${filtro ? ' | ' + filtro : ''}}}`}
+      {hasValue ? (
+        temQuebra ? (
+          (() => {
+            const lines = String(valorExibido).split(/\r?\n/);
+            const nums = extraNumbers || numeracaoInfo?.extraNumbers;
+            let extraIdx = 0;
+
+            return lines.map((linha, idx) => {
+              if (idx === 0) {
+                return (
+                  <React.Fragment key={idx}>
+                    {linha}
+                  </React.Fragment>
+                );
+              }
+
+              const hasText = linha.trim().length > 0;
+              let extraNum: string | null = null;
+              if (hasText && nums && extraIdx < nums.length) {
+                extraNum = nums[extraIdx];
+                extraIdx++;
+              }
+
+              return (
+                <React.Fragment key={idx}>
+                  <span data-word-type="soft-paragraph-break" data-word-num={extraNum || ''}>
+                    <br />
+                    {extraNum && (
+                      <span data-word-num="true" data-num-prefix="true" className="font-bold mr-2 text-slate-900 dark:text-slate-100">
+                        {extraNum}
+                      </span>
+                    )}
+                  </span>
+                  {linha}
+                </React.Fragment>
+              );
+            });
+          })()
+        ) : (
+          valorExibido
+        )
+      ) : (
+        `{{${id}${filtro ? ' | ' + filtro : ''}}}`
+      )}
     </span>
   );
 };

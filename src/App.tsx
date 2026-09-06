@@ -241,7 +241,7 @@ export default function App() {
     if (!wordFileToConvert) return;
     setIsConvertingWord(true);
     try {
-      const { converterDocxParaModeloXml } = await import('./utils/docxToXmlConverter');
+      const { converterDocxParaModeloXml } = await import('./docx/converter');
       const { xml, jsonInicial, comentariosXml, nomeSugerido } = await converterDocxParaModeloXml(wordFileToConvert);
       
       // Armazena ou apenas logs comentariosXml por enquanto conforme solicitado

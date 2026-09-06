@@ -41,8 +41,9 @@ export function renderDocumentAstBlocks(
   const selfRenderInline = (
     childInlineNodes: AstNode[],
     childPath: string = 'inline',
-    childCtxLocal?: Record<string, any>
-  ) => renderInlineAstNodes(childInlineNodes, childPath, childCtxLocal, ctx);
+    childCtxLocal?: Record<string, any>,
+    numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } }
+  ) => renderInlineAstNodes(childInlineNodes, childPath, childCtxLocal, { ...ctx, numeracaoInfo });
 
   const selfRenderBlocks = (
     childBlocos: AstNode[],
@@ -71,6 +72,7 @@ export function renderDocumentAstBlocks(
             nivel,
             renderInlineNodes: selfRenderInline,
             contextoLocal: ctxLocal,
+            dados,
           })
         );
       }
@@ -250,7 +252,7 @@ export function renderDocumentAstBlocks(
           {selfRenderInline(node.filhos || [], blockKey, ctxLocal)}
         </HeadingTag>
       );
-    } else if (node.tipo === 'p') {
+    } else if (node.tipo === 'p' || node.tipo === 'paragrafo') {
       const alinhamento = node.atributos?.alinhamento || 'justificar';
       elementos.push(
         ...renderDocumentParagraphNodes({
@@ -263,6 +265,7 @@ export function renderDocumentAstBlocks(
           alinhamentoPadrao: alinhamento,
           renderInlineNodes: selfRenderInline,
           contextoLocal: ctxLocal,
+          dados,
         })
       );
     } else if (node.tipo === 'hr') {

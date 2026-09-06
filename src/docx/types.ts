@@ -53,4 +53,3 @@ export interface ExtractedComment {
   texto: string;
   trecho: string;
 }
-

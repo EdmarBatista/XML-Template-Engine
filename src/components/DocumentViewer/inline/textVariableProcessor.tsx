@@ -27,6 +27,7 @@ export interface ProcessarTextoOptions {
   variaveisVermelhasWord: boolean;
   fontScale: number;
   comentarios?: import('../../../types').WordComment[];
+  numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
 }
 
 export function processarTextoComVariaveis({
@@ -42,6 +43,7 @@ export function processarTextoComVariaveis({
   variaveisVermelhasWord,
   fontScale,
   comentarios,
+  numeracaoInfo,
 }: ProcessarTextoOptions): React.ReactNode[] {
   const escopo = { ...dados, ...(ctxLocal || {}) };
   const regex = /\{\{\s*([^}|]+?)\s*(?:\|\s*([^}]+?)\s*)?\}\}/g;
@@ -316,6 +318,19 @@ export function processarTextoComVariaveis({
         </span>
       );
     } else {
+      let varExtraNumbers: string[] | undefined = undefined;
+      if (numeracaoInfo?.extraNumbers && typeof textoExibicao === 'string' && textoExibicao.includes('\n')) {
+        const parts = textoExibicao.split(/\r?\n/);
+        let breaksNeeded = 0;
+        for (let i = 1; i < parts.length; i++) {
+          if (parts[i].trim().length > 0) breaksNeeded++;
+        }
+        if (breaksNeeded > 0) {
+          varExtraNumbers = numeracaoInfo.extraNumbers.slice(0, breaksNeeded);
+          numeracaoInfo.extraNumbers = numeracaoInfo.extraNumbers.slice(breaksNeeded);
+        }
+      }
+
       partes.push(
         <DocumentInlineVariable
           key={`${prefixKey}_var_${chave}_${matchCount++}_${match.index}`}
@@ -332,6 +347,8 @@ export function processarTextoComVariaveis({
           onFocusField={onFocusField}
           onUpdateField={onUpdateField}
           fontScale={fontScale}
+          numeracaoInfo={numeracaoInfo}
+          extraNumbers={varExtraNumbers}
         />
       );
     }

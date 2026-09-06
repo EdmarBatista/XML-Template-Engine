@@ -96,5 +96,5 @@ export function normalizarIdentificadorValido(texto: string, fallbackPadrao: str
     return fallbackPadrao;
   }
 
-  return norm;
+  return norm || fallbackPadrao;
 }

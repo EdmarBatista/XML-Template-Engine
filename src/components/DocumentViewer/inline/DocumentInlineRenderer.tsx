@@ -17,6 +17,7 @@ export interface InlineRenderContext {
   variaveisVermelhasWord: boolean;
   fontScale: number;
   comentarios?: import('../../../types').WordComment[];
+  numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
 }
 
 export function renderInlineAstNodes(
@@ -34,6 +35,7 @@ export function renderInlineAstNodes(
     edicaoInline,
     variaveisVermelhasWord,
     fontScale,
+    numeracaoInfo,
   } = ctx;
 
   const escopo = { ...dados, ...(ctxLocal || {}) };
@@ -64,6 +66,7 @@ export function renderInlineAstNodes(
           variaveisVermelhasWord,
           fontScale,
           comentarios: ctx.comentarios,
+          numeracaoInfo: ctx.numeracaoInfo,
         })
       );
     } else if (node.tipo === 'b') {

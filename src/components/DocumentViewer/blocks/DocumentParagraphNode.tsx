@@ -1,4 +1,10 @@
 import React from 'react';
+import { calcularProximoNumero } from '../../../utils/numbering';
+import { obterValorPorCaminho } from '../../../utils/documentUtils';
+
+
+
+
 import { AstNode, NumberingContext } from '../../../types';
 import { dividirEmLinhas } from '../../../utils/paragraphs';
 
@@ -21,10 +27,12 @@ export interface DocumentParagraphNodeProps {
   renderInlineNodes: (
     inlineNodes: AstNode[],
     path: string,
-    contextoLocal?: Record<string, any>
+    contextoLocal?: Record<string, any>,
+    numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } }
   ) => React.ReactNode[];
   /** Escopo local de variáveis (ex: repetições foreach) */
   contextoLocal?: Record<string, any>;
+  dados?: Record<string, any>;
   comentarios?: import('../../../types').WordComment[];
 }
 
@@ -41,6 +49,7 @@ export function renderDocumentParagraphNodes({
   alinhamentoPadrao = 'justify',
   renderInlineNodes,
   contextoLocal,
+  dados,
   comentarios,
 }: DocumentParagraphNodeProps): React.ReactNode[] {
   const linhas = dividirEmLinhas(nos);
@@ -59,11 +68,6 @@ export function renderDocumentParagraphNodes({
   const effectiveNivel = explicitNivel !== undefined ? explicitNivel : nivel;
 
   linhas.forEach((linha, li) => {
-    // Linha vazia ou composta somente por espaços/quebras não deve ser numerada nem renderizada como parágrafo vazio
-    const isWhitespaceOnly = linha.every(n => n.tipo === 'texto' && !(n.texto || '').trim());
-    if (isWhitespaceOnly) return;
-
-    const numeroWord = node?.atributos?.numero;
     let prefixoNum = '';
     const isExplicitlyDisabled = node?.atributos?.numerado === 'false';
     const isExplicitlyEnabled = node?.atributos?.numerado === 'true';
@@ -72,118 +76,77 @@ export function renderDocumentParagraphNodes({
     // Um parágrafo recebe numeração se:
     // 1. A numeração estiver habilitada no contexto
     // 2. Não estiver explicitamente desabilitada (numerado="false")
-    // 3. Tiver nível explícito (nivel="2", "3", etc.) OU estiver explicitamente habilitado (numerado="true")
-    //    OU estiver em uma seção numerada no nível 2 ou superior (contextoNumeracao.numerarBlocos && effectiveNivel >= 2)
+    // 3. Tiver nível explícito (nivel="2", "3", etc.) OU estiver dentro de bloco onde todos parágrafos são numerados por padrão
+    let extraNumbers: string[] = [];
     const shouldNumber =
       contextoNumeracao.habilitado &&
       !isExplicitlyDisabled &&
-      (hasNivel || isExplicitlyEnabled || (contextoNumeracao.numerarBlocos && effectiveNivel >= 2) || !!numeroWord);
+      (hasNivel || isExplicitlyEnabled || (contextoNumeracao.numerarBlocos && effectiveNivel >= 2));
 
     if (shouldNumber) {
-      if (numeroWord) {
-        prefixoNum = numeroWord.endsWith('.') || numeroWord.endsWith(')') ? numeroWord : `${numeroWord}.`;
-      } else {
-        if (!contextoNumeracao.levelCounters) {
-        contextoNumeracao.levelCounters = {
-          2: contextoNumeracao.next || 1,
-          3: contextoNumeracao.subNext || 1,
-          4: contextoNumeracao.subSubNext || 1,
-          5: 1,
-          6: 1,
-          7: 1,
-          8: 1,
-        };
-      }
-      if (!contextoNumeracao.levelNumbers) {
-        contextoNumeracao.levelNumbers = {};
-        if (contextoNumeracao.lastLevel2Number) contextoNumeracao.levelNumbers[2] = contextoNumeracao.lastLevel2Number;
-        if (contextoNumeracao.lastLevel3Number) contextoNumeracao.levelNumbers[3] = contextoNumeracao.lastLevel3Number;
-        if (contextoNumeracao.lastLevel4Number) contextoNumeracao.levelNumbers[4] = contextoNumeracao.lastLevel4Number;
-        if (contextoNumeracao.lastLevel5Number) contextoNumeracao.levelNumbers[5] = contextoNumeracao.lastLevel5Number;
-        if (contextoNumeracao.lastLevel6Number) contextoNumeracao.levelNumbers[6] = contextoNumeracao.lastLevel6Number;
-        if (contextoNumeracao.lastLevel7Number) contextoNumeracao.levelNumbers[7] = contextoNumeracao.lastLevel7Number;
-        if (contextoNumeracao.lastLevel8Number) contextoNumeracao.levelNumbers[8] = contextoNumeracao.lastLevel8Number;
-      }
-
-      const lvl = Math.min(8, Math.max(2, effectiveNivel));
-
-      // Determina o número pai baseado no nível anterior (lvl - 1)
-      let parent = '';
-      if (lvl === 2) {
-        parent = contextoNumeracao.prefixo || '';
-      } else {
-        // Busca o número do nível pai imediato (lvl - 1) ou o mais próximo registrado
-        for (let k = lvl - 1; k >= 2; k--) {
-          if (contextoNumeracao.levelNumbers[k]) {
-            if (k === lvl - 1) {
-              parent = contextoNumeracao.levelNumbers[k];
-            } else {
-              // Se pulou níveis intermediários, sintetiza os níveis intermediários
-              let synth = contextoNumeracao.levelNumbers[k];
-              for (let fill = k + 1; fill < lvl; fill++) {
-                synth += '.1';
-                contextoNumeracao.levelNumbers[fill] = synth;
-                contextoNumeracao.levelCounters[fill] = 2;
+      let extraLineBreaks = 0;
+      const escopo = { ...(dados || {}), ...(contextoLocal || {}) };
+      const processNodeForLineBreaks = (n: any) => {
+        if (n.tipo === 'texto' && n.texto) {
+          const matches = n.texto.match(/\{\{\s*([^}|]+?)(?:\s*\|[^}]+)?\s*\}\}/g);
+          if (matches && escopo) {
+            matches.forEach((m: string) => {
+              const varName = m.replace(/\{\{|\}\}/g, '').split('|')[0].trim();
+              const val = escopo[varName] !== undefined ? escopo[varName] : obterValorPorCaminho(escopo, varName);
+              if (typeof val === 'string') {
+                const parts = val.split(/\r?\n/);
+                for (let i = 1; i < parts.length; i++) {
+                  if (parts[i].trim().length > 0) {
+                    extraLineBreaks++;
+                  }
+                }
               }
-              parent = synth;
-            }
-            break;
+            });
           }
         }
-        if (!parent) {
-          parent = contextoNumeracao.prefixo
-            ? `${contextoNumeracao.prefixo}${'.1'.repeat(lvl - 2)}`
-            : '1';
+        if ((n.tipo === 'var' || n.tipo === 'variavel') && n.atributos?.id && escopo) {
+          const val = escopo[n.atributos.id] !== undefined ? escopo[n.atributos.id] : obterValorPorCaminho(escopo, n.atributos.id);
+          if (typeof val === 'string') {
+            const parts = val.split(/\r?\n/);
+            for (let i = 1; i < parts.length; i++) {
+              if (parts[i].trim().length > 0) {
+                extraLineBreaks++;
+              }
+            }
+          }
         }
-      }
+        if (n.filhos && Array.isArray(n.filhos)) {
+          n.filhos.forEach(processNodeForLineBreaks);
+        }
+      };
+      linha.forEach(processNodeForLineBreaks);
 
-      const currentIdx = contextoNumeracao.levelCounters[lvl] || 1;
-      const num = parent ? `${parent}.${currentIdx}` : String(currentIdx);
-
-      contextoNumeracao.levelCounters[lvl] = currentIdx + 1;
-      contextoNumeracao.levelNumbers[lvl] = num;
-      contextoNumeracao.lastNumber = num;
-
-      // Reseta contadores e números de níveis inferiores (> lvl)
-      for (let d = lvl + 1; d <= 8; d++) {
-        contextoNumeracao.levelCounters[d] = 1;
-        delete contextoNumeracao.levelNumbers[d];
-      }
-
-      // Sincroniza campos legados
-      contextoNumeracao.next = contextoNumeracao.levelCounters[2] || 1;
-      contextoNumeracao.subNext = contextoNumeracao.levelCounters[3] || 1;
-      contextoNumeracao.subSubNext = contextoNumeracao.levelCounters[4] || 1;
-      contextoNumeracao.lastLevel2Number = contextoNumeracao.levelNumbers[2] || '';
-      contextoNumeracao.lastLevel3Number = contextoNumeracao.levelNumbers[3] || '';
-      contextoNumeracao.lastLevel4Number = contextoNumeracao.levelNumbers[4] || '';
-      contextoNumeracao.lastLevel5Number = contextoNumeracao.levelNumbers[5] || '';
-      contextoNumeracao.lastLevel6Number = contextoNumeracao.levelNumbers[6] || '';
-      contextoNumeracao.lastLevel7Number = contextoNumeracao.levelNumbers[7] || '';
-      contextoNumeracao.lastLevel8Number = contextoNumeracao.levelNumbers[8] || '';
-
+      const num = calcularProximoNumero(contextoNumeracao, effectiveNivel, nivel);
       prefixoNum = `${num}.`;
+      for (let k = 0; k < extraLineBreaks; k++) {
+        const nNext = calcularProximoNumero(contextoNumeracao, effectiveNivel, nivel);
+        extraNumbers.push(`${nNext}.`);
       }
     }
 
-    // Verifica se algum comentário pertence a esta linha
-    const linhaText = linha.map(n => n.texto || '').join('').trim();
+    // Verifica se algum comentario pertence a esta linha
+    const linhaText = linha.map(n => n.texto || '').join('');
     const comentariosLinha = (comentarios || []).filter(c => linhaText.includes(c.trecho) || (c.trecho && c.trecho.includes(linhaText)));
 
     paragrafos.push(
       <div
         key={`${pPath}_p_${li}`}
         data-word-type="paragrafo"
-        
+        data-word-level={effectiveNivel}
         data-word-align={alinhamentoPadrao}
         data-word-numerado={prefixoNum ? 'true' : 'false'}
         className={`text-slate-800 dark:text-slate-200 my-2 leading-relaxed select-text ${alignClass} relative group`}
         style={{ fontSize: `${fontScale}rem` }}
       >
         {prefixoNum && (
-          <span data-word-num="true" data-num-prefix="true" className="font-bold pr-1 text-slate-900 dark:text-slate-100">{prefixoNum} </span>
+          <span data-word-num="true" data-num-prefix="true" className="font-bold mr-2 text-slate-900 dark:text-slate-100">{prefixoNum}</span>
         )}
-        {renderInlineNodes(linha, `${pPath}_inline_${li}`, contextoLocal)}
+        {renderInlineNodes(linha, `${pPath}_inline_${li}`, contextoLocal, { contextoNumeracao, effectiveNivel, nivelBase: nivel, isNumerado: shouldNumber, extraNumbers: [...extraNumbers] })}
         
         {comentariosLinha.length > 0 && (
           <span className="inline-flex items-center ml-2 align-middle">

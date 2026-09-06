@@ -51,6 +51,7 @@ function segmentosParaRuns(segmentos: SegmentoDom[], opcoes: Required<WordExport
   return (segmentos || []).map(segmento => {
     return new TextRun({
       text: limparTexto(segmento.texto),
+      break: (segmento.texto === '\n' || segmento.texto === '\r\n') ? 1 : undefined,
       font: segmento.fonte || opcoes.fonte,
       size: ptParaHalfPoint(segmento.tamanhoFonte ?? opcoes.tamanhoFonte),
       color: paraHexCor(segmento.cor || opcoes.corTexto),
@@ -502,35 +503,51 @@ function converterElementosBlocoDom(
           const segmentos = extrairSegmentosDeDom(tempDiv, {}, opcoes, deveUsarNumeracao);
           const normalizados = normalizarSegmentos(segmentos);
           bufferNodes = [];
+          const recuoCalculado = calcularRecuoHierarquicoCm(levelPara);
+          const recuoFinal = recuoSecao > 0 ? recuoSecao : recuoCalculado;
 
-          if (normalizados.length > 0) {
-            const recuoCalculado = calcularRecuoHierarquicoCm(levelPara);
-            const recuoFinal = recuoSecao > 0 ? recuoSecao : recuoCalculado;
 
-            if (deveUsarNumeracao) {
-              resultado.push(
-                criarParagrafo(segmentosParaRuns(normalizados, opcoes), opcoes, {
-                  alinhamento: alinhamentoFinal,
-                  recuoEsquerdo: recuoFinal,
-                  numbering: {
-                    reference: numbering!.reference,
-                    level: Math.min(levelPara, (opcoes.nivelMaximoNumeracao || 9) - 1),
-                  },
-                  espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
-                  espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
-                })
-              );
-            } else {
-              resultado.push(
-                criarParagrafo(segmentosParaRuns(normalizados, opcoes), opcoes, {
-                  recuoEsquerdo: recuoFinal,
-                  alinhamento: alinhamentoFinal,
-                  espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
-                  espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
-                })
-              );
-            }
-          }
+
+      const chunks: import('./domDocumentExtractor').SegmentoDom[][] = [];
+            let currentChunk: import('./domDocumentExtractor').SegmentoDom[] = [];
+            normalizados.forEach(seg => {
+              if (seg.isParagraphBreak) {
+                chunks.push(currentChunk);
+                currentChunk = [];
+              } else {
+                currentChunk.push(seg);
+              }
+            });
+            chunks.push(currentChunk);
+
+            chunks.forEach(chunk => {
+              const hasText = chunk.some(s => s.texto.trim().length > 0);
+              const applyNumbering = deveUsarNumeracao && hasText;
+
+              if (applyNumbering) {
+                resultado.push(
+                  criarParagrafo(segmentosParaRuns(chunk, opcoes), opcoes, {
+                    alinhamento: alinhamentoFinal,
+                    recuoEsquerdo: recuoFinal,
+                    numbering: {
+                      reference: numbering!.reference,
+                      level: Math.min(levelPara, (opcoes.nivelMaximoNumeracao || 9) - 1),
+                    },
+                    espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
+                    espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
+                  })
+                );
+              } else {
+                resultado.push(
+                  criarParagrafo(segmentosParaRuns(chunk, opcoes), opcoes, {
+                    alinhamento: alinhamentoFinal,
+                    recuoEsquerdo: recuoFinal,
+                    espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
+                    espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
+                  })
+                );
+              }
+            });
         };
 
         let isFirstPart = true;
@@ -561,13 +578,28 @@ function converterElementosBlocoDom(
       const segmentos = extrairSegmentosDeDom(el, {}, opcoes, deveUsarNumeracaoNativa);
       const normalizados = normalizarSegmentos(segmentos);
 
-      if (normalizados.length > 0) {
-        const recuoCalculado = calcularRecuoHierarquicoCm(levelPara);
-        const recuoFinal = recuoSecao > 0 ? recuoSecao : recuoCalculado;
+      const chunks: import('./domDocumentExtractor').SegmentoDom[][] = [];
+      let currentChunk: import('./domDocumentExtractor').SegmentoDom[] = [];
+      normalizados.forEach(seg => {
+        if (seg.isParagraphBreak) {
+          chunks.push(currentChunk);
+          currentChunk = [];
+        } else {
+          currentChunk.push(seg);
+        }
+      });
+      chunks.push(currentChunk);
 
-        if (deveUsarNumeracaoNativa) {
+      const recuoCalculado = calcularRecuoHierarquicoCm(levelPara);
+      const recuoFinal = recuoSecao > 0 ? recuoSecao : recuoCalculado;
+
+      chunks.forEach(chunk => {
+        const hasText = chunk.some(s => s.texto.trim().length > 0);
+        const applyNumbering = deveUsarNumeracaoNativa && hasText;
+
+        if (applyNumbering) {
           resultado.push(
-            criarParagrafo(segmentosParaRuns(normalizados, opcoes), opcoes, {
+            criarParagrafo(segmentosParaRuns(chunk, opcoes), opcoes, {
               alinhamento: alinhamentoFinal,
               recuoEsquerdo: recuoFinal,
               numbering: {
@@ -580,15 +612,15 @@ function converterElementosBlocoDom(
           );
         } else {
           resultado.push(
-            criarParagrafo(segmentosParaRuns(normalizados, opcoes), opcoes, {
-              recuoEsquerdo: recuoFinal,
+            criarParagrafo(segmentosParaRuns(chunk, opcoes), opcoes, {
               alinhamento: alinhamentoFinal,
+              recuoEsquerdo: recuoFinal,
               espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
               espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
             })
           );
         }
-      }
+      });
       return;
     }
 

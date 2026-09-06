@@ -259,8 +259,6 @@ export function generateXmlFromAst(
     const block = blocks[i];
 
     if (block.type === 'table') {
-      closeSubsectionsBackToLevel2();
-
       const t = block as DocxTable;
       const indentStr = '    ' + '  '.repeat(sectionStack.length);
 
@@ -422,6 +420,14 @@ export function generateXmlFromAst(
     const plainText = p.runs.map((r) => r.text).join('').trim();
     lastContextLabel = plainText.substring(0, 50);
 
+    // 0. Diretivas Condicionais (if / endif) em nível de bloco
+    if (/^\{\{\s*if\s+(.*?)\s*\}\}$/i.test(plainText) || /^\{\{\s*(endif|end_if|\/if)\s*\}\}$/i.test(plainText) || /^\{\{\s*(foreach.*?|endforeach.*?|\/foreach.*?)\s*\}\}$/i.test(plainText)) {
+      const indentStr = '    ' + '  '.repeat(sectionStack.length);
+      conteudoXml += `${indentStr}${processedText}\n`;
+      i++;
+      continue;
+    }
+
     // 1. Título principal do documento
     if (p.isDocumentTitle) {
       closeAllSections();
@@ -432,7 +438,6 @@ export function generateXmlFromAst(
 
     // 2. Subtítulo (sem numeração)
     if (p.type === 'subtitulo') {
-      closeSubsectionsBackToLevel2();
       const indentStr = '    ' + '  '.repeat(sectionStack.length);
       const nivelAttr = p.level ? ` nivel="${p.level}"` : '';
       conteudoXml += `${indentStr}<subtitulo${nivelAttr} alinhamento="esquerda">${processedText}</subtitulo>\n`;
@@ -547,7 +552,6 @@ export function generateXmlFromAst(
       }
 
       // Se estamos dentro de uma seção numerada, agrupa parágrafos consecutivos não-numerados em <secao numerar="false">:
-      closeSubsectionsBackToLevel2();
       const contentIndent = '    ' + '  '.repeat(sectionStack.length);
       conteudoXml += `${contentIndent}<secao numerar="false">\n`;
       while (i < blocks.length && blocks[i].type !== 'table') {
@@ -610,7 +614,7 @@ export function generateXmlFromAst(
         .map(([k, v]) => `${k}="${escapeXml(v)}"`)
         .join(' ');
       const optStr = field.options
-        ? `\n        ` + field.options.map((o) => `<opcao valor="${escapeXml(o)}">${escapeXml(o)}</opcao>`).join('\n        ') + `\n      `
+        ? `\n        ` + field.options.map((o) => `<option valor="${escapeXml(o)}">${escapeXml(o)}</option>`).join('\n        ') + `\n      `
         : '';
       formularioXml += `      <${field.tag} id="${field.id}" ${attrsStr}${field.options ? `>${optStr}</${field.tag}>\n` : ' />\n'}`;
     }

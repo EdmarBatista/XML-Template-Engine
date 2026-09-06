@@ -1,13 +1,16 @@
-export type TextRun = {
+export interface TextRun {
   text: string;
   b?: boolean;
   i?: boolean;
   u?: boolean;
   strike?: boolean;
   color?: string;
-};
+  sz?: number;
+  highlight?: string;
+  font?: string;
+}
 
-export type DocxParagraph = {
+export interface DocxParagraph {
   type: 'p' | 'h' | 'li' | 'subtitulo';
   level?: number;
   numId?: string;
@@ -16,34 +19,28 @@ export type DocxParagraph = {
   lvlText?: string;
   styleId?: string;
   runs: TextRun[];
-  numeroWord?: string; // Explicit number text from Word if computed
+  numeroWord?: string;
   isTitle?: boolean;
   isDocumentTitle?: boolean;
-  isNumbered?: boolean; // True se o parágrafo possui numeração explícita/decimal no Word
-  isSpecial?: boolean;
-  specialKind?: string;
+  isNumbered?: boolean;
   restartNumbering?: boolean;
-};
+}
 
-export type DocxTable = {
+export interface DocxTableCell {
+  blocks: DocxParagraph[];
+  colSpan?: number;
+  vMerge?: 'restart' | 'continue';
+  rowSpan?: number;
+  isMergedContinuation?: boolean;
+}
+
+export interface DocxTableRow {
+  cells: DocxTableCell[];
+}
+
+export interface DocxTable {
   type: 'table';
   rows: DocxTableRow[];
-};
-
-export type DocxTableRow = {
-  cells: DocxTableCell[];
-};
-
-export type DocxTableCell = {
-  blocks: DocxBlock[];
-  colSpan?: number;
-  rowSpan?: number;
-  vMerge?: 'restart' | 'continue';
-  isMergedContinuation?: boolean;
-};
+}
 
 export type DocxBlock = DocxParagraph | DocxTable;
-
-export type DocxDocument = {
-  blocks: DocxBlock[];
-};

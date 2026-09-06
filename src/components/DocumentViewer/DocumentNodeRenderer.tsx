@@ -50,6 +50,7 @@ export const DocumentNodeRenderer: React.FC<DocumentNodeRendererProps> = ({
   pathPrefix = 'blk',
   contextoLocal,
   nivelSecao = 0,
+  comentarios,
 }) => {
   // Cria contexto de numeração fresco e isolado para esta passagem de renderização
   const ctxNumLocal: NumberingContext = {
@@ -67,7 +68,7 @@ export const DocumentNodeRenderer: React.FC<DocumentNodeRendererProps> = ({
     ctxNumLocal,
     pathPrefix,
     contextoLocal,
-    nivelSecao,
+    nivelSecao || 1,
     {
       dados,
       estrutura,
@@ -78,6 +79,7 @@ export const DocumentNodeRenderer: React.FC<DocumentNodeRendererProps> = ({
       variaveisVermelhasWord,
       fontScale,
       contextoNumeracao: ctxNumLocal,
+      comentarios,
     }
   );
 

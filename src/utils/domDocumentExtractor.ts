@@ -13,6 +13,8 @@ export interface SegmentoDom {
   cor?: string;
   tamanhoFonte?: number;
   fonte?: string;
+  isParagraphBreak?: boolean;
+  customNum?: string;
 }
 
 export interface OpcoesBaseDocumento {
@@ -167,10 +169,18 @@ export function extrairSegmentosDeDom(
     return [];
   }
 
+  if (el.getAttribute('data-word-type') === 'soft-paragraph-break') {
+    const customNum = el.getAttribute('data-word-num') || undefined;
+    const segs: SegmentoDom[] = [{ texto: '\n', isParagraphBreak: true, customNum, ...estiloAtual }];
+    if (customNum && !ignorarSpanNumeracao) {
+      segs.push({ texto: `${customNum} `, bold: true, ...estiloAtual });
+    }
+    return segs;
+  }
+
   const isWordNum =
     el.getAttribute('data-word-num') === 'true' ||
-    el.hasAttribute('data-word-num') ||
-    el.hasAttribute('data-num-prefix');
+    el.getAttribute('data-num-prefix') === 'true';
   if (isWordNum && ignorarSpanNumeracao) {
     return [];
   }
@@ -197,7 +207,18 @@ export function extrairSegmentosDeDom(
 
   if (el.tagName === 'TEXTAREA') {
     const txtEl = el as HTMLTextAreaElement;
-    segmentos.push({ texto: txtEl.value || '', ...estiloAtual });
+    const value = txtEl.value || '';
+    if (value.includes('\n')) {
+      const parts = value.split('\n');
+      parts.forEach((part, index) => {
+        segmentos.push({ texto: part, ...estiloAtual });
+        if (index < parts.length - 1) {
+          segmentos.push({ texto: '\n', ...estiloAtual });
+        }
+      });
+    } else {
+      segmentos.push({ texto: value, ...estiloAtual });
+    }
     return segmentos;
   }
 
@@ -289,6 +310,12 @@ export function normalizarSegmentos(segmentos: SegmentoDom[]): SegmentoDom[] {
 
   (segmentos || []).forEach(segmento => {
     if (!segmento || segmento.texto == null) return;
+    if (segmento.texto === '\n' || segmento.texto === '\r\n') {
+      resultado.push(segmento);
+      ultimoTexto = '';
+      return;
+    }
+    
     let texto = limparTexto(segmento.texto);
     if (!texto || texto === 'undefined' || texto === 'null') return;
 
