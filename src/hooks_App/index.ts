@@ -18,7 +18,7 @@
  *    - Persistência e alternância de modelos nativos e customizados no LocalStorage.
  *
  * 3. useDocumentExporters:
- *    - Camada unificada de exportações: Word (.docx), PDF (.pdf), Impressão nativa.
+ *    - Camada unificada de exportações: Word (.docx) e PDF (.pdf).
  *    - Download de preenchimento JSON e empacotamento de pacotes ZIP (XML + JSON).
  *    - Cópia do texto gerado para a área de transferência com feedback visual.
  *
@@ -27,7 +27,7 @@
  *    - Métodos auxiliares de abertura, fechamento e toggle.
  *
  * 5. useKeyboardShortcuts:
- *    - Listener global de eventos de teclado (Ctrl+S, Ctrl+P, Ctrl+Z, Ctrl+Y, Ctrl+E, Ctrl+M, Esc).
+ *    - Listener global de eventos de teclado (Ctrl+S, Ctrl+Z, Ctrl+Y, Ctrl+M, Esc).
  *
  * 6. useFilePackageActions:
  *    - Processamento de Drag & Drop e upload de arquivos (.xml, .json, .zip).

@@ -17,7 +17,6 @@ interface SidebarToolbarProps {
   onSaveZip?: () => void;
   onExportWord: () => void;
   onExportPdf: () => void;
-  onPrint: () => void;
   onOpenModelModal: () => void;
   onClearForm: () => void;
   variaveisVermelhasWord: boolean;
@@ -47,7 +46,7 @@ interface SidebarToolbarProps {
 
 export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
   currentXmlName, customTemplates, onRemoveCustomTemplate, onSelectTemplate, onNewTemplate, onLoadJson, onUploadXml, onUploadJson, onUploadZip, onSaveJson, onSaveZip,
-  onExportWord, onExportPdf, onPrint, onOpenModelModal, onClearForm,
+  onExportWord, onExportPdf, onOpenModelModal, onClearForm,
   variaveisVermelhasWord, onToggleVariaveisVermelhas, numeracaoAtiva, onToggleNumeracao,
   edicaoInline, onToggleEdicaoInline, irParaCampoAtivo, onToggleIrParaCampo,
   irParaDocumentoAtivo, onToggleIrParaDocumento, modoA4, onToggleModoA4, darkMode, onToggleDarkMode, onCopiarTexto, copiado, zoom, onZoomIn, onZoomOut, onResetZoom, onToggleSidebar, onDoubleToggleSidebar, collapsed
@@ -183,10 +182,6 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
 
       <button type="button" onClick={onExportPdf} className="btn-toolbar" title="Salvar Documento PDF (.pdf)">
         <FileText className="w-4 h-4 text-rose-400" />
-      </button>
-      
-      <button type="button" onClick={onPrint} className="btn-toolbar" title="Imprimir (Ctrl + P)">
-        <Printer className="w-4 h-4 text-slate-300" />
       </button>
 
       <button

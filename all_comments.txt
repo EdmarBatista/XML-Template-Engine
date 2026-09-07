@@ -1,0 +1,663 @@
+
+--- src/App.tsx ---
+/**
+ * ============================================================================
+ * App.tsx (Orquestrador da Aplicação)
+ * ============================================================================
+ *
+ * Arquitetura & Distribuição de Responsabilidades:
+ *
+ * 1. App.tsx (este arquivo):
+ *    - Atua exclusivamente como orquestrador de alto nível e integrador de layout.
+ *    - Conecta os hooks especializados de estado, visualizadores, formulário e modais.
+ *    - Renderiza a estrutura visual split-screen, atalhos de teclado e os modais.
+ *
+ * 2. hooks_App (Hooks especializados do App):
+ *    - A. useFormHistory: Gerenciamento do estado `dados`, histórico Undo/Redo e `isDirty`.
+ *    - B. useDocumentEngine: Ciclo de vida dos templates, parsing XML -> AST e erros.
+ *    - C. useDocumentExporters: Exportações (Word .docx, PDF .pdf, JSON, ZIP).
+ *    - D. useModalsManager: Estados e controles declarativos de abertura de modais.
+ *    - E. useKeyboardShortcuts: Atalhos de teclado (Ctrl+S, Ctrl+Z, Ctrl+Y, Ctrl+M, Esc).
+ *    - F. useFilePackageActions: Drag & Drop e uploads de múltiplos arquivos (.xml, .json, .zip).
+ *    - G. useSidebarResizer: Redimensionamento e limites do divisor lateral.
+ *
+ * 3. hooks Globais:
+ *    - usePreferencias: Preferências persistentes de UI (zoom, modo A4, dark mode, etc.).
+ *    - useCamposFoco: Sincronização de foco e scroll bidirecional formulário <-> documento.
+ *    - useToast: Notificações visuais flutuantes.
+ * ============================================================================
+ */
+
+--- src/components/DocumentViewer/DocumentA4Canvas.tsx ---
+/**
+ * Container de apresentação da folha física A4 e modo de visualização fluido
+ */
+
+--- src/components/DocumentViewer/DocumentNodeRenderer.tsx ---
+/**
+ * ============================================================================
+ * DocumentNodeRenderer (Despachante Central e Ponto de Entrada da AST)
+ * ============================================================================
+ *
+ * Responsabilidades:
+ * - Atua como orquestrador e ponto de entrada da árvore de sintaxe abstrata (AST).
+ * - Cria um contexto isolado de numeração para a passagem de renderização atual.
+ * - Delega a resolução especializada para os domínios modulares:
+ *   * `blocks/`: Gerenciamento e despacho de blocos estruturais (seção, parágrafo, tabela, lista).
+ *   * `inline/`: Resolução de nós e variáveis inline (var, máscaras, texto, acessos a tabela).
+ *   * `logic/`: Avaliação e renderização de nós condicionais (<if expr="...">).
+ * ============================================================================
+ */
+
+--- src/components/DocumentViewer/blocks/DocumentListNode.tsx ---
+/** Nó AST da lista (<lista>, <ul>, <ol>) */
+/** Chave única do bloco React */
+/** Escala da fonte aplicada */
+/** Escopo de dados atual para interpolação e repetições */
+/** Função de renderização de nós inline para o corpo dos itens */
+/** Contexto local de variáveis */
+/** Dicionário de destaques ativos */
+/** Callback para focar no campo do formulário ao clicar */
+/**
+ * Componente que renderiza nós de lista (<lista>, <ul>, <ol>) com suporte a marcadores,
+ * numeração sequencial, condicionais <if> e repetições <foreach> em itens.
+ */
+
+--- src/components/DocumentViewer/blocks/DocumentParagraphNode.tsx ---
+/** Nós AST que compõem o corpo do parágrafo */
+/** Caminho/chave única do nó para renderização React */
+/** Contexto mutável de numeração do documento */
+/** Fator multiplicador de escala da fonte */
+/** Nível hierárquico do parágrafo na seção */
+/** Nó AST completo do parágrafo, se disponível */
+/** Alinhamento horizontal do texto */
+/** Função de renderização de nós inline passada pelo despachante */
+/** Escopo local de variáveis (ex: repetições foreach) */
+/**
+ * Função utilitária que processa os nós AST e gera um array de elementos React para os parágrafos.
+ */
+/**
+ * Componente React wrapper para o renderizador de parágrafos
+ */
+
+--- src/components/DocumentViewer/blocks/DocumentSectionNode.tsx ---
+/**
+ * Renderizador hierárquico e síncrono de seções (<secao>), títulos (<titulo>, <subtitulo>) e numeração.
+ * Executado como função pura durante a travessia da AST para garantir determinismo absoluto na numeração.
+ */
+
+--- src/components/DocumentViewer/blocks/DocumentTableNode.tsx ---
+/**
+ * Renderizador de tabelas estruturadas (<tabela>), cabeçalhos, bordas, linhas e loops <foreach>
+ * com suporte a edição inline por célula, placeholders, botão de adicionar linha e navegação bidirecional.
+ */
+
+--- src/components/DocumentViewer/inline/DocumentInlineTableAccess.tsx ---
+/**
+ * Variável interativa para acessos a células/colunas de tabela:
+ * {{tabela.coluna[indice]}}, {{tabela[indice].coluna}}, {{tabela.coluna}} ou foreach.
+ * - Clique: foca/destaca o campo da tabela.
+ * - Duplo clique: edita a célula (select/radio/checkbox/date/moeda/text) ou a coluna inteira (como lista_csv).
+ * - Quando vazio, mostra o placeholder {{caminho}}.
+ */
+
+--- src/components/DocumentViewer/inline/DocumentInlineVariable.tsx ---
+/**
+ * Componente de Variável Interativa com Edição Inline (Duplo Clique) e Localização (Clique Único)
+ */
+
+--- src/components/DocumentViewer/inline/DocumentTableCell.tsx ---
+/**
+ * Célula de tabela com edição inline direta e unificada.
+ * Suporta input, number, moeda, date, select, textarea, checkbox e máscaras documentais.
+ */
+
+--- src/components/DocumentViewer/logic/DocumentConditionalNode.tsx ---
+/**
+ * ============================================================================
+ * DocumentConditionalNode (logic)
+ * ============================================================================
+ *
+ * Avaliação e renderização de nós condicionais (<if expr="...">).
+ * Suporta modo inline (dentro de parágrafos) e modo bloco (múltiplos parágrafos).
+ */
+/** Nó AST do elemento <if> inline */
+/** Chave única para o nó React */
+/** Escopo de dados atual (incluindo escopos locais de loop se houver) */
+/** Dicionário de variáveis atualmente sob destaque visual ativo */
+/** Callback para focar no campo do formulário ao clicar */
+/** Função de renderização para os nós inline filhos */
+/** Contexto local de variáveis */
+/**
+ * Renderiza uma condicional inline (<if>) dentro de texto/parágrafo.
+ */
+/** Nó AST do elemento <if> em nível de bloco */
+/** Chave única para o bloco React */
+/** Escopo de dados atual */
+/** Dicionário de variáveis atualmente sob destaque visual */
+/** Callback para focar no campo do formulário ao clicar */
+/** Contexto de numeração sequencial */
+/** Nível de profundidade da seção */
+/** Função de renderização de blocos AST passada pelo despachante */
+/** Contexto local de variáveis */
+/**
+ * Renderiza uma condicional de bloco (<if>) envolvendo múltiplos elementos/parágrafos.
+ */
+
+--- src/components/DocumentViewer.tsx ---
+/**
+ * =========================================================================================
+ * PROPOSTA DE DECOMPOSIÇÃO APLICADA (DocumentViewer):
+ * 
+ * 1. DocumentViewer.tsx: Orquestrador limpo de estado, timers de destaque e scroll suave (~150 linhas).
+ * 2. DocumentA4Canvas.tsx: Container de apresentação física da folha A4 e modo fluido com zoom e réguas.
+ * 3. DocumentNodeRenderer.tsx: Dispatcher central que processa os nós AST e controla o fluxo de parágrafos.
+ * 4. DocumentSectionNode.tsx: Renderizador modular de seções (<secao>), títulos (<titulo>, <subtitulo>) e numeração hierárquica.
+ * 5. DocumentTableNode.tsx: Renderizador isolado de tabelas estruturadas (<tabela>), cabeçalhos, bordas e células.
+ * 6. DocumentInlineVariable.tsx: Elemento interativo de variável com clique (foco) e duplo-clique (edição inline).
+ * =========================================================================================
+ */
+
+--- src/components/ModelModal/VarsTabs.tsx ---
+/**
+ * Aba "Variáveis" (edição). Extraída de ModelModal.tsx (sugestão C de modularização).
+ */
+/**
+ * Aba "Tabela Resumo" (somente leitura). Extraída de ModelModal.tsx.
+ */
+
+--- src/components/Sidebar.tsx ---
+/**
+ * =========================================================================================
+ * PROPOSTA DE DECOMPOSIÇÃO APLICADA (Sidebar):
+ * 
+ * 1. Sidebar.tsx: Orquestrador da barra lateral, gerenciamento de acordeões, busca e auto-scroll (~200 linhas).
+ * 2. SidebarHeader.tsx: Barra de progresso de preenchimento, campo de busca de campos e botão expandir/recolher tudo.
+ * 3. SidebarGroupAccordion.tsx: Bloco colapsável modular para cada <grupo> do formulário.
+ * 4. fields/: Componentes especialistas desacoplados por tipo de entrada:
+ *    - TextFieldInput.tsx: Inputs de texto e strings com máscaras automáticas (CPF, CNPJ, Moeda, CEP, etc.).
+ *    - NumberFieldInput.tsx: Inputs numéricos (min, max, step, quantitativos).
+ *    - DateFieldInput.tsx: Seletores de data.
+ *    - TextAreaFieldInput.tsx: Áreas de texto com múltiplas linhas e auto-redimensionamento.
+ *    - SelectFieldInput.tsx: Caixas de seleção suspensas (dropdowns com suporte a opções condicionais).
+ *    - ChoiceFieldInput.tsx: Caixas de opção exclusivas (radios) e booleanas (checkboxes) com sub-inputs aninhados.
+ * =========================================================================================
+ */
+
+--- src/components/TemplateSelector.tsx ---
+/**
+ * Seletor de templates (customizados + modelos prontos) com dropdown.
+ .
+ */
+
+--- src/constants/documentTheme.ts ---
+/**
+ * Centralização das Constantes de Tema, Tipografia, Cores, Bordas, Espaçamentos e Configurações de Exportação (Word e PDF).
+ * Garante paridade absoluta entre a Pré-visualização na tela (HTML/DOM), Microsoft Word (.docx) e Adobe PDF (.pdf).
+ */
+
+--- src/data/defaultTemplates.ts ---
+/**
+ * Catálogo de modelos padrão. Cada modelo está em data/templates/*.ts
+ * (sugestão F de modularização).
+ */
+
+--- src/docx/converter.ts ---
+/**
+ * Conversor direto nativo DOCX (OpenXML) → Modelo XML do Sistema.
+ *
+ * Elimina completamente qualquer etapa intermediária de HTML e a biblioteca Mammoth.
+ * Converte diretamente as partes XML do Word (document.xml, styles.xml, numbering.xml, comments.xml)
+ * para a AST estruturada e gera o XML final com a hierarquia pura de seções e tags <p> limpas.
+ */
+
+--- src/docx/generator.ts ---
+/**
+ * Remove numeração manual digitada no início de títulos (ex.: "7. ", "1.1 ", "CLÁUSULA PRIMEIRA - ")
+ * para que o atributo titulo="..." contenha apenas o texto puro e a hierarquia automática do frontend
+ * forneça a numeração correta sem duplicidade.
+ */
+
+--- src/docx/types.ts ---
+/**
+   * Número EXIBIDO pelo Word para este parágrafo quando ele é um nível de capítulo
+   * (nível de numeração %1.). É calculado na passagem de pós-processamento aplicando
+   * o reinício de numeração (startOverride) — SÓ a estrutura do Word, sem ler o texto.
+   */
+
+--- src/docx/word.ts ---
+/** numIds cujo parágrafo, ao ser usado naquele ilvl, INICIA (reinicia) a lista */
+/**
+ * Lê word/numbering.xml e detecta, estruturalmente, em quais numIds existe um
+ * <w:lvlOverride><w:startOverride/> (qualquer ilvl) — sinal de que um parágrafo
+ * que usa esse numId deve REINICIAR a numeração do nível de capítulo (%1.).
+ * Não depende de texto — apenas da definição OOXML.
+ */
+
+--- src/hooks/useCamposFoco.ts ---
+/**
+ * Hook de foco/destaque bidirecional entre documento e sidebar.
+ .
+ */
+
+--- src/hooks/usePreferencias.ts ---
+/**
+ * Hook de preferências de interface: carrega os valores iniciais,
+ * mantém os estados e persiste automaticamente no localStorage.
+ .
+ */
+
+--- src/hooks/useToast.ts ---
+/**
+ * Hook de toast: mensagem temporária exibida no App.
+ .
+ */
+
+--- src/hooks_App/index.ts ---
+/**
+ * ============================================================================
+ * Módulo de Hooks do Componente Principal (hooks_App)
+ * ============================================================================
+ *
+ * Este diretório organiza a decomposição modular da arquitetura do `App.tsx`,
+ * distribuindo as responsabilidades em hooks customizados de responsabilidade única:
+ *
+ * 1. useFormHistory:
+ *    - Gerenciamento de estado `dados` do formulário com pilha de histórico (Undo/Redo).
+ *    - Detecção de modificações pendentes (`isDirty`).
+ *    - Atualizações pontuais (`updateField`) e em lote (`batchUpdateFields`).
+ *    - Metadados de rastreamento do último campo alterado.
+ *
+ * 2. useDocumentEngine:
+ *    - Ciclo de vida dos templates e compilação de XML para AST (`IntermediateModel`).
+ *    - Tratamento e sinalização de erros de sintaxe XML (`xmlError`).
+ *    - Persistência e alternância de modelos nativos e customizados no LocalStorage.
+ *
+ * 3. useDocumentExporters:
+ *    - Camada unificada de exportações: Word (.docx) e PDF (.pdf).
+ *    - Download de preenchimento JSON e empacotamento de pacotes ZIP (XML + JSON).
+ *    - Cópia do texto gerado para a área de transferência com feedback visual.
+ *
+ * 4. useModalsManager:
+ *    - Controle dos estados de visibilidade dos modais (Editor XML, Inspetor de Modelo).
+ *    - Métodos auxiliares de abertura, fechamento e toggle.
+ *
+ * 5. useKeyboardShortcuts:
+ *    - Listener global de eventos de teclado (Ctrl+S, Ctrl+Z, Ctrl+Y, Ctrl+M, Esc).
+ *
+ * 6. useFilePackageActions:
+ *    - Processamento de Drag & Drop e upload de arquivos (.xml, .json, .zip).
+ *
+ * 7. useSidebarResizer:
+ *    - Controle de arrasto e limites do divisor entre formulário e visualizador.
+ * ============================================================================
+ */
+
+--- src/hooks_App/useDocumentEngine.ts ---
+/**
+ * ============================================================================
+ * useDocumentEngine (Gerenciador de Templates, Engine XML e Parsing de AST)
+ * ============================================================================
+ *
+ * Atribuições & Responsabilidades:
+ * 1. Carregar lista de templates nativos e customizados (LocalStorage via StorageService).
+ * 2. Realizar o parsing do XML para AST (`IntermediateModel` / `xmlAst`).
+ * 3. Capturar e sinalizar erros de sintaxe XML (`xmlError`).
+ * 4. Alternância entre modelos (templates padrão e personalizados).
+ * 5. Persistência e compilação de novos templates via editor ou upload.
+ * 6. Suporte à inserção silenciosa de arquivos XML secundários.
+ */
+
+--- src/hooks_App/useDocumentExporters.ts ---
+/**
+ * ============================================================================
+ * useDocumentExporters (Camada Unificada de Exportações e Downloads)
+ * ============================================================================
+ *
+ * Atribuições & Responsabilidades:
+ * 1. Geração e download de documentos Microsoft Word (.docx) formatados.
+ * 2. Geração e download de arquivos PDF vetoriais (.pdf).
+ * 3. Exportação do preenchimento estruturado de dados em formato JSON.
+ * 4. Empacotamento e download do pacote ZIP completo (XML + JSON).
+ * 5. Cópia limpa do texto integral do documento para a área de transferência.
+ * 6. Tratamento unificado de mensagens e feedbacks visuais via useToast.
+ */
+
+--- src/hooks_App/useFilePackageActions.ts ---
+/**
+ * ============================================================================
+ * useFilePackageActions
+ * ============================================================================
+ *
+ * Atribuições & Responsabilidades:
+ * 1. Gerenciar interações de Drag & Drop de arquivos (XML, JSON, ZIP).
+ * 2. Processar uploads de arquivos XML individuais, preenchimentos JSON e pacotes ZIP.
+ * 3. Exportar preenchimento estruturado em formato JSON.
+ * 4. Empacotar e baixar modelos e formulários completos em arquivo compactado .ZIP.
+ */
+
+--- src/hooks_App/useFormHistory.ts ---
+/**
+ * ============================================================================
+ * useFormHistory (Gerenciador de Estado, Histórico e Modificações do Formulário)
+ * ============================================================================
+ *
+ * Atribuições & Responsabilidades:
+ * 1. Manter o estado `dados: Record<string, any>` dos campos do documento ativo.
+ * 2. Gerenciar histórico de Desfazer/Refazer (Undo/Redo) com pilha de snapshots.
+ * 3. Indicar se o formulário possui alterações não salvas (`isDirty`).
+ * 4. Fornecer atualizações pontuais (`updateField`) e em lote (`batchUpdateFields`).
+ * 5. Gerenciar limpeza e redefinição dos campos do formulário.
+ * 6. Integrar a emissão de destaques e rastreamento do último campo modificado.
+ */
+
+--- src/hooks_App/useKeyboardShortcuts.ts ---
+/**
+ * ============================================================================
+ * useKeyboardShortcuts (Gerenciador Global de Atalhos de Teclado)
+ * ============================================================================
+ *
+ * Atribuições & Responsabilidades:
+ * 1. Capturar eventos de teclado globais (`keydown`) com verificação segura
+ *    de contexto (evita interceptar atalhos quando o usuário digita em inputs,
+ *    textareas ou editores Monaco).
+ * 2. Atalhos suportados:
+ *    - Ctrl+S / Cmd+S: Baixar preenchimento JSON.
+ *    - Ctrl+Z / Cmd+Z: Desfazer alteração no formulário (Undo).
+ *    - Ctrl+Y / Cmd+Shift+Z: Refazer alteração no formulário (Redo).
+ *    - Ctrl+M / Cmd+M: Abrir/fechar Painel de Variáveis e Modelo.
+ *    - Esc: Fechar modais abertos.
+ */
+
+--- src/hooks_App/useModalsManager.ts ---
+/**
+ * ============================================================================
+ * useModalsManager (Gerenciador de Abertura e Fechamento dos Modais)
+ * ============================================================================
+ *
+ * Atribuições & Responsabilidades:
+ * 1. Controlar os estados booleanos de visibilidade dos modais do App.
+ *    - `isXmlEditorOpen`: Editor de código-fonte XML e dados JSON.
+ *    - `isModelModalOpen`: Inspetor de modelo, variáveis e AST intermediário.
+ * 2. Disponibilizar métodos utilitários declarativos (`openXmlEditor`, `closeXmlEditor`,
+ *    `openModelModal`, `closeModelModal`, `closeAllModals`).
+ */
+
+--- src/hooks_App/useSidebarResizer.ts ---
+/**
+ * ============================================================================
+ * useSidebarResizer
+ * ============================================================================
+ *
+ * Atribuições & Responsabilidades:
+ * 1. Gerenciar o estado de arrasto e redimensionamento do divisor entre formulário e documento.
+ * 2. Vincular e desvincular listeners de 'mousemove' e 'mouseup' na janela com limites de largura.
+ */
+
+--- src/services/apiService.ts ---
+/**
+ * Serviço de consultas externas (CNPJ/CEP) com cache simples, timeout e debounce.
+ .
+ */
+/**
+ * Consulta dados de uma empresa pelo CNPJ (OpenCNPJ).
+ */
+/**
+ * Consulta endereço pelo CEP (ViaCEP). Lança erro se o CEP não for localizado.
+ */
+
+--- src/services/filePackageService.ts ---
+/**
+ * Serviço de Empacotamento, Leitura e Download de Arquivos (.zip, .xml, .json).
+ * Centraliza as operações de leitura assíncrona, extração de pacotes ZIP via JSZip
+ * e acionamento de downloads para desacoplar o App.tsx.
+ */
+/**
+   * Lê e extrai os conteúdos de um pacote .zip contendo .xml (único ou particionado) e/ou .json.
+   */
+/**
+   * Gera e dispara o download de um pacote ZIP.
+   * Se houver partes separadas (xmlParts), elas vêm salvas separadamente no ZIP (ex: Nome [01].xml, Nome [02].xml).
+   */
+/**
+   * Dispara o download de um arquivo JSON estruturado contendo os dados do formulário.
+   */
+/**
+   * Lê o conteúdo de texto de um arquivo File assincronamente.
+   */
+/**
+   * Utilitário compartilhado para acionamento de download no navegador.
+   */
+
+--- src/services/storageService.ts ---
+/**
+ * Serviço de Gerenciamento Unificado de Armazenamento Local (LocalStorage).
+ * Centraliza a leitura, gravação, defaults e migrações de preferências de interface,
+ * modelos personalizados e dados preenchidos de formulários.
+ */
+/**
+   * Carrega as preferências de interface unificadas com fallback para os valores padrão.
+   */
+/**
+   * Salva todas as preferências de interface de uma única vez em um registro unificado.
+   */
+/**
+   * Carrega a lista de templates customizados salvos pelo usuário.
+   */
+/**
+   * Salva a lista de templates customizados.
+   */
+/**
+   * Obtém o ID do último template selecionado.
+   */
+/**
+   * Salva o ID do template ativo.
+   */
+/**
+   * Carrega os dados preenchidos de um template específico ou todo o mapa de formulários.
+   */
+/**
+   * Salva os dados de preenchimento para um template específico no mapa persistido.
+   */
+/**
+   * Limpa os dados de preenchimento salvos para um template específico.
+   */
+/**
+   * Carrega o JSON histórico atrelado ao nome de um arquivo.
+   */
+/**
+   * Salva o JSON histórico atrelado ao nome de um arquivo.
+   */
+/**
+   * Remove o JSON histórico atrelado ao nome de um arquivo.
+   */
+
+--- src/services/useCnpjCepLookup.ts ---
+/**
+ * Hook para consulta automática de CNPJ e CEP (com debounce e cancelamento),
+ * encapsulando o estado loading/data/error que antes ficava dentro do Sidebar.
+ */
+
+--- src/utils/caminhos.ts ---
+/**
+ * Retorna o tipo efetivo de uma coluna de tabela, considerando tanto o atributo
+ * `tipo` quanto o `validar`. Uma coluna com `tipo="input"` e `validar="moeda"`
+ * é tratada como moeda (formatada/justada na edição e na exportação).
+ */
+
+--- src/utils/domDocumentExtractor.ts ---
+/**
+ * Utilitário compartilhado para extração e processamento semântico de documentos DOM.
+ * Utilizado pelos exportadores de Word (DOCX) e PDF para garantir 100% de paridade.
+ */
+/**
+ * REGRA DE IDENTAÇÃO HIERÁRQUICA DO DOCUMENTO:
+ * - O deslocamento / recuo à esquerda deve ocorrer no Word (.docx) e PDF, e NÃO na visualização em tela.
+ * - O primeiro nível a ter deslocamento é o nível >= 2 (ex: 5.16.1, três segmentos ou subnível).
+ * - Nível 0 (Seção principal, ex: 1. / 5.): recuo = 0 cm.
+ * - Nível 1 (Primeiro subnível / item, ex: 1.1 / 5.16): recuo = 0 cm.
+ * - Nível >= 2 (Subitens subordinados, ex: 1.1.1 / 5.16.1): recuo = (nivel - 1) * 0.5 cm.
+ *   Fórmula: nivel <= 1 ? 0 : (nivel - 1) * 0.5
+ */
+/**
+ * Extrai recursivamente segmentos de texto formatado a partir de nós inline do DOM.
+ */
+/**
+ * Normaliza e insere espaçamento apropriado entre palavras consecutivas.
+ */
+/**
+ * Calcula dinamicamente as larguras das colunas de tabelas no pdfMake.
+ * Analisa a proporção e volume de texto de cada coluna para replicar fielmente
+ * o comportamento de layout de tabela do HTML/Word (colunas curtas compactas com 'auto',
+ * colunas equilibradas com proporções ideais e colunas de texto longo com '*').
+ */
+
+--- src/utils/expressionEvaluator.ts ---
+/**
+ * Avaliador de expressões lógicas e de comparação para tags <if expr="...">
+ */
+
+--- src/utils/listas.ts ---
+/**
+ * Divide o valor de uma lista (CSV ou com quebras de linha) em itens individuais,
+ * suportando itens com aspas que contenham vírgulas internamente (ex: "Pintura, de fogo").
+ */
+/**
+ * Obtém valor por caminho estruturado com suporte a índices de tabelas e propriedades de objetos.
+ * Formatos suportados:
+ * - `tabela.coluna[0]` ou `tabela.coluna[1]` (acesso direto à célula pela coluna indexada)
+ * - `tabela[0].coluna` (acesso direto pelo registro indexado)
+ * - `tabela.coluna` (valores de todas as linhas da coluna concatenados por vírgula)
+ * - `item.propriedade` (acesso a objeto em foreach)
+ */
+/**
+ * Tipos de coluna que são "genéricos" (input/text) e que podem se tornar um tipo
+ * específico quando a coluna declara `validar="..."` (ex.: validar="moeda").
+ */
+
+--- src/utils/mascaras.ts ---
+/**
+ * Formata um item individual de um loop foreach, removendo aspas externas caso existam.
+ */
+
+--- src/utils/paragraphs.ts ---
+/**
+ * Divide os nós inline em grupos de parágrafos, quebrando a cada `\n` literal
+ * presente no texto do XML ou a cada <br>. Restaura o comportamento da versão
+ * que funcionava, em que cada linha virava um parágrafo separado no documento.
+ *
+ .
+ */
+
+--- src/utils/pdfExporter.ts ---
+/**
+ * Motor de Exportação para Adobe PDF (.pdf)
+ * Gera documentos PDF vetoriais com fidelidade tipográfica e estrutural a partir do HTML/DOM renderizado,
+ * utilizando as constantes centralizadas de DOCUMENT_THEME.
+ */
+/**
+ * Resolve a instância do pdfmake.
+ *
+ * =====================================================================
+ * POR QUE VIA CDN (e não importado do npm):
+ * Para reduzir o index.html gerado pelo vite-plugin-singlefile, as libs
+ * `pdfmake` + `vfs_fonts` deixaram de ser importadas aqui e passaram a ser
+ * carregadas via <script> CDN no index.html, expostas em `window.pdfMake`.
+ *   - Antes: index.html ≈ 3,26 MB  (gzip ≈ 1,24 MB)
+ *   - Depois: index.html ≈ 1,39 MB (gzip ≈ 414 KB)  -> redução ~57%
+ * Isso só é viável porque o app usa <script> externo (ver index.html),
+ * o que é compatível com o bundle singlefile.
+ *
+ * SE VOLTAR PARA 100% OFFLINE: restaure os imports e remova os <script>
+ * de CDN do index.html:
+ *   import pdfMake from 'pdfmake/build/pdfmake';
+ *   import pdfFonts from 'pdfmake/build/vfs_fonts';
+ *   (pdfMake as any).vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+ * =====================================================================
+ */
+/**
+ * Converte tabela HTML em estrutura de tabela vetorial do pdfMake.
+ */
+/**
+ * Converte recursivamente os blocos do DOM em nós estruturados do pdfMake,
+ * aplicando com exatidão numeração hierárquica e recuos calculados.
+ */
+/**
+ * Exporta o documento PDF diretamente a partir do elemento HTML renderizado no DOM.
+ */
+
+--- src/utils/validacao.ts ---
+/**
+ * Valida um campo do formulário conforme o tipo/validar e devolve o status+mensagem.
+ .
+ */
+
+--- src/utils/wordExporter.ts ---
+/**
+ * Motor de Exportação para Microsoft Word (.docx)
+ * Gera documentos Word com fidelidade tipográfica e estrutural a partir do HTML/DOM renderizado,
+ * utilizando as constantes centralizadas de DOCUMENT_THEME.
+ */
+/**
+ * Converte tabela HTML em tabela nativa do Word com preenchimento de cabeçalho, bordas e padding calibrados.
+ */
+/**
+ * Exporta o documento Word (.docx) diretamente a partir do elemento HTML renderizado no DOM.
+ */
+
+--- src/utils/xmlEditorCompletions.ts ---
+/**
+ * Extrai todos os campos e colunas declarados no <formulario> de um XML.
+ */
+/**
+ * Valida o uso de variáveis no XML:
+ * - Identifica variáveis usadas em {{...}} que não foram declaradas no formulário.
+ * - Identifica campos declarados no formulário que não foram referenciados no documento.
+ */
+/**
+ * Filtros canônicos disponíveis no sistema
+ */
+/**
+ * Snippets de tags XML canônicas
+ */
+/**
+ * Provedor central de autocompletar para o CodeMirror 6.
+ * Fornece completamento inteligente de:
+ * 1. Tags e Snippets XML quando digita '<' ou nome de tag
+ * 2. Variáveis declaradas no formulário quando digita '{{'
+ * 3. Filtros quando digita '|' dentro de '{{ ... }}'
+ */
+
+--- src/utils/xmlFormatter.ts ---
+/**
+ * Verifica se um nó possui elementos filhos que são considerados blocos
+ * (ou seja, que exigem quebra de linha e indentação hierárquica, como <secao>, <if>, <tabela>, etc.)
+ */
+/**
+ * Serializa nós inline preservando tags como <b>, <i>, <u> sem quebras indesejadas de linha.
+ */
+/**
+ * Formata recursivamente um nó do DOM respeitando a hierarquia de blocos e recuos.
+ */
+/**
+ * Formata uma string XML preservando a hierarquia correta de identação de seções,
+ * subseções, campos de formulário, condicionais e tabelas.
+ */
+
+--- src/utils/xmlParser.ts ---
+/**
+ * Analisa o nome do arquivo para extrair o nome base e o índice de partição [XX].
+ * Exemplos:
+ *   "Contrato [01].xml" -> { baseNome: "Contrato", indice: 1, isPart: true }
+ *   "Documento [2].xml"  -> { baseNome: "Documento", indice: 2, isPart: true }
+ *   "Modelo.xml"         -> { baseNome: "Modelo", indice: null, isPart: false }
+ */
+/**
+ * Concatena múltiplos arquivos XML particionados em um único documento XML válido.
+ * 
+ * Regra de Mesclagem:
+ * 1. Ordena as partes pelo índice numérico crescente.
+ * 2. Unifica todos os <grupo> dentro de uma única tag <formulario>.
+ * 3. Unifica todos os nós/seções/títulos dentro de uma única tag <conteudo>.
+ * 4. Retorna a string XML concatenada e formatada.
+ */

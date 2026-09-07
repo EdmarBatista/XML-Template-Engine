@@ -10,7 +10,6 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 - 📄 **Exportação Multiformato de Alta Fidelidade**:
   - **Microsoft Word (.docx)**: Geração nativa via `docx` a partir do DOM renderizado, com suporte a estilos, tabelas com quebra de página inteligente (`cantSplit`), repetição de cabeçalho (`tableHeader`), preenchimento suave (`#E2E8F0`), recuos de lista, numeração automática e destaque opcional de variáveis.
   - **Exportação Nativa para PDF (.pdf)**: Geração nativa com `pdfmake` a partir do DOM renderizado, preservando a estrutura tipográfica, alinhamento, larguras automáticas de colunas, células com repetição de cabeçalho entre páginas (`headerRows: 1`) e recuo progressivo de 0,5 cm por nível de seção.
-  - **Impressão Isolada (A4)**: Impressão limpa via `<iframe>` oculto com estilos `@page` otimizados para papel A4.
   - **JSON de Preenchimento & Pacote ZIP**: Exportação e importação completa de dados salvos (`.json`) e pacote `.zip` unificado contendo o template XML e dados JSON.
 - 🎨 **Constantes Centralizadas de Tema (`documentTheme.ts`)**:
   - Arquivo único de configuração contendo tipografia, tamanhos de fonte em pt, paleta de cores (hexadecimal e texto), larguras e estilos de borda, padding/twips de células de tabelas e espaçamentos entre parágrafos, eliminando valores arbitrários hardcoded em múltiplos arquivos.
@@ -393,7 +392,6 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 | Atalho | Ação |
 |---|---|
 | <kbd>Ctrl</kbd> + <kbd>S</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> | Salvar / exportar os dados preenchidos (`.json`) |
-| <kbd>Ctrl</kbd> + <kbd>P</kbd> / <kbd>Cmd</kbd> + <kbd>P</kbd> | Imprimir documento / gerar visualização de impressão A4 |
 | <kbd>Ctrl</kbd> + <kbd>M</kbd> / <kbd>Cmd</kbd> + <kbd>M</kbd> | Abrir ou fechar o **Painel de Variáveis e Modelo** |
 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Cmd</kbd> + <kbd>Z</kbd> | Desfazer (*Undo*) a última alteração nos campos |
 | <kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | Refazer (*Redo*) a alteração desfeita |
@@ -471,7 +469,7 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 │   ├── hooks_App/          # Hooks orquestradores de alto nível do App.tsx
 │   │   ├── index.ts                # Barrel de exportação de hooks_App
 │   │   ├── useDocumentEngine.ts    # Orquestração do template XML, AST e sincronização de dados
-│   │   ├── useDocumentExporters.ts # Camada unificada de exportações (Word, PDF, Impressão, JSON, ZIP)
+│   │   ├── useDocumentExporters.ts # Camada unificada de exportações (Word, PDF, JSON, ZIP)
 │   │   ├── useFilePackageActions.ts# Ações de upload/download de pacotes de arquivo
 │   │   ├── useFormHistory.ts       # Histórico de desfazer/refazer (Undo/Redo)
 │   │   ├── useKeyboardShortcuts.ts # Gerenciador de atalhos de teclado globais
@@ -498,7 +496,7 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 │   │   ├── paragraphs.ts           # Quebra de parágrafos por \\n / <br>
 │   │   ├── domDocumentExtractor.ts # Extrator semântico DOM para Word e PDF
 │   │   ├── expressionEvaluator.ts  # Avaliador de expressões lógicas (<if expr="...">)
-│   │   ├── pdfExporter.ts          # Exportador nativo para PDF (via DOM) e impressão isolada
+│   │   ├── pdfExporter.ts          # Exportador nativo para PDF (via DOM)
 │   │   ├── wordExporter.ts         # Exportador para Microsoft Word (via DOM) (.docx)
 │   │   └── xmlParser.ts            # Parser XML -> Modelo Intermediário (AST)
 │   ├── types.ts            # Definições de tipos TypeScript

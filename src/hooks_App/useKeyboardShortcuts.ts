@@ -9,7 +9,6 @@
  *    textareas ou editores Monaco).
  * 2. Atalhos suportados:
  *    - Ctrl+S / Cmd+S: Baixar preenchimento JSON.
- *    - Ctrl+P / Cmd+P: Imprimir / Exportar documento.
  *    - Ctrl+Z / Cmd+Z: Desfazer alteração no formulário (Undo).
  *    - Ctrl+Y / Cmd+Shift+Z: Refazer alteração no formulário (Redo).
  *    - Ctrl+M / Cmd+M: Abrir/fechar Painel de Variáveis e Modelo.
@@ -20,7 +19,6 @@ import React from 'react';
 
 export interface KeyboardShortcutsHandlers {
   onSaveJson?: () => void;
-  onPrint?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
   onToggleModelModal?: () => void;
@@ -30,7 +28,6 @@ export interface KeyboardShortcutsHandlers {
 
 export function useKeyboardShortcuts({
   onSaveJson,
-  onPrint,
   onUndo,
   onRedo,
   onToggleModelModal,
@@ -71,15 +68,6 @@ export function useKeyboardShortcuts({
           return;
         }
 
-        // Ctrl + P -> Imprimir documento
-        if (key === 'p') {
-          if (onPrint) {
-            e.preventDefault();
-            onPrint();
-          }
-          return;
-        }
-
         // Ctrl + M -> Abrir/fechar Modal de Modelo
         if (key === 'm' && !isTyping) {
           if (onToggleModelModal) {
@@ -116,7 +104,6 @@ export function useKeyboardShortcuts({
   }, [
     enabled,
     onSaveJson,
-    onPrint,
     onUndo,
     onRedo,
     onToggleModelModal,

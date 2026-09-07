@@ -25,7 +25,7 @@ export const DocumentA4Canvas: React.FC<DocumentA4CanvasProps> = ({
       }`}
     >
       <div
-        className={`flex-1 overflow-y-auto select-text print:p-0 print:bg-white ${
+        className={`flex-1 overflow-y-auto select-text ${
           modoA4
             ? 'p-4 md:p-8'
             : 'p-[8px] md:p-10 w-full'
@@ -42,7 +42,7 @@ export const DocumentA4Canvas: React.FC<DocumentA4CanvasProps> = ({
                   '--doc-font-scale': `${fontScale}`,
                 } as React.CSSProperties)
           }
-          className={`text-slate-900 dark:text-slate-100 font-sans print:shadow-none print:m-0 print:w-full transition-[zoom] duration-150 select-text ${
+          className={`text-slate-900 dark:text-slate-100 font-sans transition-[zoom] duration-150 select-text ${
             modoA4
               ? 'bg-white dark:bg-slate-800 w-[210mm] min-h-[297mm] p-[25mm] shadow-xl border border-slate-200 dark:border-slate-700 rounded-sm mx-auto block'
               : 'w-full max-w-full p-0 bg-transparent dark:bg-transparent border-0 shadow-none rounded-none'

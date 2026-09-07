@@ -14,6 +14,26 @@ export const TextFieldInput: React.FC<TextFieldInputProps> = ({
   onChange,
   statusValidacao,
 }) => {
+  const isListaCsv = campo.tipoInput === 'lista_csv';
+  const baseClassName = `w-full text-xs text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border rounded-md px-2.5 py-1.5 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
+    !statusValidacao.valido ? 'border-red-400 bg-red-50/30' : 'border-slate-300 dark:border-slate-600'
+  }`;
+
+  if (isListaCsv) {
+    return (
+      <div>
+        <textarea
+          id={campo.id}
+          value={valor ?? ''}
+          placeholder={campo.placeholder || ''}
+          onChange={e => onChange(campo.id, e.target.value)}
+          rows={3}
+          className={`${baseClassName} resize-y min-h-[60px]`}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <input
@@ -22,9 +42,7 @@ export const TextFieldInput: React.FC<TextFieldInputProps> = ({
         value={valor ?? ''}
         placeholder={campo.placeholder || ''}
         onChange={e => onChange(campo.id, e.target.value)}
-        className={`w-full text-xs text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border rounded-md px-2.5 py-1.5 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
-          !statusValidacao.valido ? 'border-red-400 bg-red-50/30' : 'border-slate-300 dark:border-slate-600'
-        }`}
+        className={baseClassName}
       />
     </div>
   );

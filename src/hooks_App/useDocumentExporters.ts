@@ -6,15 +6,14 @@
  * Atribuições & Responsabilidades:
  * 1. Geração e download de documentos Microsoft Word (.docx) formatados.
  * 2. Geração e download de arquivos PDF vetoriais (.pdf).
- * 3. Impressão isolada do documento com quebras nativas de página A4.
- * 4. Exportação do preenchimento estruturado de dados em formato JSON.
- * 5. Empacotamento e download do pacote ZIP completo (XML + JSON).
- * 6. Cópia limpa do texto integral do documento para a área de transferência.
- * 7. Tratamento unificado de mensagens e feedbacks visuais via useToast.
+ * 3. Exportação do preenchimento estruturado de dados em formato JSON.
+ * 4. Empacotamento e download do pacote ZIP completo (XML + JSON).
+ * 5. Cópia limpa do texto integral do documento para a área de transferência.
+ * 6. Tratamento unificado de mensagens e feedbacks visuais via useToast.
  */
 
 import React from 'react';
-import { exportarParaPdf, imprimirDocumentoIsolado } from '../utils/pdfExporter';
+import { exportarParaPdf } from '../utils/pdfExporter';
 import { exportarParaWord } from '../utils/wordExporter';
 import { FilePackageService } from '../services/filePackageService';
 import { XmlPart } from '../types';
@@ -78,24 +77,9 @@ export function useDocumentExporters({
       showToast('Arquivo PDF (.pdf) gerado com sucesso!');
     } catch (err: any) {
       console.error('Erro ao gerar PDF:', err);
-      if (docElement) {
-        imprimirDocumentoIsolado(docElement, xmlName);
-      } else {
-        window.print();
-      }
+      showToast('Erro ao gerar o PDF. Consulte o console para mais detalhes.');
     }
   }, [xmlName, numeracaoAtiva, variaveisVermelhasWord, showToast]);
-
-  // Imprimir documento
-  const handlePrint = React.useCallback(() => {
-    const docElement = (document.getElementById('documento-visualizado') ||
-      document.querySelector('.document-content-a4, .print\\:p-0 > div')) as HTMLElement;
-    if (docElement) {
-      imprimirDocumentoIsolado(docElement, xmlName);
-    } else {
-      window.print();
-    }
-  }, [xmlName]);
 
   // Salvar JSON de preenchimento
   const handleSaveJson = React.useCallback(() => {
@@ -142,7 +126,6 @@ export function useDocumentExporters({
     copiado,
     handleExportWord,
     handleExportPdf,
-    handlePrint,
     handleSaveJson,
     handleSaveZip,
     handleCopiarTexto,

@@ -13,9 +13,9 @@
  * 2. hooks_App (Hooks especializados do App):
  *    - A. useFormHistory: Gerenciamento do estado `dados`, histórico Undo/Redo e `isDirty`.
  *    - B. useDocumentEngine: Ciclo de vida dos templates, parsing XML -> AST e erros.
- *    - C. useDocumentExporters: Exportações (Word .docx, PDF .pdf, impressão, JSON, ZIP).
+ *    - C. useDocumentExporters: Exportações (Word .docx, PDF .pdf, JSON, ZIP).
  *    - D. useModalsManager: Estados e controles declarativos de abertura de modais.
- *    - E. useKeyboardShortcuts: Atalhos de teclado (Ctrl+S, Ctrl+P, Ctrl+Z, Ctrl+Y, Ctrl+E, Ctrl+M, Esc).
+ *    - E. useKeyboardShortcuts: Atalhos de teclado (Ctrl+S, Ctrl+Z, Ctrl+Y, Ctrl+M, Esc).
  *    - F. useFilePackageActions: Drag & Drop e uploads de múltiplos arquivos (.xml, .json, .zip).
  *    - G. useSidebarResizer: Redimensionamento e limites do divisor lateral.
  *
@@ -198,7 +198,6 @@ export default function App() {
     copiado,
     handleExportWord,
     handleExportPdf,
-    handlePrint,
     handleSaveJson,
     handleSaveZip,
     handleCopiarTexto,
@@ -227,7 +226,6 @@ export default function App() {
   // E. Hook de Atalhos Globais de Teclado
   useKeyboardShortcuts({
     onSaveJson: handleSaveJson,
-    onPrint: handlePrint,
     onUndo: undo,
     onRedo: redo,
     onToggleModelModal: toggleModelModal,
@@ -417,7 +415,6 @@ export default function App() {
                     onSaveZip={handleSaveZip}
                     onExportWord={handleExportWord}
                     onExportPdf={handleExportPdf}
-                    onPrint={handlePrint}
                     
                     onOpenModelModal={openModelModal}
                     onClearForm={handleClearForm}
