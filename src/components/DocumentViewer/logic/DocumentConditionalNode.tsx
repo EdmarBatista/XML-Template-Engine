@@ -81,20 +81,8 @@ export interface DocumentBlockConditionalNodeProps {
   destaquesAtivos: Record<string, number>;
   /** Callback para focar no campo do formulário ao clicar */
   onFocusField: (fieldId: string) => void;
-  /** Contexto de numeração sequencial */
-  contextoNumeracao: NumberingContext;
-  /** Nível de profundidade da seção */
-  nivel: number;
-  /** Função de renderização de blocos AST passada pelo despachante */
-  renderAstBlocos: (
-    nodes: AstNode[],
-    contextoNumeracao: NumberingContext,
-    pathPrefix: string,
-    contextoLocal?: Record<string, any>,
-    nivelSecao?: number
-  ) => React.ReactNode[];
-  /** Contexto local de variáveis */
-  contextoLocal?: Record<string, any>;
+  /** Filhos já renderizados síncronamente */
+  renderedChildren: React.ReactNode[];
 }
 
 /**
@@ -106,10 +94,7 @@ export const DocumentBlockConditionalNode: React.FC<DocumentBlockConditionalNode
   escopo,
   destaquesAtivos,
   onFocusField,
-  contextoNumeracao,
-  nivel,
-  renderAstBlocos,
-  contextoLocal,
+  renderedChildren,
 }) => {
   const expr = node.atributos?.expr || '';
   const avaliado = avaliarExpressao(expr, escopo);
@@ -132,7 +117,7 @@ export const DocumentBlockConditionalNode: React.FC<DocumentBlockConditionalNode
       } ${primeiroId ? 'cursor-pointer hover:bg-blue-50/60 dark:hover:bg-slate-800/80' : ''}`}
       title={primeiroId ? `Bloco Condicional IF: ${expr} (Clique para localizar no formulário)` : undefined}
     >
-      {renderAstBlocos(node.filhos || [], contextoNumeracao, `${blockKey}_if`, contextoLocal, nivel)}
+      {renderedChildren}
     </div>
   );
 };

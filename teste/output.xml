@@ -61,77 +61,77 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
       </tabela>
       <secao>
         <p><i><b>Estimativas de consumo individualizadas, do órgão gerenciador e órgão(s) e entidade(s) participante(s).</b></i></p>
+        <subtitulo alinhamento="esquerda">Órgão Gerenciador:</subtitulo>
+        <tabela borda="true">
+          <cabecalho>
+            <linha>
+              <coluna>item</coluna>
+              <coluna>DESCRIÇÃO/ ESPECIF.</coluna>
+              <coluna>UNIDADEDEMEDIDA</coluna>
+              <coluna>REQUISIÇÃOMÍNIMA</coluna>
+              <coluna>REQUISIÇÃOMáxima</coluna>
+              <coluna>Quantidadetotal</coluna>
+            </linha>
+          </cabecalho>
+          <foreach lista="tb_tabela_estimativas_de_consumo_individualizadas_do_orgao" var="item">
+            <linha>
+              <coluna>{{item.item}}</coluna>
+              <coluna>{{item.descricao_especif}}</coluna>
+              <coluna>{{item.unidadedemedida}}</coluna>
+              <coluna>{{item.requisicaominima}}</coluna>
+              <coluna>{{item.requisicaomaxima}}</coluna>
+              <coluna>{{item.quantidadetotal}}</coluna>
+            </linha>
+          </foreach>
+        </tabela>
+        <subtitulo alinhamento="esquerda">Órgão Participante:</subtitulo>
+        <tabela borda="true">
+          <cabecalho>
+            <linha>
+              <coluna>Item</coluna>
+              <coluna>DESCRIÇÃO/ ESPECIF.</coluna>
+              <coluna>UNIDADEDEMEDIDA</coluna>
+              <coluna>REQUISIÇÃOMÍNIMA</coluna>
+              <coluna>REQUISIÇÃOMáxima</coluna>
+              <coluna>Quantidadetotal</coluna>
+            </linha>
+          </cabecalho>
+          <foreach lista="tb_tabela_estimativas_de_consumo_individualizadas_do_orgao" var="item">
+            <linha>
+              <coluna>{{item.item}}</coluna>
+              <coluna>{{item.descricao_especif}}</coluna>
+              <coluna>{{item.unidadedemedida}}</coluna>
+              <coluna>{{item.requisicaominima}}</coluna>
+              <coluna>{{item.requisicaomaxima}}</coluna>
+              <coluna>{{item.quantidadetotal}}</coluna>
+            </linha>
+          </foreach>
+        </tabela>
+        <subtitulo alinhamento="esquerda">Órgão Participante:</subtitulo>
+        <tabela borda="true">
+          <cabecalho>
+            <linha>
+              <coluna>Item</coluna>
+              <coluna>DESCRIÇÃO/ ESPECIF.</coluna>
+              <coluna>UNIDADEDEMEDIDA</coluna>
+              <coluna>REQUISIÇÃOMÍNIMA</coluna>
+              <coluna>REQUISIÇÃOMáxima</coluna>
+              <coluna>Quantidadetotal</coluna>
+            </linha>
+          </cabecalho>
+          <foreach lista="tb_tabela_estimativas_de_consumo_individualizadas_do_orgao" var="item">
+            <linha>
+              <coluna>{{item.item}}</coluna>
+              <coluna>{{item.descricao_especif}}</coluna>
+              <coluna>{{item.unidadedemedida}}</coluna>
+              <coluna>{{item.requisicaominima}}</coluna>
+              <coluna>{{item.requisicaomaxima}}</coluna>
+              <coluna>{{item.quantidadetotal}}</coluna>
+            </linha>
+          </foreach>
+        </tabela>
+        <subtitulo nivel="2" alinhamento="esquerda"><b>Classificação do objeto quanto à heterogeneidade ou complexidade</b></subtitulo>
       </secao>
-      <subtitulo alinhamento="esquerda">Órgão Gerenciador:</subtitulo>
-      <tabela borda="true">
-        <cabecalho>
-          <linha>
-            <coluna>item</coluna>
-            <coluna>DESCRIÇÃO/ ESPECIF.</coluna>
-            <coluna>UNIDADEDEMEDIDA</coluna>
-            <coluna>REQUISIÇÃOMÍNIMA</coluna>
-            <coluna>REQUISIÇÃOMáxima</coluna>
-            <coluna>Quantidadetotal</coluna>
-          </linha>
-        </cabecalho>
-        <foreach lista="tb_tabela_estimativas_de_consumo_individualizadas_do_orgao" var="item">
-          <linha>
-            <coluna>{{item.item}}</coluna>
-            <coluna>{{item.descricao_especif}}</coluna>
-            <coluna>{{item.unidadedemedida}}</coluna>
-            <coluna>{{item.requisicaominima}}</coluna>
-            <coluna>{{item.requisicaomaxima}}</coluna>
-            <coluna>{{item.quantidadetotal}}</coluna>
-          </linha>
-        </foreach>
-      </tabela>
-      <subtitulo alinhamento="esquerda">Órgão Participante:</subtitulo>
-      <tabela borda="true">
-        <cabecalho>
-          <linha>
-            <coluna>Item</coluna>
-            <coluna>DESCRIÇÃO/ ESPECIF.</coluna>
-            <coluna>UNIDADEDEMEDIDA</coluna>
-            <coluna>REQUISIÇÃOMÍNIMA</coluna>
-            <coluna>REQUISIÇÃOMáxima</coluna>
-            <coluna>Quantidadetotal</coluna>
-          </linha>
-        </cabecalho>
-        <foreach lista="tb_tabela_estimativas_de_consumo_individualizadas_do_orgao" var="item">
-          <linha>
-            <coluna>{{item.item}}</coluna>
-            <coluna>{{item.descricao_especif}}</coluna>
-            <coluna>{{item.unidadedemedida}}</coluna>
-            <coluna>{{item.requisicaominima}}</coluna>
-            <coluna>{{item.requisicaomaxima}}</coluna>
-            <coluna>{{item.quantidadetotal}}</coluna>
-          </linha>
-        </foreach>
-      </tabela>
-      <subtitulo alinhamento="esquerda">Órgão Participante:</subtitulo>
-      <tabela borda="true">
-        <cabecalho>
-          <linha>
-            <coluna>Item</coluna>
-            <coluna>DESCRIÇÃO/ ESPECIF.</coluna>
-            <coluna>UNIDADEDEMEDIDA</coluna>
-            <coluna>REQUISIÇÃOMÍNIMA</coluna>
-            <coluna>REQUISIÇÃOMáxima</coluna>
-            <coluna>Quantidadetotal</coluna>
-          </linha>
-        </cabecalho>
-        <foreach lista="tb_tabela_estimativas_de_consumo_individualizadas_do_orgao" var="item">
-          <linha>
-            <coluna>{{item.item}}</coluna>
-            <coluna>{{item.descricao_especif}}</coluna>
-            <coluna>{{item.unidadedemedida}}</coluna>
-            <coluna>{{item.requisicaominima}}</coluna>
-            <coluna>{{item.requisicaomaxima}}</coluna>
-            <coluna>{{item.quantidadetotal}}</coluna>
-          </linha>
-        </foreach>
-      </tabela>
-      <subtitulo nivel="2" alinhamento="esquerda"><b>Classificação do objeto quanto à heterogeneidade ou complexidade</b></subtitulo>
       <p><i>O(s) serviço(s) objeto desta contratação são caracterizados como </i><i><b>comum(ns),</b></i><i> conforme justificativa constante do Estudo Técnico Preliminar.</i></p>
       <secao numerar="false">
         <p><i><b>OU</b></i></p>
@@ -180,8 +180,8 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
         <p><i>[...];</i></p>
         <p><i>[...]; e</i></p>
         <p><i>[...].</i></p>
+        <subtitulo nivel="2" alinhamento="esquerda"><i><b>Indicação de marcas ou modelos</b></i></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><i><b>Indicação de marcas ou modelos</b></i></subtitulo>
       <p><i>Na presente contratação será admitida a indicação da(s) seguinte(s) marca(s), característica(s) ou modelo(s), de acordo com as justificativas contidas nos Estudos Técnicos Preliminares: (...).</i></p>
       <subtitulo nivel="2" alinhamento="esquerda"><i><b>Da vedação de utilização de marca/produto na execução do serviço</b></i></subtitulo>
       <p><i>Diante das conclusões extraídas do processo administrativo nº </i><i><b>xxxxx.xxxxxx/xxxx-xx</b></i><i>, a Administração não aceitará o fornecimento dos seguintes produtos/marcas:</i></p>
@@ -189,8 +189,8 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
         <p><i>[...];</i></p>
         <p><i>[...]; e</i></p>
         <p><i>[...].</i></p>
+        <subtitulo nivel="2" alinhamento="esquerda"><i><b>Da exigência de carta de solidariedade</b></i></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><i><b>Da exigência de carta de solidariedade</b></i></subtitulo>
       <p><i>Em caso de fornecedor, revendedor ou distribuidor, será exigida do licitante/interessado provisoriamente classificado em primeiro lugar, nos termos do edital ou do aviso de contratação direta, carta de solidariedade emitida pelo fabricante, que assegure a execução do contrato.</i></p>
       <subtitulo nivel="1" alinhamento="esquerda"><b>Subcontratação</b></subtitulo>
       <p><i>Não será admitida a subcontratação do objeto contratual.</i></p>
@@ -298,29 +298,29 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
         <p>Descrição detalhada dos métodos, rotinas, etapas, tecnologias procedimentos, frequência e periodicidade de execução do trabalho: <i>[...]</i>.</p>
         <p><i>Cronograma de realização dos serviços: [...];</i></p>
         <p><i>Etapa ... Período / a partir de / após concluído ...</i></p>
+        <subtitulo nivel="2" alinhamento="esquerda"><b>Local e horário da prestação dos serviços</b></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><b>Local e horário da prestação dos serviços</b></subtitulo>
       <p>Os serviços serão prestados no seguinte endereço: <i>[...]</i>;</p>
       <p>Os serviços serão prestados no seguinte horário: <i>[...].</i></p>
       <subtitulo nivel="2" alinhamento="esquerda"><b>Rotinas a serem cumpridas</b></subtitulo>
       <secao>
         <p>A execução contratual observará as rotinas <i>[abaixo] / [em anexo]</i>:</p>
+        <subtitulo nivel="2" alinhamento="esquerda"><b>Materiais a serem disponibilizados</b></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><b>Materiais a serem disponibilizados</b></subtitulo>
       <p><i>Para a perfeita execução dos serviços, o Contratado deverá disponibilizar os materiais, equipamentos, ferramentas e utensílios necessários, nas quantidades estimadas e qualidades a seguir estabelecidas, promovendo sua substituição quando necessário:</i></p>
       <secao>
         <p><i>[...];</i></p>
         <p><i>[...]; e</i></p>
         <p><i>[...].</i></p>
+        <subtitulo nivel="2" alinhamento="esquerda"><b>Informações relevantes para o dimensionamento da proposta</b></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><b>Informações relevantes para o dimensionamento da proposta</b></subtitulo>
       <p><i>A demanda do órgão tem como base as seguintes características:</i></p>
       <secao>
         <p><i>[...];</i></p>
         <p><i>[...]; e</i></p>
         <p><i>[...].</i></p>
+        <subtitulo nivel="2" alinhamento="esquerda"><i><b>Disposições específicas para contratações integradas e semi-integradas</b></i></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><i><b>Disposições específicas para contratações integradas e semi-integradas</b></i></subtitulo>
       <p><i>Providências necessárias para a efetivação de desapropriação autorizada pelo poder público:</i></p>
       <secao>
         <p><i>[...];</i></p>
@@ -382,16 +382,16 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
         </secao>
         <p>No caso de empregada gestante, os uniformes deverão ser apropriados para a situação, substituindo-os sempre que estiverem apertados;</p>
         <p>Os uniformes deverão ser entregues mediante recibo, cuja cópia, devidamente acompanhada do original para conferência, deverá ser enviada ao servidor responsável pela fiscalização do contrato.</p>
+        <subtitulo nivel="2" alinhamento="esquerda"><i><b>Procedimentos de transição e finalização do contrato</b></i></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><i><b>Procedimentos de transição e finalização do contrato</b></i></subtitulo>
       <p><i>Os procedimentos de transição e finalização do contrato constituem-se das seguintes etapas: </i></p>
       <secao>
         <p><i>[...];</i></p>
         <p><i>[...]; e</i></p>
         <p><i>[...].</i></p>
-      </secao>
-      <secao numerar="false">
-        <p><i><b>OU</b></i></p>
+        <secao numerar="false">
+          <p><i><b>OU</b></i></p>
+        </secao>
       </secao>
       <p><i>Não serão necessários procedimentos de transição e finalização do contrato devido às características do objeto.</i></p>
     </secao>
@@ -449,8 +449,8 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
       <secao>
         <p>se o saldo de horas objeto do recebimento anterior foi integralmente compensado, caso a compensação tenha sido concluída; ou</p>
         <p>se o saldo de horas não foi integralmente compensado, com a sugestão de glosa no pagamento da fatura.</p>
+        <subtitulo nivel="2" alinhamento="esquerda"><b>Fiscalização Administrativa</b></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><b>Fiscalização Administrativa</b></subtitulo>
       <p>O fiscal administrativo do contrato verificará a manutenção das condições de habilitação da contratada, acompanhará o empenho, o pagamento, as garantias, as glosas e a formalização de apostilamento e termos aditivos, solicitando quaisquer documentos comprobatórios pertinentes, caso necessário.</p>
       <p>Caso ocorra descumprimento das obrigações contratuais, o fiscal administrativo do contrato atuará tempestivamente na solução do problema, reportando ao gestor do contrato para que tome as providências cabíveis, quando ultrapassar a sua competência.</p>
       <p><i>Além do disposto acima, a fiscalização contratual obedecerá às seguintes rotinas:</i></p>
@@ -483,15 +483,9 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
             <p>comprovantes de entrega de benefícios suplementares (vale-transporte, vale-alimentação, entre outros), a que estiver obrigada por força de lei ou de Convenção ou Acordo Coletivo de Trabalho, relativos a qualquer mês da prestação dos serviços e de qualquer empregado;</p>
             <p>comprovantes de realização de eventuais cursos de treinamento e reciclagem que forem exigidos por lei ou pelo contrato; e</p>
             <p>documentos comprobatórios de que o capital social integralizado da empresa é compatível com o número de empregados, na forma do art. 4º-B da Lei nº 6.019/1974.</p>
-          </secao>
-        </secao>
-      </secao>
-      <secao numerar="false">
-        <p><i><b>OU</b></i></p>
-      </secao>
-      <secao>
-        <secao>
-          <secao>
+            <secao numerar="false">
+              <p><i><b>OU</b></i></p>
+            </secao>
             <p>documentos comprobatórios de que o capital social mínimo integralizado atende ao disposto no art. 14 da Lei n.º 14.967/2024.</p>
           </secao>
           <p>entrega de cópia da documentação abaixo relacionada, quando da extinção ou rescisão do contrato, após o último mês de prestação dos serviços, no prazo definido no contrato:</p>
@@ -580,20 +574,18 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
         <p><i>[...];</i></p>
         <p><i>[...]; e</i></p>
         <p><i>[...].</i></p>
+        <subtitulo nivel="2" alinhamento="esquerda"><b>Recebimento</b></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><b>Recebimento</b></subtitulo>
       <p>Os serviços serão recebidos provisoriamente, no prazo de <i>XXX (xxxxx) </i>dias, pelos fiscais técnico e administrativo, mediante termos detalhados, quando verificado o cumprimento das exigências de caráter técnico e administrativo.</p>
       <secao>
         <p><i>Tratando-se de obra ou serviço de engenharia, ao final de cada etapa da execução contratual, conforme previsto no Cronograma Físico-Financeiro, o Contratado apresentará a medição prévia dos serviços executados no período, por meio de planilha e memória de cálculo detalhada.</i></p>
         <secao>
           <p><i>Uma etapa será considerada efetivamente concluída quando os serviços previstos para aquela etapa, no Cronograma Físico-Financeiro, estiverem executados em sua totalidade.</i></p>
           <p><i>O Contratado também apresentará, a cada medição, os documentos comprobatórios da procedência legal dos produtos e subprodutos florestais utilizados naquela etapa da execução contratual, quando for o caso.</i></p>
+          <secao numerar="false">
+            <p><i><b>OU</b></i></p>
+          </secao>
         </secao>
-      </secao>
-      <secao numerar="false">
-        <p><i><b>OU</b></i></p>
-      </secao>
-      <secao>
         <p><i>Não se tratando de obra ou serviço de engenharia, para fins de recebimento provisório </i><i><b>[descrever o fato que será considerado como conclusão do objeto ou etapa para fins de permitir o recebimento provisório]</b></i><i>.</i></p>
       </secao>
       <p>O prazo para recebimento provisório será contado do recebimento de comunicação de cobrança oriunda do Contratado com a comprovação da prestação dos serviços a que se referem a parcela a ser paga.</p>
@@ -684,8 +676,8 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
       <secao>
         <p>O pedido de revisão em virtude dos efeitos da Lei nº 14.973, de 2024 deverá ser formulado durante a vigência do contrato e antes de eventual prorrogação ou encerramento contratual, sob pena de preclusão.</p>
         <p>A revisão prevista no acima, caso requerida pelo Contratado, deverá ser instruída com a comprovação da variação dos custos por meio de Planilha de Custos e Formação de Preços.</p>
+        <subtitulo nivel="2" alinhamento="esquerda"><b>Repactuação</b></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><b>Repactuação</b></subtitulo>
       <p>Os preços contratados serão repactuados para manutenção do equilíbrio econômico-financeiro, após o interregno de um ano, mediante solicitação do Contratado.</p>
       <p>O interregno mínimo de 1 (um) ano para a primeira repactuação será contado:</p>
       <secao>
@@ -737,11 +729,11 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
       <p>A majoração da tarifa de transporte público gera a possibilidade de revisão do item relativo aos valores pagos a título de vale-transporte, constante da Planilha de Custos e Formação de Preços do presente Contrato, desde que comprovada pelo Contratado a sua efetiva repercussão sobre os preços contratados.</p>
       <secao>
         <p>A revisão dos custos relativos ao vale-transporte será formalizada por apostilamento.</p>
+        <secao numerar="false">
+          <p><i><b>OU</b></i></p>
+        </secao>
+        <subtitulo nivel="2" alinhamento="esquerda"><i><b>Reajuste</b></i></subtitulo>
       </secao>
-      <secao numerar="false">
-        <p><i><b>OU</b></i></p>
-      </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><i><b>Reajuste</b></i></subtitulo>
       <p><i>Os preços inicialmente contratados são fixos e irreajustáveis no prazo de um ano contado da data do orçamento estimado, em [DD/MM/AAAA].</i></p>
       <secao numerar="false">
         <p><i><b>OU</b></i></p>
@@ -916,8 +908,8 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
       <p><i>Em se tratando de contratação para registro de preços, caso adotado o critério de julgamento de menor preço ou de maior desconto por grupo de itens, o critério de aceitabilidade de preços unitários máximos será:</i></p>
       <secao>
         <p><i>Valores unitários: conforme planilha de composição de preços anexa ao edital </i><u><i><b>OU</b></i></u><i> tabela constante no item XXXXXX deste Termo de Referência.</i></p>
+        <subtitulo nivel="2" alinhamento="esquerda"><b>Exigências de habilitação</b></subtitulo>
       </secao>
-      <subtitulo nivel="2" alinhamento="esquerda"><b>Exigências de habilitação</b></subtitulo>
       <p>Para fins de habilitação, deverá o interessado comprovar os seguintes requisitos:</p>
       <subtitulo nivel="2" alinhamento="esquerda"><b>Habilitação jurídica</b></subtitulo>
       <p>Pessoa física: cédula de identidade (RG) ou documento equivalente que, por força de lei, tenha validade para fins de identificação em todo o território nacional;</p>
@@ -1295,9 +1287,9 @@ SERVIÇOS COM E SEM DEDICAÇÃO EXCLUSIVA DE MÃO DE OBRA, OBRAS E SERVIÇOS DE 
       <secao>
         <p><i>ficará ele constituído em mora, sendo-lhe aplicáveis as respectivas sanções administrativas; e</i></p>
         <p><i>poderá a Administração optar pela extinção contratual e, nesse caso, adotará as medidas admitidas em lei para a continuidade da execução contratual</i></p>
-      </secao>
-      <secao numerar="false">
-        <p><i><b>OU</b></i></p>
+        <secao numerar="false">
+          <p><i><b>OU</b></i></p>
+        </secao>
       </secao>
       <p><i>A contratação será extinta quando vencido o prazo estipulado, independentemente de terem sido cumpridas ou não as obrigações de ambas as partes contraentes.</i></p>
       <p><i>O contrato poderá ser extinto antes do prazo nele fixado, sem ônus para o CONTRATANTE, mediante justificativa formal de que não dispõe de créditos orçamentários para sua continuidade ou de que o contrato não mais lhe oferece vantagem.</i></p>

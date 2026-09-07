@@ -9,6 +9,7 @@ import { renderDocumentParagraphNodes } from './DocumentParagraphNode';
 import { InlineRenderContext, renderInlineAstNodes } from '../inline/DocumentInlineRenderer';
 import { processarTextoComVariaveis } from '../inline/textVariableProcessor';
 import { DocumentInlineAutoTable } from '../inline/DocumentInlineAutoTable';
+import { avaliarExpressao } from '../../../utils/expressionEvaluator';
 
 export interface BlockDispatcherContext extends InlineRenderContext {
   contextoNumeracao?: NumberingContext;
@@ -147,20 +148,23 @@ export function renderDocumentAstBlocks(
     flushInlineBuffer(idx);
 
     if (node.tipo === 'if') {
-      elementos.push(
-        <DocumentBlockConditionalNode
-          key={blockKey}
-          node={node}
-          blockKey={blockKey}
-          escopo={escopo}
-          destaquesAtivos={destaquesAtivos}
-          onFocusField={onFocusField}
-          contextoNumeracao={ctxNum}
-          nivel={nivel}
-          renderAstBlocos={selfRenderBlocks}
-          contextoLocal={ctxLocal}
-        />
-      );
+      const expr = node.atributos?.expr || '';
+      const avaliado = avaliarExpressao(expr, escopo);
+      
+      if (avaliado) {
+        const renderedChildren = selfRenderBlocks(node.filhos || [], ctxNum, `${blockKey}_if`, ctxLocal, nivel);
+        elementos.push(
+          <DocumentBlockConditionalNode
+            key={blockKey}
+            node={node}
+            blockKey={blockKey}
+            escopo={escopo}
+            destaquesAtivos={destaquesAtivos}
+            onFocusField={onFocusField}
+            renderedChildren={renderedChildren}
+          />
+        );
+      }
     } else if (node.tipo === 'foreach') {
       const varName = node.atributos?.var || 'item';
       const listaNome = node.atributos?.lista || '';
