@@ -9,5 +9,6 @@ coverage/
 !.env.example
 pandoc_repo/
 
+app_standadlone.html
 pandoc_source/
 pandoc_repo/

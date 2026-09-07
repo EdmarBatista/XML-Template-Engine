@@ -1,10 +1,9 @@
 import type { TemplateItem } from "../defaultTemplates";
 
-export const contratoServicos: TemplateItem =
-  {
+export const contratoServicos: TemplateItem =  {
     id: 'contrato-servicos',
     nome: 'Contrato de Prestação de Serviços',
-    descricao: 'Contrato padrão de prestação de serviços com qualificação das partes, cláusula de pagamento, confidencialidade e foro.',
+    descricao: 'Contrato avançado com uso de estruturas condicionais, caixas de seleção, listas dinâmicas e variáveis embutidas em texto.',
     categoria: 'Jurídico',
     xml: `<documento>
     <formulario>
@@ -14,21 +13,33 @@ export const contratoServicos: TemplateItem =
             <input id="contratante_endereco" label="Endereço Completo" tipo="texto" placeholder="Rua das Flores, 100 - Centro" descricao="Endereço da sede"/>
             <input id="contratante_representante" label="Representante Legal" tipo="texto" placeholder="Ana Beatriz Mendes" descricao="Nome do representante legal"/>
         </grupo>
-
+        
         <grupo titulo="2. Contratada">
             <input id="contratada_nome" label="Razão Social / Nome da Contratada" tipo="texto" placeholder="Beta Soluções Digitais ME" descricao="Nome completo da contratada"/>
             <number id="contratada_cnpj" label="CNPJ da Contratada" tipo="cnpj" placeholder="98.765.432/0001-88" descricao="CNPJ da contratada"/>
             <input id="contratada_endereco" label="Endereço da Contratada" tipo="texto" placeholder="Av. Paulista, 1000 - Bela Vista" descricao="Endereço da sede da contratada"/>
             <input id="contratada_email" label="E-mail de Contato" tipo="email" placeholder="contato@empresa.com.br" descricao="E-mail oficial de notificações"/>
         </grupo>
-
+        
         <grupo titulo="3. Escopo e Entregas">
             <textarea id="descricao_servico" label="Descrição dos Serviços" placeholder="Detalhamento das entregas e escopo técnico..." descricao="Detalhamento das entregas e escopo técnico"/>
+            
+            <radio id="regime_trabalho" label="Regime de Execução dos Serviços">
+                <option>Remoto (Home Office)</option>
+                <option>Híbrido</option>
+                <option>Presencial nas instalações da CONTRATANTE</option>
+            </radio>
+
+            <input id="equipamentos_necessarios" label="Equipamentos e Recursos (separados por vírgula)" tipo="lista_csv" placeholder="Ex: Servidor AWS, Licença Office, Notebook..." descricao="Itens que a contratante deverá providenciar para a contratada"/>
+
             <tabela id="cronograma_entregas" label="Cronograma de Marcos e Parcelas">
                 <coluna id="etapa" label="Etapa / Marco" tipo="input" placeholder="Ex: Fase 1 - Planejamento e Arquitetura"/>
                 <coluna id="prazo" label="Prazo Estimado" tipo="input" placeholder="Ex: 30 dias"/>
                 <coluna id="valor" label="Valor da Etapa (R$)" tipo="moeda" placeholder="0,00"/>
             </tabela>
+        </grupo>
+        
+        <grupo titulo="4. Disposições Finais">
             <number id="valor_total" label="Valor Total dos Serviços (R$)" tipo="moeda" min="0" step="0.01" placeholder="0,00"/>
             <select id="forma_pagamento" label="Forma de Pagamento" descricao="Condição de quitação">
                 <option>À vista via PIX / Transferência</option>
@@ -36,25 +47,41 @@ export const contratoServicos: TemplateItem =
                 <option>Por marcos de entrega (milestones)</option>
             </select>
             <input id="prazo_vigencia" label="Prazo de Vigência Contratual" tipo="texto" placeholder="12 (doze) meses"/>
+            
+            <checkbox id="clausula_confidencialidade" label="Incluir Cláusula de Confidencialidade e Sigilo (NDA)" />
+            
             <input id="cidade_foro" label="Comarca / Foro de Eleição" tipo="texto" placeholder="São Paulo / SP"/>
         </grupo>
     </formulario>
-
+    
     <conteudo>
         <titulo>INSTRUMENTO PARTICULAR DE PRESTAÇÃO DE SERVIÇOS</titulo>
         <subtitulo>Contrato nº {{contratante_cnpj}}</subtitulo>
-
+        
         <secao titulo="DAS PARTES CONTRATANTES">
         De um lado, <b>{{contratante_nome}}</b>, inscrita no CNPJ/MF sob o nº <b>{{contratante_cnpj | cnpj}}</b>, com sede em {{contratante_endereco}}, neste ato representada por seu representante legal, <i>{{contratante_representante}}</i>, doravante denominada simplesmente <b>CONTRATANTE</b>;
         
         E, de outro lado, <b>{{contratada_nome}}</b>, inscrita no CNPJ/MF sob o nº <b>{{contratada_cnpj | cnpj}}</b>, com sede em {{contratada_endereco}}, e-mail para notificações <u>{{contratada_email | email}}</u>, doravante denominada simplesmente <b>CONTRATADA</b>;
-
+        
         Têm entre si, justo e acordado, o presente Contrato de Prestação de Serviços, mediante as cláusulas e condições seguintes:
         </secao>
-
-        <secao titulo="DO OBJETO DO CONTRATO">
+        
+        <secao titulo="DO OBJETO E LOCAL DE PRESTAÇÃO">
         O presente contrato tem por objeto a prestação dos serviços especializados pela CONTRATADA à CONTRATANTE, compreendendo:
         <i>{{descricao_servico}}</i>.
+        
+        Os serviços serão executados no regime <b>{{regime_trabalho}}</b>.
+
+        <if expr="regime_trabalho == 'Presencial nas instalações da CONTRATANTE'">
+        Fica acordado que a CONTRATANTE providenciará estação de trabalho adequada, garantindo plenas condições de segurança, acesso à internet de alta velocidade e infraestrutura para a equipe da CONTRATADA durante a execução presencial.
+        </if>
+        
+        Para a plena execução do objeto, a CONTRATANTE compromete-se a fornecer ou custear os seguintes recursos e acessos técnicos:
+        <lista>
+            <foreach lista="equipamentos_necessarios" var="item">
+                <item>{{item}}</item>
+            </foreach>
+        </lista>
         </secao>
 
         <secao titulo="DO CRONOGRAMA DE ENTREGAS E MARCOS">
@@ -65,26 +92,32 @@ export const contratoServicos: TemplateItem =
         <p>• Primeira Entrega: <b>{{cronograma_entregas.etapa[0]}}</b> (Prazo: {{cronograma_entregas.prazo[0]}}) no valor de <b>R$ {{cronograma_entregas.valor[0] | moeda}}</b>.</p>
         <p>• Relação de todos os prazos cadastrados: {{cronograma_entregas.prazo}}.</p>
         </secao>
-
+        
         <secao titulo="DO PREÇO E DAS CONDIÇÕES DE PAGAMENTO">
         Pelos serviços prestados, a CONTRATANTE pagará à CONTRATADA o valor total de <b>R$ {{valor_total | moeda}}</b> (<i>{{valor_total | moedaPorExtenso}}</i>).
         A condição de pagamento acordada entre as partes será: <b>{{forma_pagamento}}</b>.
         </secao>
-
+        
         <secao titulo="DO PRAZO E VIGÊNCIA">
         O presente contrato vigorará pelo prazo de <b>{{prazo_vigencia}}</b>, a contar da data de sua assinatura, podendo ser prorrogado mediante termo aditivo formal.
         </secao>
 
+        <if expr="clausula_confidencialidade">
+        <secao titulo="DA CONFIDENCIALIDADE E SIGILO">
+        As partes comprometem-se a manter sob o mais absoluto e estrito sigilo todas as informações, dados materiais, especificações técnicas ou comerciais, e segredos de negócio que venham a ter acesso em virtude deste contrato. O dever de confidencialidade permanecerá vigente mesmo após o término deste instrumento, independentemente do motivo da rescisão, sujeitando a parte infratora ao pagamento de indenização por perdas e danos.
+        </secao>
+        </if>
+        
         <secao titulo="DO FORO">
         Para dirimir quaisquer controvérsias oriundas deste Contrato, as partes elegem o Foro da Comarca de <b>{{cidade_foro}}</b>, com expressa renúncia a qualquer outro, por mais privilegiado que seja.
         </secao>
-
+        
         <secao titulo="ASSINATURAS" numerar="false">
         Local e Data: {{cidade_foro}}, na data de assinatura digital.
         
         <b>{{contratante_nome}}</b> (CONTRATANTE)
         Representante: {{contratante_representante}}
-
+        
         <b>{{contratada_nome}}</b> (CONTRATADA)
         </secao>
     </conteudo>
@@ -99,6 +132,8 @@ export const contratoServicos: TemplateItem =
   "contratada_endereco": "Rua das Inovações, 500 - Centro, Curitiba/PR",
   "contratada_email": "contato@betasolucoes.com.br",
   "descricao_servico": "Desenvolvimento e sustentação de sistema web sob demanda, incluindo arquitetura em nuvem e suporte técnico especializado.",
+  "regime_trabalho": "Presencial nas instalações da CONTRATANTE",
+  "equipamentos_necessarios": ["Servidor de Produção na AWS", "Acesso ao Repositório GitHub", "Licença Corporativa do Figma", "Conta de Administrador no Google Workspace"],
   "cronograma_entregas": [
     { "etapa": "Fase 1 - Arquitetura e Protótipo", "prazo": "30 dias", "valor": "15.000,00" },
     { "etapa": "Fase 2 - Implementação do Core", "prazo": "60 dias", "valor": "25.000,00" },
@@ -107,6 +142,7 @@ export const contratoServicos: TemplateItem =
   "valor_total": "50000.00",
   "forma_pagamento": "Parcelado conforme cronograma de entregas",
   "prazo_vigencia": "12 (doze) meses",
+  "clausula_confidencialidade": true,
   "cidade_foro": "São Paulo / SP"
 }`
   };
