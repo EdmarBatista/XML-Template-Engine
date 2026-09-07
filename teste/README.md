@@ -86,3 +86,9 @@ As regras definidas e consolidadas para a conversão de documentos DOCX para a e
     - No visualizador (`DocumentSectionNode`), o atributo `reiniciar="true"` reseta o contador interno de capítulos para 1 (gerando `1.`, `1.1.`, `1.2.`, etc.) e propaga `data-word-reiniciar="true"`.
     - Na exportação para Word (`wordExporter.ts`), o reinício é respeitado tanto na extração do texto renderizado quanto no motor de numeração nativo do Word, que instancia uma nova definição de lista sequencial (`edmsecoes_N`) com `start: 1`, garantindo perfeita paridade visual e estrutural entre o conversor, a tela e o arquivo `.docx` exportado.
 
+13. **Numeração em Variáveis Multilinha (`texto_multilinha`) e Extração de Quebras (`soft-paragraph-break`)**:
+    - Variáveis de múltiplas linhas (`textarea` / `texto_multilinha`) propagam sequencialmente a numeração hierárquica base do documento.
+    - Cada linha de texto não vazia renderizada consumirá de forma imutável seu índice numérico da sequência global (ex: `1.2.`, `1.3.`, `1.4.`).
+    - Linhas vazias dentro da variável inserem quebras visuais puras, sem consumir índices de numeração do documento.
+    - Na extração de DOM para exportação PDF/DOCX (`domDocumentExtractor.ts`), nós de texto contendo `data-word-type="soft-paragraph-break"` e um `data-word-num` são extraídos como parágrafos reais independentes (`isParagraphBreak: true`), concatenando explicitamente o prefixo numeral para garantir paridade visual entre Frontend e documentos gerados.
+

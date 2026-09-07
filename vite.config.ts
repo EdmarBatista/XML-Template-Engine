@@ -81,6 +81,7 @@ function standaloneRootPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
+    base: '/XML-Template-Engine/',
     plugins: [
       devCdnExternalsPlugin(),
       react(),

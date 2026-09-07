@@ -397,6 +397,9 @@ O motor conta com um algoritmo avançado de numeração hierárquica contínua q
 5. **Integração com Importação de Word (.docx)**:
    - Ao arrastar um arquivo `.docx`, o conversor reconhece estilos de títulos e parágrafos `Nivel 01` a `Nivel 08` (ou `Heading 1` a `Heading 8`), mapeando-os diretamente para `<secao>` ou `<p nivel="2">` ... `<p nivel="8">`.
 
+6. **Variáveis Multilinha e Numeração Sequencial**:
+   - Campos de texto com múltiplas linhas (`textarea`) respeitam a numeração do parágrafo onde estão contidas. Quando uma variável multilinha exibe texto em várias linhas, cada linha preenchida consome sequencialmente um subnível adicional da hierarquia sem quebrar a continuidade do documento (tanto na visualização web quanto na exportação Word e PDF). Linhas em branco não consomem numeração, preservando apenas o espaçamento vertical.
+
 #### Modos de Usar Tabelas no Documento:
 
 1. **Renderização Direta e Automática (Apenas com a Variável):**
