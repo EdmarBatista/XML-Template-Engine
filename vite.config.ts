@@ -91,15 +91,14 @@ export default defineConfig(() => {
       standaloneRootPlugin()
     ],
     optimizeDeps: {
-      exclude: ['docx', 'mammoth', 'jszip', 'jsdom', 'puppeteer', 'undici'],
+      exclude: ['docx', 'jszip', 'jsdom', 'puppeteer', 'undici'],
     },
     build: {
       rollupOptions: {
-        external: ['docx', 'mammoth', 'jszip'],
+        external: ['docx', 'jszip'],
         plugins: [
           externalGlobals({
             docx: 'docx',
-            mammoth: 'mammoth',
             jszip: 'JSZip'
           })
         ]
