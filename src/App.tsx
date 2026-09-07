@@ -48,6 +48,8 @@ import {
 import { DEFAULT_TEMPLATES, TemplateItem } from './data/defaultTemplates';
 import { StorageService } from './services/storageService';
 import { construirEstadoInicial } from './utils/xmlParser';
+import { converterDocxParaModeloXml } from './docx/converter';
+import { TEMPLATE_NOVO_DOCUMENTO } from './utils/xmlEditorCompletions';
 
 export default function App() {
   // Notificações visuais
@@ -115,10 +117,8 @@ export default function App() {
   });
 
   const handleNewTemplate = () => {
-    import('./utils/xmlEditorCompletions').then(({ TEMPLATE_NOVO_DOCUMENTO }) => {
-      carregarXmlEJson('Novo Documento.xml', TEMPLATE_NOVO_DOCUMENTO, null, undefined);
-      showToast('Novo modelo em branco criado.');
-    });
+    carregarXmlEJson('Novo Documento.xml', TEMPLATE_NOVO_DOCUMENTO, null, undefined);
+    showToast('Novo modelo em branco criado.');
   };
 
   // Inicializa e sincroniza dados do template ativo no LocalStorage
@@ -239,7 +239,6 @@ export default function App() {
     if (!wordFileToConvert) return;
     setIsConvertingWord(true);
     try {
-      const { converterDocxParaModeloXml } = await import('./docx/converter');
       const { xml, jsonInicial, comentariosXml, nomeSugerido } = await converterDocxParaModeloXml(wordFileToConvert);
       
       // Armazena ou apenas logs comentariosXml por enquanto conforme solicitado
