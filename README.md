@@ -1,6 +1,230 @@
 # XML Template Engine · Editor e Gerador de Documentos
 
-Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **React 19**, **TypeScript**, **Vite** e **Tailwind CSS**, projetada para transformar templates estruturados em **XML** (`<formulario>` + `<conteudo>`) em formulários interativos com renderização em tempo real e exportação profissional para **DOCX (Word)**, **PDF** e **JSON**.
+O **XML Template Engine** é uma plataforma para **criação, edição, preenchimento e geração automatizada de documentos estruturados**, baseada em templates XML.
+
+A ideia central é separar a **estrutura do documento** dos **dados que serão preenchidos**. Em vez de editar manualmente documentos extensos, o usuário cria ou utiliza um template que define os campos, regras, condições, listas, tabelas, seções e formatação do documento. O sistema transforma esse template em uma interface de preenchimento e, simultaneamente, monta o documento final em uma prévia visual.
+
+### O que o sistema faz?
+
+O sistema permite criar **modelos de documentos inteligentes**, nos quais o conteúdo pode mudar automaticamente de acordo com os dados informados pelo usuário.
+
+Um mesmo template pode, por exemplo:
+
+* solicitar informações por meio de formulários;
+* utilizar variáveis dentro do texto;
+* formatar automaticamente valores, datas, CPF, CNPJ, CEP e telefone;
+* exibir ou ocultar trechos do documento conforme determinadas condições;
+* repetir blocos de conteúdo para listas de dados;
+* criar listas com marcadores ou numeração;
+* criar tabelas preenchíveis com múltiplas linhas;
+* gerar numeração hierárquica automática de seções;
+* utilizar formatação de texto, como **negrito, itálico, sublinhado, tachado, marca-texto, cores e links**;
+* atualizar a visualização do documento em tempo real conforme os dados são preenchidos;
+* importar documentos Word existentes e transformá-los em templates XML;
+* exportar o documento preenchido para **Microsoft Word (.docx)** e **PDF**.
+
+### O que é possível criar?
+
+A estrutura foi pensada para documentos que possuem um **modelo relativamente padronizado**, mas cujos dados e partes do conteúdo variam a cada utilização.
+
+Entre os exemplos de aplicação estão:
+
+* **Termos de Referência (TR);**
+* **Estudos Técnicos Preliminares (ETP);**
+* editais e documentos de contratação;
+* contratos e termos aditivos;
+* convênios e instrumentos administrativos;
+* relatórios técnicos;
+* pareceres e documentos administrativos;
+* laudos;
+* formulários que precisam gerar documentos automaticamente;
+* documentos jurídicos padronizados;
+* propostas comerciais;
+* orçamentos;
+* outros documentos estruturados que possam ser representados por um template.
+
+### Como funciona?
+
+O documento é construído a partir de um XML dividido principalmente em duas partes:
+
+```xml
+<documento>
+  <formulario>
+    <!-- Campos que o usuário deverá preencher -->
+  </formulario>
+
+  <conteudo>
+    <!-- Estrutura e conteúdo do documento -->
+  </conteudo>
+</documento>
+```
+
+O bloco `<formulario>` define **quais informações devem ser fornecidas**.
+
+O bloco `<conteudo>` define **como essas informações serão utilizadas no documento**.
+
+Por exemplo:
+
+```xml
+<formulario>
+  <grupo titulo="Dados do Contrato">
+    <input
+      id="contratado"
+      label="Nome do Contratado"
+    />
+
+    <number
+      id="valor"
+      label="Valor do Contrato"
+      tipo="moeda"
+    />
+  </grupo>
+</formulario>
+
+<conteudo>
+  <p>
+    O contrato será celebrado com
+    <b>{{contratado}}</b>,
+    pelo valor de
+    <b>{{valor | moeda}}</b>.
+  </p>
+</conteudo>
+```
+
+Ao preencher o formulário, o documento é atualizado automaticamente:
+
+> O contrato será celebrado com **Empresa Exemplo**, pelo valor de **R$ 150.000,00**.
+
+### Templates com lógica
+
+O XML não precisa ser apenas um documento estático. O template pode conter **regras de negócio e lógica de apresentação**.
+
+É possível, por exemplo, mostrar determinado conteúdo somente quando uma condição for verdadeira:
+
+```xml
+<if expr="tipo_contratacao == 'dispensa'">
+  <p>
+    A contratação será realizada por dispensa de licitação.
+  </p>
+</if>
+```
+
+Também é possível repetir conteúdo para cada registro de uma lista:
+
+```xml
+<foreach lista="itens" var="item">
+  <p>
+    {{item.descricao}} -
+    {{item.valor | moeda}}
+  </p>
+</foreach>
+```
+
+Isso permite construir documentos cujo conteúdo é **dinâmico**, sem precisar criar manualmente cada parágrafo, item ou linha.
+
+### Formulários dinâmicos
+
+O template pode definir diferentes tipos de campos, incluindo:
+
+* texto;
+* texto multilinha;
+* números;
+* valores monetários;
+* datas;
+* CPF;
+* CNPJ;
+* CEP;
+* telefone;
+* e-mail;
+* listas de opções;
+* seleção única;
+* caixas de seleção;
+* tabelas com múltiplas linhas.
+
+Alguns campos também possuem **máscaras, validação e consultas automáticas**, reduzindo a necessidade de tratamento manual dos dados.
+
+### Editor XML integrado
+
+O sistema também funciona como um **editor de templates XML**.
+
+O usuário pode editar diretamente o código do modelo utilizando um editor com:
+
+* destaque de sintaxe;
+* numeração de linhas;
+* autocompletar;
+* sugestões de tags e atributos;
+* sugestões de variáveis;
+* validação da estrutura XML;
+* identificação visual de tags inválidas;
+* visualização imediata do resultado.
+
+Dessa forma, o XML funciona como uma espécie de **linguagem de marcação própria para construção de documentos**, enquanto o sistema interpreta essa estrutura e a transforma em um documento visual.
+
+### Edição visual do documento
+
+Além da edição do XML, o sistema permite trabalhar diretamente com o documento renderizado.
+
+A prévia pode ser visualizada em:
+
+* **modo A4**, simulando a página física do documento;
+* **modo fluido**, para leitura contínua;
+* diferentes níveis de zoom.
+
+O documento é atualizado conforme o usuário altera os dados do formulário, permitindo verificar o resultado antes da geração do arquivo final.
+
+### Importação de documentos Word
+
+Documentos existentes também podem ser utilizados como ponto de partida.
+
+Um arquivo **`.docx`** pode ser importado e convertido para a estrutura XML do sistema, preservando elementos como:
+
+* títulos;
+* subtítulos;
+* parágrafos;
+* listas;
+* tabelas;
+* hierarquia de tópicos;
+* formatação estrutural.
+
+Além disso, variáveis inseridas no documento Word podem ser identificadas pelo sistema e utilizadas para construir automaticamente os campos correspondentes no formulário.
+
+Isso permite transformar um documento Word tradicional em um **template reutilizável e preenchível** sem precisar reconstruí-lo inteiramente do zero.
+
+### Do template ao documento final
+
+O fluxo básico do sistema é:
+
+```text
+TEMPLATE XML
+     ↓
+Interpretação do modelo
+     ↓
+Formulário dinâmico
+     ↓
+Preenchimento dos dados
+     ↓
+Processamento de variáveis e regras
+     ↓
+Renderização do documento
+     ↓
+┌───────────────┬───────────────┐
+│               │               │
+DOCX            PDF          JSON/ZIP
+```
+
+O resultado pode ser exportado para **Microsoft Word**, **PDF** ou salvo como dados para reutilização posterior.
+
+### Em resumo
+
+O XML Template Engine transforma um documento padronizado em um **modelo inteligente e reutilizável**.
+
+Em vez de criar manualmente cada documento, você define uma única vez:
+
+**estrutura + campos + regras + formatação + lógica**
+
+e o sistema utiliza essa definição para produzir diferentes documentos a partir dos dados fornecidos pelo usuário.
+
+Isso torna a ferramenta especialmente útil para processos em que existe uma grande quantidade de documentos semelhantes, mas com informações, tabelas, cláusulas e trechos que precisam variar de acordo com cada situação.
 
 ---
 
