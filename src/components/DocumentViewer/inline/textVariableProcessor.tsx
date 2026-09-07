@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormStructure } from '../../../types';
-import { aplicarFiltroDocumento, obterValorPorCaminho } from '../../../utils/documentUtils';
+import { aplicarFiltroDocumento, obterValorPorCaminho, valoresDaLista } from '../../../utils/documentUtils';
 import { DocumentInlineTableAccess } from './DocumentInlineTableAccess';
 import { DocumentInlineVariable } from './DocumentInlineVariable';
 import { DocumentInlineAutoTable } from './DocumentInlineAutoTable';
@@ -158,8 +158,12 @@ export function processarTextoComVariaveis({
       const comValor = textoExibicao !== '';
       const destacado = Boolean(destaquesAtivos[campoFoco]);
 
-      const listaParaTabela = (nome: string) =>
-        Array.isArray(escopo[nome]) ? escopo[nome] : [];
+      const listaParaTabela = (nome: string) => {
+        const val = escopo[nome];
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string' && val.trim() !== '') return valoresDaLista(val);
+        return [];
+      };
 
       let tabelaAcesso: {
         listaNome: string;
@@ -202,10 +206,12 @@ export function processarTextoComVariaveis({
             };
           }
         } else {
+          const campoMeta = estrutura?.campos?.[baseListaFromFor];
+          const isListaCsv = campoMeta?.tipo === 'input' && campoMeta?.tipoInput === 'lista_csv';
           tabelaAcesso = {
             listaNome: baseListaFromFor,
             coluna: '',
-            indice: loopIndexFromFor,
+            indice: isListaCsv ? null : loopIndexFromFor,
             listaAtual: listaParaTabela(baseListaFromFor),
           };
         }

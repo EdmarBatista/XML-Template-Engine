@@ -102,12 +102,27 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
           : {};
         item[tabelaAcesso.coluna] = val;
         listaAtual[indice] = item;
+        onUpdateField(tabelaAcesso.listaNome, listaAtual, 'inline');
       } else {
         listaAtual[indice] = val;
+        const csvString = listaAtual.map(it => {
+          const s = String(it || '').trim();
+          return s.includes(',') || s.includes('\n') || s.includes('\r') ? `"${s}"` : s;
+        }).join(', ');
+        onUpdateField(tabelaAcesso.listaNome, csvString, 'inline');
       }
-      onUpdateField(tabelaAcesso.listaNome, listaAtual, 'inline');
     } else {
       const itens = parseListaPreservandoVazios(val);
+
+      if (!tabelaAcesso.coluna) {
+        // É uma lista_csv inteira
+        const csvString = itens.map(it => {
+          const s = String(it || '').trim();
+          return s.includes(',') || s.includes('\n') || s.includes('\r') ? `"${s}"` : s;
+        }).join(', ');
+        onUpdateField(tabelaAcesso.listaNome, csvString, 'inline');
+        return;
+      }
 
       // Preserva o número de linhas existentes, atribuindo cada item à linha correspondente.
       const numLinhas = Math.max(listaAtual.length, itens.length);
@@ -244,7 +259,12 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
     if (ehColunaInteira) {
       const lista = Array.isArray(tabelaAcesso.listaAtual) ? tabelaAcesso.listaAtual : [];
       initialVal = lista
-        .map(linha => (linha && typeof linha === 'object' ? linha[tabelaAcesso.coluna] : ''))
+        .map(linha => {
+          if (tabelaAcesso.coluna) {
+            return (linha && typeof linha === 'object' ? linha[tabelaAcesso.coluna] : '');
+          }
+          return linha !== undefined && linha !== null ? String(linha) : '';
+        })
         .map(citarValor)
         .join(', ');
     } else {

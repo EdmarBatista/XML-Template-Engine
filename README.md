@@ -9,7 +9,7 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
 - ⚡ **Renderização e Atualização em Tempo Real**: Conforme os campos do formulário são preenchidos, o documento é atualizado instantaneamente na visualização lateral.
 - 📄 **Exportação Multiformato de Alta Fidelidade**:
   - **Microsoft Word (.docx)**: Geração nativa via `docx` a partir do DOM renderizado, com suporte a estilos, tabelas com quebra de página inteligente (`cantSplit`), repetição de cabeçalho (`tableHeader`), preenchimento suave (`#E2E8F0`), recuos de lista, numeração automática e destaque opcional de variáveis.
-  - **PDF Vetorial (.pdf)**: Geração vetorial com `pdfmake` a partir do DOM renderizado, preservando a estrutura tipográfica, alinhamento, larguras automáticas de colunas, células com repetição de cabeçalho entre páginas (`headerRows: 1`) e recuo progressivo de 0,5 cm por nível de seção.
+  - **Exportação Nativa para PDF (.pdf)**: Geração nativa com `pdfmake` a partir do DOM renderizado, preservando a estrutura tipográfica, alinhamento, larguras automáticas de colunas, células com repetição de cabeçalho entre páginas (`headerRows: 1`) e recuo progressivo de 0,5 cm por nível de seção.
   - **Impressão Isolada (A4)**: Impressão limpa via `<iframe>` oculto com estilos `@page` otimizados para papel A4.
   - **JSON de Preenchimento & Pacote ZIP**: Exportação e importação completa de dados salvos (`.json`) e pacote `.zip` unificado contendo o template XML e dados JSON.
 - 🎨 **Constantes Centralizadas de Tema (`documentTheme.ts`)**:
@@ -37,105 +37,6 @@ Uma aplicação web moderna, responsiva e de alta fidelidade desenvolvida em **R
   - **Botão `+` (Restaurar Dados Históricos)**: Modelos que possuem dados históricos associados exibem um botão verde `+` no seletor de modelos. Clicar no botão restaura instantaneamente os dados de preenchimento predefinidos.
   - **Exclusão Granular de Modelos**: Ao excluir um modelo, um painel interativo pergunta se você deseja: **Apagar apenas o Modelo** (mantendo os dados para uso futuro), **Apagar apenas os Dados** (mantendo o modelo na lista, mas limpando o histórico) ou **Apagar Tudo (Modelo e Dados)**.
   - **Limpeza Segura do Formulário**: A ação de limpar formulário reseta apenas os dados preenchidos da sessão atual, preservando o modelo e seu histórico atrelado.
-
----
-
-## 🛠️ Stack Tecnológica
-
-| Camada | Tecnologia |
-|---|---|
-| **Framework & UI** | React 19, TypeScript, Vite 6, Tailwind CSS v4 |
-| **Animações & Ícones** | Lucide React, Motion |
-| **Editor de Código** | CodeMirror 6 (`@uiw/react-codemirror`, `@codemirror/lang-xml`, `@codemirror/lang-json`) |
-| **Geração e Conversão de Documentos** | `docx` (Word), `pdfmake` (PDF), `jszip`, `mammoth` (Conversão DOCX -> XML) |
-| **Parsing & AST** | Parser XML customizado para árvore sintática intermediária (AST) |
-
----
-
-## 📂 Estrutura do Projeto
-
-```
-/
-├── public/                 # Recursos estáticos
-├── src/
-│   ├── components/         # Componentes da interface
-│   │   ├── CodeMirrorEditor.tsx    # Wrapper reutilizável do CodeMirror
-│   │   ├── DocumentViewer.tsx      # Visualizador de documento com suporte A4/Fluido
-│   │   ├── DocumentViewer/         # Renderizadores modulares do documento (AST, blocos, inline, lógica)
-│   │   │   ├── DocumentA4Canvas.tsx        # Canvas e container de página física A4 e modo fluido
-│   │   │   ├── DocumentNodeRenderer.tsx    # Orquestrador raiz e ponto de entrada da AST
-│   │   │   ├── index.ts                    # Barrel de exportação do DocumentViewer
-│   │   │   ├── blocks/                     # Nós de nível estrutural/bloco
-│   │   │   │   ├── DocumentBlockDispatcher.tsx # Despachante e gerenciador de blocos e buffers
-│   │   │   │   ├── DocumentSectionNode.tsx     # Renderizador de seções (<secao>), títulos e numeração
-│   │   │   │   ├── DocumentParagraphNode.tsx   # Renderizador de parágrafos (<p>) e quebras de linha
-│   │   │   │   ├── DocumentListNode.tsx        # Renderizador de listas ordenadas e com marcadores
-│   │   │   │   ├── DocumentTableNode.tsx       # Renderizador de tabelas (<tabela>) com linhas e loops
-│   │   │   │   └── index.ts                    # Barrel de blocos estruturais
-│   │   │   ├── inline/                     # Nós e variáveis de nível inline
-│   │   │   │   ├── DocumentInlineRenderer.tsx  # Despachante e renderizador de nós inline
-│   │   │   │   ├── DocumentInlineVariable.tsx  # Variável interativa com foco e edição inline
-│   │   │   │   ├── DocumentInlineTableAccess.tsx # Acesso a células e colunas de tabelas
-│   │   │   │   ├── DocumentInlineAutoTable.tsx   # Grade dinâmica gerada automaticamente
-│   │   │   │   ├── DocumentTableCell.tsx         # Célula de tabela com edição inline unificada
-│   │   │   │   ├── textVariableProcessor.tsx     # Processador e interpolador de {{chave|filtro}}
-│   │   │   │   └── index.ts                    # Barrel de nós inline
-│   │   │   └── logic/                      # Avaliação e renderização condicional
-│   │   │       ├── DocumentConditionalNode.tsx # Avaliação interativa de <if expr="...">
-│   │   │       └── index.ts                    # Barrel de lógica condicional
-│   │   ├── ImportWordModal.tsx     # Modal de confirmação e conversão de arquivos Word (.docx)
-│   │   ├── ModelModal.tsx          # Inspetor de variáveis e modelo AST
-│   │   ├── ModelModal/VarsTabs.tsx # Abas de Variáveis (edição + resumo)
-│   │   ├── Sidebar.tsx             # Formulário dinâmico com grupos e campos
-│   │   ├── SidebarToolbar.tsx      # Barra de ferramentas e ações rápidas
-│   │   ├── TemplateSelector.tsx    # Seletor de templates (customizados/prontos)
-│   │   └── XmlEditorModal.tsx      # Modal de edição do código-fonte XML
-│   ├── hooks/              # Hooks de estado extraídos do App
-│   │   ├── usePreferencias.ts      # Preferências de interface + persistência
-│   │   ├── useCamposFoco.ts        # Foco/destaque bidirecional documento↔sidebar
-│   │   └── useToast.ts             # Toast simples
-│   ├── hooks_App/          # Hooks orquestradores de alto nível do App.tsx
-│   │   ├── index.ts                # Barrel de exportação de hooks_App
-│   │   ├── useDocumentEngine.ts    # Orquestração do template XML, AST e sincronização de dados
-│   │   ├── useDocumentExporters.ts # Camada unificada de exportações (Word, PDF, Impressão, JSON, ZIP)
-│   │   ├── useFilePackageActions.ts# Ações de upload/download de pacotes de arquivo
-│   │   ├── useFormHistory.ts       # Histórico de desfazer/refazer (Undo/Redo)
-│   │   ├── useKeyboardShortcuts.ts # Gerenciador de atalhos de teclado globais
-│   │   ├── useModalsManager.ts     # Gerenciamento de estado dos modais
-│   │   └── useSidebarResizer.ts    # Redimensionamento dinâmico da barra lateral
-│   ├── constants/
-│   │   └── documentTheme.ts        # Constantes centralizadas de tipografia, cores, bordas e tabelas
-│   ├── data/
-│   │   ├── defaultTemplates.ts     # Catálogo de modelos padrão (barrel)
-│   │   └── templates/              # Um arquivo por template (termoReferencia, bateriaTestes, contratoServicos)
-│   ├── services/           # Serviços desacoplados de persistência, empacotamento e API externa
-│   │   ├── apiService.ts           # Consultas CNPJ/CEP com cache/debounce
-│   │   ├── useCnpjCepLookup.ts     # Hook que consome apiService (loading/data/error)
-│   │   ├── filePackageService.ts   # Empacotador/desempacotador ZIP, leitura e download de arquivos
-│   │   └── storageService.ts       # Gerenciamento unificado de LocalStorage (preferências e dados)
-│   ├── utils/              # Motores de conversão e utilitários
-│   │   ├── documentUtils.ts        # Barrel de formatacao/mascaras/validacao/listas/caminhos
-│   │   ├── docxToXmlConverter.ts   # Conversor semântico Word (.docx) para Modelo XML e extração de comentários
-│   │   ├── formatacao.ts           # Moeda, datas, números por extenso, romano
-│   │   ├── mascaras.ts             # Máscaras de CPF/CNPJ/CEP/moeda e filtros de documento
-│   │   ├── validacao.ts            # Validações (email/CPF/CNPJ/CEP) e validarCampo
-│   │   ├── listas.ts               # CSV/foreach (formatarItemForeach, valoresDaLista)
-│   │   ├── caminhos.ts             # obterValorPorCaminho e obterTipoEfetivoColuna
-│   │   ├── paragraphs.ts           # Quebra de parágrafos por \\n / <br>
-│   │   ├── domDocumentExtractor.ts # Extrator semântico DOM para Word e PDF
-│   │   ├── expressionEvaluator.ts  # Avaliador de expressões lógicas (<if expr="...">)
-│   │   ├── pdfExporter.ts          # Exportador vetorial para PDF (via DOM) e impressão isolada
-│   │   ├── wordExporter.ts         # Exportador para Microsoft Word (via DOM) (.docx)
-│   │   └── xmlParser.ts            # Parser XML -> Modelo Intermediário (AST)
-│   ├── types.ts            # Definições de tipos TypeScript
-│   ├── App.tsx             # Componente raiz e gerenciador de estado
-│   ├── main.tsx            # Ponto de entrada da aplicação React
-│   └── index.css           # Estilos globais Tailwind CSS
-├── index.html              # HTML principal da aplicação
-├── package.json            # Dependências e scripts npm
-├── tsconfig.json           # Configurações do compilador TypeScript
-└── vite.config.ts          # Configuração do Vite e plugins
-```
 
 ---
 
@@ -510,6 +411,105 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 | <kbd>Enter</kbd> | Salvar e confirmar valor (em campos simples, data ou numéricos) |
 | <kbd>Ctrl</kbd> + <kbd>Enter</kbd> / <kbd>Cmd</kbd> + <kbd>Enter</kbd> | Salvar e confirmar valor em áreas de texto multilinhas (*textarea*) |
 | <kbd>Esc</kbd> | Cancelar edição rápida e restaurar o valor anterior |
+
+---
+
+## 🛠️ Stack Tecnológica
+
+| Camada | Tecnologia |
+|---|---|
+| **Framework & UI** | React 19, TypeScript, Vite 6, Tailwind CSS v4 |
+| **Animações & Ícones** | Lucide React, Motion |
+| **Editor de Código** | CodeMirror 6 (`@uiw/react-codemirror`, `@codemirror/lang-xml`, `@codemirror/lang-json`) |
+| **Geração e Conversão de Documentos** | `docx` (Word), `pdfmake` (PDF), `jszip` (Leitura Nativa DOCX -> XML) |
+| **Parsing & AST** | Parser XML customizado para árvore sintática intermediária (AST) |
+
+---
+
+## 📂 Estrutura do Projeto
+
+```
+/
+├── public/                 # Recursos estáticos
+├── src/
+│   ├── components/         # Componentes da interface
+│   │   ├── CodeMirrorEditor.tsx    # Wrapper reutilizável do CodeMirror
+│   │   ├── DocumentViewer.tsx      # Visualizador de documento com suporte A4/Fluido
+│   │   ├── DocumentViewer/         # Renderizadores modulares do documento (AST, blocos, inline, lógica)
+│   │   │   ├── DocumentA4Canvas.tsx        # Canvas e container de página física A4 e modo fluido
+│   │   │   ├── DocumentNodeRenderer.tsx    # Orquestrador raiz e ponto de entrada da AST
+│   │   │   ├── index.ts                    # Barrel de exportação do DocumentViewer
+│   │   │   ├── blocks/                     # Nós de nível estrutural/bloco
+│   │   │   │   ├── DocumentBlockDispatcher.tsx # Despachante e gerenciador de blocos e buffers
+│   │   │   │   ├── DocumentSectionNode.tsx     # Renderizador de seções (<secao>), títulos e numeração
+│   │   │   │   ├── DocumentParagraphNode.tsx   # Renderizador de parágrafos (<p>) e quebras de linha
+│   │   │   │   ├── DocumentListNode.tsx        # Renderizador de listas ordenadas e com marcadores
+│   │   │   │   ├── DocumentTableNode.tsx       # Renderizador de tabelas (<tabela>) com linhas e loops
+│   │   │   │   └── index.ts                    # Barrel de blocos estruturais
+│   │   │   ├── inline/                     # Nós e variáveis de nível inline
+│   │   │   │   ├── DocumentInlineRenderer.tsx  # Despachante e renderizador de nós inline
+│   │   │   │   ├── DocumentInlineVariable.tsx  # Variável interativa com foco e edição inline
+│   │   │   │   ├── DocumentInlineTableAccess.tsx # Acesso a células e colunas de tabelas
+│   │   │   │   ├── DocumentInlineAutoTable.tsx   # Grade dinâmica gerada automaticamente
+│   │   │   │   ├── DocumentTableCell.tsx         # Célula de tabela com edição inline unificada
+│   │   │   │   ├── textVariableProcessor.tsx     # Processador e interpolador de {{chave|filtro}}
+│   │   │   │   └── index.ts                    # Barrel de nós inline
+│   │   │   └── logic/                      # Avaliação e renderização condicional
+│   │   │       ├── DocumentConditionalNode.tsx # Avaliação interativa de <if expr="...">
+│   │   │       └── index.ts                    # Barrel de lógica condicional
+│   │   ├── ImportWordModal.tsx     # Modal de confirmação e conversão de arquivos Word (.docx)
+│   │   ├── ModelModal.tsx          # Inspetor de variáveis e modelo AST
+│   │   ├── ModelModal/VarsTabs.tsx # Abas de Variáveis (edição + resumo)
+│   │   ├── Sidebar.tsx             # Formulário dinâmico com grupos e campos
+│   │   ├── SidebarToolbar.tsx      # Barra de ferramentas e ações rápidas
+│   │   ├── TemplateSelector.tsx    # Seletor de templates (customizados/prontos)
+│   │   └── XmlEditorModal.tsx      # Modal de edição do código-fonte XML
+│   ├── hooks/              # Hooks de estado extraídos do App
+│   │   ├── usePreferencias.ts      # Preferências de interface + persistência
+│   │   ├── useCamposFoco.ts        # Foco/destaque bidirecional documento↔sidebar
+│   │   └── useToast.ts             # Toast simples
+│   ├── hooks_App/          # Hooks orquestradores de alto nível do App.tsx
+│   │   ├── index.ts                # Barrel de exportação de hooks_App
+│   │   ├── useDocumentEngine.ts    # Orquestração do template XML, AST e sincronização de dados
+│   │   ├── useDocumentExporters.ts # Camada unificada de exportações (Word, PDF, Impressão, JSON, ZIP)
+│   │   ├── useFilePackageActions.ts# Ações de upload/download de pacotes de arquivo
+│   │   ├── useFormHistory.ts       # Histórico de desfazer/refazer (Undo/Redo)
+│   │   ├── useKeyboardShortcuts.ts # Gerenciador de atalhos de teclado globais
+│   │   ├── useModalsManager.ts     # Gerenciamento de estado dos modais
+│   │   └── useSidebarResizer.ts    # Redimensionamento dinâmico da barra lateral
+│   ├── constants/
+│   │   └── documentTheme.ts        # Constantes centralizadas de tipografia, cores, bordas e tabelas
+│   ├── data/
+│   │   ├── defaultTemplates.ts     # Catálogo de modelos padrão (barrel)
+│   │   └── templates/              # Um arquivo por template (termoReferencia, bateriaTestes, contratoServicos)
+│   ├── services/           # Serviços desacoplados de persistência, empacotamento e API externa
+│   │   ├── apiService.ts           # Consultas CNPJ/CEP com cache/debounce
+│   │   ├── useCnpjCepLookup.ts     # Hook que consome apiService (loading/data/error)
+│   │   ├── filePackageService.ts   # Empacotador/desempacotador ZIP, leitura e download de arquivos
+│   │   └── storageService.ts       # Gerenciamento unificado de LocalStorage (preferências e dados)
+│   ├── utils/              # Motores de conversão e utilitários
+│   │   ├── documentUtils.ts        # Barrel de formatacao/mascaras/validacao/listas/caminhos
+│   │   ├── docxToXmlConverter.ts   # Conversor semântico Word (.docx) para Modelo XML e extração de comentários
+│   │   ├── formatacao.ts           # Moeda, datas, números por extenso, romano
+│   │   ├── mascaras.ts             # Máscaras de CPF/CNPJ/CEP/moeda e filtros de documento
+│   │   ├── validacao.ts            # Validações (email/CPF/CNPJ/CEP) e validarCampo
+│   │   ├── listas.ts               # CSV/foreach (formatarItemForeach, valoresDaLista)
+│   │   ├── caminhos.ts             # obterValorPorCaminho e obterTipoEfetivoColuna
+│   │   ├── paragraphs.ts           # Quebra de parágrafos por \\n / <br>
+│   │   ├── domDocumentExtractor.ts # Extrator semântico DOM para Word e PDF
+│   │   ├── expressionEvaluator.ts  # Avaliador de expressões lógicas (<if expr="...">)
+│   │   ├── pdfExporter.ts          # Exportador nativo para PDF (via DOM) e impressão isolada
+│   │   ├── wordExporter.ts         # Exportador para Microsoft Word (via DOM) (.docx)
+│   │   └── xmlParser.ts            # Parser XML -> Modelo Intermediário (AST)
+│   ├── types.ts            # Definições de tipos TypeScript
+│   ├── App.tsx             # Componente raiz e gerenciador de estado
+│   ├── main.tsx            # Ponto de entrada da aplicação React
+│   └── index.css           # Estilos globais Tailwind CSS
+├── index.html              # HTML principal da aplicação
+├── package.json            # Dependências e scripts npm
+├── tsconfig.json           # Configurações do compilador TypeScript
+└── vite.config.ts          # Configuração do Vite e plugins
+```
 
 ---
 
