@@ -323,7 +323,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
           autoFocus
           onFocus={e => e.target.select()}
           onKeyDown={e => {
-            if (isNumberField && !isMasked && ['e', 'E', '+'].includes(e.key)) {
+            if (isNumberField && !isMasked && e.key.length === 1 && !/^[0-9.,\-]$/.test(e.key)) {
               e.preventDefault();
             } else if (e.key === 'Enter') {
               salvar();

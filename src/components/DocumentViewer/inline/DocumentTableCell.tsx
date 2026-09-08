@@ -403,7 +403,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
               step={colMeta?.step}
               placeholder={placeholderText}
               onKeyDown={e => {
-                if (['e', 'E', '+'].includes(e.key)) {
+                if (e.key.length === 1 && !/^[0-9.,\-]$/.test(e.key)) {
                   e.preventDefault();
                 } else if (e.key === 'Enter') {
                   e.preventDefault();

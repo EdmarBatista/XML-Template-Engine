@@ -149,9 +149,14 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
                                     return (
                                       <td key={col.id} className="px-2 py-1">
                                         <input
-                                          type={isNumber ? 'number' : 'text'}
+                                          type={isNumber ? 'number' : colTipo === 'date' ? 'date' : 'text'}
                                           inputMode={isNumber || isMaskedCol ? 'numeric' : undefined}
                                           value={String(valorColuna ?? '')}
+                                          onKeyDown={e => {
+                                            if (isNumber && e.key.length === 1 && !/^[0-9.,\-]$/.test(e.key)) {
+                                              e.preventDefault();
+                                            }
+                                          }}
                                           onChange={e => {
                                             const linhasAtuais = Array.isArray(valor) ? [...valor] : [];
                                             const linhaAtual = { ...(linhasAtuais[rIdx] || {}) };
@@ -218,8 +223,13 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
                   </div>
                 ) : (
                   <input
-                    type={isMasked ? 'text' : campo?.tipo === 'number' ? 'number' : 'text'}
+                    type={isMasked ? 'text' : campo?.tipo === 'number' ? 'number' : campo?.tipo === 'date' ? 'date' : 'text'}
                     value={String(valorExibido ?? '')}
+                    onKeyDown={e => {
+                      if (!isMasked && campo?.tipo === 'number' && e.key.length === 1 && !/^[0-9.,\-]$/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     onChange={e => {
                       const raw = e.target.value;
                       if (isMasked) {

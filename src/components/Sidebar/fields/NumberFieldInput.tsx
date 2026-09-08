@@ -35,7 +35,7 @@ export const NumberFieldInput: React.FC<NumberFieldInputProps> = ({
         value={valorExibido}
         placeholder={campo.placeholder || ''}
         onKeyDown={e => {
-          if (!isMasked && ['e', 'E', '+'].includes(e.key)) {
+          if (!isMasked && e.key.length === 1 && !/^[0-9.,\-]$/.test(e.key)) {
             e.preventDefault();
           }
         }}

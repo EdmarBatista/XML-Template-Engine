@@ -466,7 +466,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
           autoFocus
           onFocus={e => e.target.select()}
           onKeyDown={e => {
-            if (isNumberField && !isMasked && ['e', 'E', '+'].includes(e.key)) e.preventDefault();
+            if (isNumberField && !isMasked && e.key.length === 1 && !/^[0-9.,\-]$/.test(e.key)) e.preventDefault();
             else if (e.key === 'Enter') salvar();
             else if (e.key === 'Escape') cancelar();
           }}

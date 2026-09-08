@@ -196,8 +196,7 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
                           value={valorCelula}
                           placeholder={col.placeholder || ''}
                           onKeyDown={e => {
-                            // Bloqueia teclas não numéricas no teclado
-                            if (['e', 'E', '+'].includes(e.key)) {
+                            if (e.key.length === 1 && !/^[0-9.,\-]$/.test(e.key)) {
                               e.preventDefault();
                             }
                           }}
