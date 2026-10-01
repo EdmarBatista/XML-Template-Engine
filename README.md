@@ -658,7 +658,6 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 
 ```
 /
-├── public/                 # Recursos estáticos
 ├── src/
 │   ├── components/         # Componentes da interface
 │   │   ├── CodeMirrorEditor.tsx    # Wrapper reutilizável do CodeMirror
@@ -666,7 +665,6 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 │   │   ├── DocumentViewer/         # Renderizadores modulares do documento (AST, blocos, inline, lógica)
 │   │   │   ├── DocumentA4Canvas.tsx        # Canvas e container de página física A4 e modo fluido
 │   │   │   ├── DocumentNodeRenderer.tsx    # Orquestrador raiz e ponto de entrada da AST
-│   │   │   ├── index.ts                    # Barrel de exportação do DocumentViewer
 │   │   │   ├── blocks/                     # Nós de nível estrutural/bloco
 │   │   │   │   ├── DocumentBlockDispatcher.tsx # Despachante e gerenciador de blocos e buffers
 │   │   │   │   ├── DocumentSectionNode.tsx     # Renderizador de seções (<secao>), títulos e numeração
@@ -683,11 +681,11 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 │   │   │   │   ├── textVariableProcessor.tsx     # Processador e interpolador de {{chave|filtro}}
 │   │   │   │   └── index.ts                    # Barrel de nós inline
 │   │   │   └── logic/                      # Avaliação e renderização condicional
-│   │   │       ├── DocumentConditionalNode.tsx # Avaliação interativa de <if expr="...">
-│   │   │       └── index.ts                    # Barrel de lógica condicional
+│   │   │       └── DocumentConditionalNode.tsx # Avaliação interativa de <if expr="...">
 │   │   ├── ImportWordModal.tsx     # Modal de confirmação e conversão de arquivos Word (.docx)
 │   │   ├── ModelModal.tsx          # Inspetor de variáveis e modelo AST
-│   │   ├── ModelModal/VarsTabs.tsx # Abas de Variáveis (edição + resumo)
+│   │   ├── ModelModal/             # Componentes modulares do modal de modelo
+│   │   │   └── VarsTabs.tsx                # Abas de Variáveis (edição + resumo)
 │   │   ├── Sidebar.tsx             # Orquestrador da barra lateral e formulário dinâmico
 │   │   ├── Sidebar/                # Componentes modulares da barra lateral
 │   │   │   ├── SidebarHeader.tsx       # Cabeçalho da barra lateral e busca
@@ -701,8 +699,7 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 │   │   │       ├── TextAreaFieldInput.tsx
 │   │   │       └── TextFieldInput.tsx
 │   │   ├── SidebarToolbar.tsx      # Barra de ferramentas e ações rápidas
-│   │   ├── TemplateSelector.tsx    # Seletor de templates (customizados/prontos)
-│   │   └── XmlEditorModal.tsx      # Modal de edição do código-fonte XML
+│   │   └── TemplateSelector.tsx    # Seletor de templates (customizados/prontos)
 │   ├── docx/                       # Motor modular de conversão direta DOCX (OpenXML) -> Modelo XML
 │   │   ├── converter.ts            # Ponto de entrada do conversor (converterDocxParaModeloXml)
 │   │   ├── ast.ts                  # Tipos e estruturas da AST nativa DOCX
@@ -730,7 +727,7 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 │   │   └── documentTheme.ts        # Constantes centralizadas de tipografia, cores, bordas e tabelas
 │   ├── data/
 │   │   ├── defaultTemplates.ts     # Catálogo de modelos padrão (barrel)
-│   │   └── templates/              # Modelos padrão (bateriaTestes, catalogoCompletoTags, contratoServicos, etc.)
+│   │   └── templates/              # Modelos padrão (bateriaTestes, catalogoCompletoTags, contratoServicos, exemploParticionado, termoReferencia)
 │   ├── services/                   # Serviços desacoplados de persistência, empacotamento e API externa
 │   │   ├── apiService.ts           # Consultas CNPJ/CEP com cache/debounce
 │   │   ├── useCnpjCepLookup.ts     # Hook que consome apiService (loading/data/error)
