@@ -45,8 +45,13 @@ export function sanitizarXmlParaParser(xmlString: string): string {
     return `${prefix}${quote}${exprSeguro}${quote}`;
   });
 
-  // 5. Converte tags self-closing de checkbox e radio para tags com fechamento explícito para evitar que o parser HTML as trate como containers
-  res = res.replace(/<(checkbox|radio)\b([^>]*?)\/>/gi, '<$1$2></$1>');
+  // 5. Converte tags self-closing de campos, colunas, checkbox e radio para tags com fechamento explícito.
+  // IMPORTANTE: Evita que o parser HTML de fallback (text/html) trate tags como <coluna ... /> como containers abertos
+  // que engoliriam as colunas seguintes como filhas em vez de tratá-las como irmãs (sibling elements).
+  res = res.replace(/<(checkbox|radio|coluna|col|input|number|date|textarea)\b([^>]*?)\/>/gi, '<$1$2></$1>');
+
+  // 6. Garante que tags self-closing adjacentes sejam tratadas como irmãs (separando com quebra de linha)
+  res = res.replace(/\/>\s*</g, '/>\n<');
 
   return res.trim();
 }
@@ -220,11 +225,25 @@ export function extrairCampos(formularioNode: Element): FormStructure {
     if (tag === 'tabela') {
       const colunas: TableColumnMetadata[] = [];
       Array.from(campoEl.children)
-        .filter(c => c.tagName.toLowerCase() === 'coluna')
-        .forEach(colEl => {
-          const colId = colEl.getAttribute('id');
-          if (!colId) return;
-          const colLabel = colEl.getAttribute('label') || colEl.getAttribute('rotulo') || colEl.getAttribute('titulo') || colId;
+        .filter(c => ['coluna', 'col', 'item'].includes(c.tagName.toLowerCase()))
+        .forEach((colEl, idx) => {
+          let colId = colEl.getAttribute('id') || colEl.getAttribute('name');
+          const colLabel = colEl.getAttribute('label') || colEl.getAttribute('rotulo') || colEl.getAttribute('titulo') || colEl.textContent?.trim() || `Coluna ${idx + 1}`;
+          
+          if (!colId) {
+            if (colLabel && colLabel !== `Coluna ${idx + 1}`) {
+              colId = colLabel
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9_]/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_|_$/g, '');
+            }
+            if (!colId) {
+              colId = `col_${idx + 1}`;
+            }
+          }
           const rawTipo = (colEl.getAttribute('tipo') || 'input').toLowerCase().trim();
           
           // Mapeamento unificado (um nome canônico por conceito)

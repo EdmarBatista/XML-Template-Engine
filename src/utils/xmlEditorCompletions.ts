@@ -51,10 +51,29 @@ export function extrairCamposDeclarados(xmlString: string): CampoExtraido[] {
 
     const colunas: string[] = [];
     if (tag === 'tabela' && corpoTag) {
-      const regexColunas = /<coluna\b[^>]*?\bid\s*=\s*["']([^"']+)["']/gi;
+      const regexColunas = /<(?:coluna|col)\b([^>]*?)(?:\/?>|>([\s\S]*?)<\/(?:coluna|col)>)/gi;
       let colMatch: RegExpExecArray | null;
+      let cIdx = 0;
       while ((colMatch = regexColunas.exec(corpoTag)) !== null) {
-        colunas.push(colMatch[1].trim());
+        cIdx++;
+        const colAttrs = colMatch[1] || '';
+        const colContent = (colMatch[2] || '').trim();
+        const idColMatch = colAttrs.match(/\b(?:id|name)\s*=\s*["']([^"']+)["']/i);
+        const labelColMatch = colAttrs.match(/\b(?:label|rotulo|titulo)\s*=\s*["']([^"']+)["']/i);
+        const colLabel = labelColMatch ? labelColMatch[1].trim() : (colContent || `Coluna ${cIdx}`);
+        let colId = idColMatch ? idColMatch[1].trim() : '';
+        if (!colId) {
+          colId = colLabel
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9_]/g, '_')
+            .replace(/_+/g, '_')
+            .replace(/^_|_$/g, '') || `col_${cIdx}`;
+        }
+        if (colId && !colunas.includes(colId)) {
+          colunas.push(colId);
+        }
       }
     }
 
