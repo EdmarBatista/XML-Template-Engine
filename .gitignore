@@ -23,6 +23,11 @@ tsconfig.tsbuildinfo
 
 # Bancada de analise da refatoracao DOCX->XML (scripts, ground truth e dados de referencia)
 # tmp_hx/ e versionado por decisao explicita — ver DOC_REFATORACAO_DOCXTOXML.md
+# Exceto as saidas geradas, que nao se versionam: são reproduzíveis a partir de
+# bundle_entry.ts (esbuild) e da execucao de run_conv.cjs.
+tmp_hx/converted_module.cjs
+tmp_hx/converted_module.mjs
+tmp_hx/out_convertido.xml
 
 # Estado de sessao do agente
 .reasonix/
