@@ -37,10 +37,16 @@ async function main() {
   });
   
   const page = await browser.newPage();
-  console.log("Acessando aplicação local (http://localhost:3000)...");
-  
+  // Porta/URL configuravel por variavel de ambiente. O padrao permanece o do
+  // teste/README.md (http://localhost:3000). Existe porque outra aplicacao pode
+  // ocupar a mesma porta em IPv6 (::{1}) enquanto o vite escuta so em IPv4
+  // (0.0.0.0) — nesse caso "localhost" resolve para a outra app e o teste fala
+  // com o alvo errado. Rodar com APP_URL=http://127.0.0.1:3000 contorna isso.
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  console.log(`Acessando aplicação local (${appUrl})...`);
+
   try {
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+    await page.goto(appUrl, { waitUntil: 'networkidle2' });
   } catch(e) {
     console.error("Não foi possível acessar a aplicação. O servidor está rodando?");
     await browser.close();
@@ -49,7 +55,16 @@ async function main() {
 
   console.log("Fazendo upload do arquivo XML no frontend...");
   const xmlPath = path.join(__dirname, 'output.xml');
-  const fileInput = await page.$('input[type="file"]');
+  // A aplicação é uma SPA React: o input só passa a existir no DOM depois do mount
+  // dos componentes (SidebarToolbar). Consultá-lo logo após o goto corria contra o
+  // render e falhava de forma intermitente com "Input de upload não encontrado".
+  let fileInput = null;
+  try {
+    await page.waitForSelector('input[type="file"]', { timeout: 30000 });
+    fileInput = await page.$('input[type="file"]');
+  } catch (e) {
+    console.error("Input de upload não apareceu no DOM em 30s:", e && e.message ? e.message : e);
+  }
   if (!fileInput) {
     console.error("Input de upload não encontrado na página.");
     await browser.close();

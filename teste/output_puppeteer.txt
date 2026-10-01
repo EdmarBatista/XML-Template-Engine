@@ -584,11 +584,11 @@ CRITÉRIOS DE ACEITABILIDADE DE PREÇOS
 9.5.1.valor global: conforme valor estimado da contratação;
 9.5.2.custos unitários relevantes: itens...
 9.6.Em se tratando de serviços contínuos executados em regime de dedicação exclusiva de mão de obra, somente serão aceitas, nos termos do edital, propostas que adotem, na planilha de custos e formação de preços, valores iguais ou superiores aos orçados pela Administração para as seguintes parcelas, conforme estimativa baseada no(a) .............. (Acordo Coletiva de Trabalho OU Convenção Coletiva de Trabalho OU Dissídio Coletivo) nº XXXXX, utilizado(a) como paradigma:
-a) salário-base e adicionais ................., no valor de R$ ...............;
-b) auxílio-alimentação, no valor de R$ ...............; e
-c) benefícios de natureza trabalhista ou social que contemplem todos os trabalhadores representados pelo sindicato laboral, a saber:
-i) ..........., no valor de R$ ..........;
-ii) .............., no valor de R$....... (especificar os benefícios e valores).
+salário-base e adicionais ................., no valor de R$ ...............;
+auxílio-alimentação, no valor de R$ ...............; e
+benefícios de natureza trabalhista ou social que contemplem todos os trabalhadores representados pelo sindicato laboral, a saber:
+..........., no valor de R$ ..........;
+.............., no valor de R$....... (especificar os benefícios e valores).
 9.6.1.Não serão considerados custos unitários mínimos relevantes quaisquer valores previstos em Acordo, Convenção Coletiva de Trabalho ou Dissídio Coletivo que não contemplem todos os trabalhadores representados pelo sindicato laboral;
 9.6.2.Em caso de divergência entre os valores considerados no orçamento da Administração e os valores constantes da norma coletiva do licitante, a proposta deverá considerar o maior valor entre ambos;
 9.6.3.Os valores orçados pela Administração constam ..... [da planilha / do Anexo...].
