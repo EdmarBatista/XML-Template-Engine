@@ -74,6 +74,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   headerActions,
   deslocarSidebar = true,
 }) => {
+  const grupos = estrutura?.grupos || [];
+  const campos = estrutura?.campos || {};
+
   const [busca, setBusca] = React.useState('');
   const [secoesAbertas, setSecoesAbertas] = React.useState<Record<number, boolean>>({});
 
@@ -124,7 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       if (stored) saved = JSON.parse(stored);
     } catch {}
 
-    estrutura.grupos.forEach((_, idx) => {
+    grupos.forEach((_, idx) => {
       if (saved && saved[idx] !== undefined) {
         estado[idx] = saved[idx];
       } else {
@@ -132,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }
     });
     setSecoesAbertas(estado);
-  }, [estrutura]);
+  }, [grupos]);
 
   // Salva no localStorage sempre que mudar
   React.useEffect(() => {
@@ -146,7 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (!campoFocadoSidebar?.id) return;
     const targetId = campoFocadoSidebar.id;
 
-    const grupoIdx = estrutura.grupos.findIndex(g => g.campos && g.campos.includes(targetId));
+    const grupoIdx = grupos.findIndex(g => g.campos && g.campos.includes(targetId));
     if (grupoIdx >= 0) {
       setSecoesAbertas(prev => ({ ...prev, [grupoIdx]: true }));
     }
@@ -168,7 +171,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setTimeout(() => container.classList.remove('campo-foco-animado'), 7100);
       }
     }, 100);
-  }, [campoFocadoSidebar, estrutura, deslocarSidebar]);
+  }, [campoFocadoSidebar, grupos, deslocarSidebar]);
 
   const toggleGrupo = (idx: number) => {
     setSecoesAbertas(prev => ({ ...prev, [idx]: !prev[idx] }));
@@ -177,7 +180,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const expandirOuRecolherTudo = () => {
     const allOpen = Object.values(secoesAbertas).every(Boolean);
     const novo: Record<number, boolean> = {};
-    estrutura.grupos.forEach((_, idx) => {
+    grupos.forEach((_, idx) => {
       novo[idx] = !allOpen;
     });
     setSecoesAbertas(novo);
@@ -189,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const renderCampo = (campoId: string, nivel = 0) => {
-    const campo = estrutura.campos[campoId];
+    const campo = campos[campoId];
     if (!campo || !campoVisivel(campo)) return null;
 
     if (busca.trim()) {
@@ -395,7 +398,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const grupoPossuiCamposVisiveis = React.useCallback((itens: FormItem[]): boolean => {
     for (const item of itens) {
       if (item.tipo === 'campo') {
-        const campo = estrutura.campos[item.id];
+        const campo = campos[item.id];
         if (!campo || !campoVisivel(campo)) continue;
 
         if (busca.trim()) {
@@ -414,7 +417,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }
     }
     return false;
-  }, [estrutura.campos, dados, busca, campoVisivel]);
+  }, [campos, dados, busca, campoVisivel]);
 
   const coletarCamposVisiveis = React.useCallback((): string[] => {
     const idsVisiveis = new Set<string>();
@@ -422,7 +425,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const percorrerItens = (itens: FormItem[]) => {
       for (const item of itens) {
         if (item.tipo === 'campo') {
-          const campo = estrutura.campos[item.id];
+          const campo = campos[item.id];
           if (campo && campoVisivel(campo)) {
             idsVisiveis.add(item.id);
           }
@@ -434,12 +437,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }
     };
 
-    estrutura.grupos.forEach(grupo => {
+    grupos.forEach(grupo => {
       if (grupo.itens && grupo.itens.length > 0) {
         percorrerItens(grupo.itens);
       } else if (grupo.campos) {
         grupo.campos.forEach(cId => {
-          const campo = estrutura.campos[cId];
+          const campo = campos[cId];
           if (campo && campoVisivel(campo)) {
             idsVisiveis.add(cId);
           }
@@ -448,7 +451,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     });
 
     return Array.from(idsVisiveis);
-  }, [estrutura, dados]);
+  }, [grupos, campos, dados]);
 
   if (collapsed) {
     return (
@@ -479,7 +482,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Accordion Groups List */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {estrutura.grupos.length === 0 || totalCampos === 0 ? (
+        {grupos.length === 0 || totalCampos === 0 ? (
           <div className="p-4 text-center text-slate-500 dark:text-slate-400 text-xs flex flex-col items-center justify-center gap-2 mt-8">
             <Sliders className="w-8 h-8 text-slate-400 dark:text-slate-500 opacity-60" />
             <p className="font-semibold text-slate-600 dark:text-slate-300">Nenhum campo configurado</p>
@@ -488,7 +491,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </p>
           </div>
         ) : (
-          estrutura.grupos.map((grupo, idx) => {
+          grupos.map((grupo, idx) => {
             if (!grupoPossuiCamposVisiveis(grupo.itens)) return null;
             const isOpen = Boolean(secoesAbertas[idx]);
             return (

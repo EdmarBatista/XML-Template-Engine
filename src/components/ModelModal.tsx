@@ -5,6 +5,7 @@ import {
   Braces,
   Check,
   Code,
+  Columns,
   Copy,
   Download,
   Edit2,
@@ -40,6 +41,7 @@ export interface ModelModalProps {
   onUpdateMultipleFields?: (novosDados: Record<string, any>) => void;
   onApplyXml?: (novoXml: string, novoNome?: string) => void;
   onApplyAll?: (novoXml: string, novosDados: Record<string, any>, novoNome?: string, novasPartes?: XmlPart[]) => void;
+  onStartSideBySide?: (xmlContent: string) => void;
   initialTab?: TabType;
 }
 
@@ -56,6 +58,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   onUpdateMultipleFields,
   onApplyXml,
   onApplyAll,
+  onStartSideBySide,
   initialTab = 'vars-edit',
 }) => {
   const { activeModelModalTab, setActiveModelModalTab } = usePreferencias();
@@ -823,6 +826,22 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           <Eye className="w-3.5 h-3.5 text-slate-400" />
                           <span>Visualizar</span>
                         </button>
+
+                        {onStartSideBySide && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onStartSideBySide(xmlCode);
+                              onClose();
+                            }}
+                            className="flex items-center gap-1 text-xs px-2.5 py-1 bg-purple-600/20 text-purple-300 border border-purple-500/50 rounded hover:bg-purple-600/30 transition"
+                            title="Editar XML ao lado com visualização em tempo real na tela principal"
+                          >
+                            <Columns className="w-3.5 h-3.5 text-purple-400" />
+                            <span className="text-xs">Edição lado a lado</span>
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={handleApplyXml}

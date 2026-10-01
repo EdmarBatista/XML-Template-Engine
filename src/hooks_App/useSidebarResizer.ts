@@ -14,12 +14,16 @@ interface UseSidebarResizerProps {
   isResizing: boolean;
   setIsResizing: (val: boolean) => void;
   setSidebarWidth: (width: number) => void;
+  isSideBySideEditing?: boolean;
+  xmlEditorWidth?: number;
 }
 
 export function useSidebarResizer({
   isResizing,
   setIsResizing,
   setSidebarWidth,
+  isSideBySideEditing = false,
+  xmlEditorWidth = 420,
 }: UseSidebarResizerProps) {
   const startResizing = React.useCallback(
     (e: React.MouseEvent) => {
@@ -32,7 +36,8 @@ export function useSidebarResizer({
   React.useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
-      const newWidth = Math.max(280, Math.min(e.clientX, window.innerWidth - 350));
+      const leftOffset = isSideBySideEditing ? xmlEditorWidth + 6 : 0;
+      const newWidth = Math.max(280, Math.min(e.clientX - leftOffset, window.innerWidth - 350));
       setSidebarWidth(newWidth);
     };
 
@@ -48,7 +53,7 @@ export function useSidebarResizer({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isResizing, setIsResizing, setSidebarWidth]);
+  }, [isResizing, setIsResizing, setSidebarWidth, isSideBySideEditing, xmlEditorWidth]);
 
   return {
     startResizing,

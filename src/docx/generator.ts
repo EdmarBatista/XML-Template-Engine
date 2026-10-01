@@ -33,18 +33,18 @@ function runsToXml(runs: TextRun[]): string {
 function limparPrefixoNumericoTitulo(rawTitle: string): string {
   let s = rawTitle.trim();
   // Remove prefixos como "1. ", "7. ", "1.1. ", "1.1.1 - ", "1) "
-  s = s.replace(/^(?:(?:\d+[\.\)])+(?:\s*-\s*|\s+)|(?:\d+\s*-\s*))/i, '');
+  s = s.replace(/^(?:<[^>]+>)*\s*(?:(?:\d+[\.\)])+(?:\s*-\s*|\s+)|(?:\d+\s*-\s*))/i, '');
   // Remove prefixos como "CLÁUSULA PRIMEIRA - ", "CLÁUSULA 1ª: ", "SEÇÃO I - "
-  s = s.replace(/^(?:CL[ÁA]USULA\s+[A-Z0-9ªº\.\-]+\s*[:\-–—]\s*|SE[ÇC][ÃA]O\s+[IVXLCDM0-9\.\-]+\s*[:\-–—]\s*)/i, '');
+  s = s.replace(/^(?:<[^>]+>)*\s*(?:CL[ÁA]USULA\s+[A-Z0-9ªº\.\-]+\s*[:\-–—]\s*|SE[ÇC][ÃA]O\s+[IVXLCDM0-9\.\-]+\s*[:\-–—]\s*)/i, '');
   return s.trim() || rawTitle.trim();
 }
 
 function limparPrefixoItemLista(text: string): string {
-  return text.replace(/^(?:[IVXLCDM]+\)|[ivxlcdm]+\)|[a-zA-Z]\)|\d+\)|•|\-)\s*/i, '').trim();
+  return text.replace(/^(?:<[^>]+>)*\s*(?:[IVXLCDM]+\)|[ivxlcdm]+\)|[a-zA-Z]\)|\d+\)|•|\-)\s*/i, '').trim();
 }
 
 function limparPrefixoNumericoParagrafo(text: string): string {
-  return text.replace(/^\d+(?:\.\d+)*\.?\s+/, '').trim();
+  return text.replace(/^(?:<[^>]+>)*\s*\d+(?:\.\d+)*\.+\s+/, '').trim();
 }
 
 export function generateXmlFromAst(
@@ -59,7 +59,8 @@ export function generateXmlFromAst(
 
   function processText(text: string): string {
     return text.replace(/\{\{\s*(.*?)\s*\}\}/g, (_match, inner) => {
-      const parts = inner.split('|').map((p: string) => p.trim());
+      const cleanInner = inner.replace(/<\/?[a-z][^>]*>/gi, '').trim();
+      const parts = cleanInner.split('|').map((p: string) => p.trim());
       const rawLabel = parts[0];
       const lowerRaw = rawLabel.toLowerCase();
 

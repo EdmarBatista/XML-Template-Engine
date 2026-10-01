@@ -27,12 +27,13 @@
  */
 
 import React from 'react';
-import { AlertTriangle, RotateCcw, X, Trash2 } from 'lucide-react';
+import { AlertTriangle, RotateCcw, X, Trash2, FileCode, Check } from 'lucide-react';
 import { DocumentViewer } from './components/DocumentViewer';
 import { ModelModal } from './components/ModelModal';
 import { ImportWordModal } from './components/ImportWordModal';
 import { SidebarToolbar } from './components/SidebarToolbar';
 import { Sidebar } from './components/Sidebar';
+import { CodeMirrorEditor } from './components/CodeMirrorEditor';
 import { useToast } from './hooks/useToast';
 import { usePreferencias } from './hooks/usePreferencias';
 import { useCamposFoco } from './hooks/useCamposFoco';
@@ -47,7 +48,7 @@ import {
 } from './hooks_App';
 import { DEFAULT_TEMPLATES, TemplateItem } from './data/defaultTemplates';
 import { StorageService } from './services/storageService';
-import { construirEstadoInicial } from './utils/xmlParser';
+import { construirEstadoInicial, parseXmlDocument, criarModeloIntermediario } from './utils/xmlParser';
 import { converterDocxParaModeloXml } from './docx/converter';
 import { TEMPLATE_NOVO_DOCUMENTO } from './utils/xmlEditorCompletions';
 
@@ -235,6 +236,44 @@ export default function App() {
   const [wordFileToConvert, setWordFileToConvert] = React.useState<File | null>(null);
   const [isConvertingWord, setIsConvertingWord] = React.useState(false);
 
+  const [isSideBySideEditing, setIsSideBySideEditing] = React.useState(false);
+  const [sideBySideXmlCode, setSideBySideXmlCode] = React.useState('');
+  const [backupOriginalXml, setBackupOriginalXml] = React.useState('');
+  const [xmlEditorWidth, setXmlEditorWidth] = React.useState(420);
+  const [isResizingXml, setIsResizingXml] = React.useState(false);
+
+  const startResizingXml = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingXml(true);
+    const startX = e.clientX;
+    const startWidth = xmlEditorWidth;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      const newWidth = Math.max(300, Math.min(startWidth + delta, 900));
+      setXmlEditorWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      setIsResizingXml(false);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }, [xmlEditorWidth]);
+
+  const previewModelo = React.useMemo(() => {
+    if (!isSideBySideEditing || !modelo) return modelo;
+    try {
+      const doc = parseXmlDocument(sideBySideXmlCode);
+      return criarModeloIntermediario(doc, xmlName, xmlParts || undefined);
+    } catch {
+      return modelo;
+    }
+  }, [isSideBySideEditing, sideBySideXmlCode, modelo, xmlName, xmlParts]);
+
   const handleConvertWord = async () => {
     if (!wordFileToConvert) return;
     setIsConvertingWord(true);
@@ -282,6 +321,8 @@ export default function App() {
     isResizing,
     setIsResizing,
     setSidebarWidth,
+    isSideBySideEditing,
+    xmlEditorWidth,
   });
 
   // Carregar string JSON pré-preenchida de um template
@@ -383,112 +424,192 @@ export default function App() {
       <div className="flex-1 flex overflow-hidden relative">
         {modelo ? (
           <>
-            {/* Barra Lateral do Formulário */}
-              <Sidebar
-                estrutura={modelo.formulario}
-                dados={dados}
-                onChange={updateField}
-                onFieldFocus={handleFocusFieldFromSidebar}
-                campoFocadoSidebar={campoFocadoSidebar}
-                deslocarSidebar={irParaCampoAtivo}
-                collapsed={sidebarCollapsed}
-                onToggleCollapse={handleToggleSidebar}
-                onDoubleToggleCollapse={handleDoubleToggleSidebar}
-                toolbarLateral={toolbarLateral}
-                onToggleToolbarLateral={handleRestaurarToolbarTopo}
-                sidebarWidth={sidebarWidth}
-                headerActions={
-                  <SidebarToolbar
-                    customTemplates={customTemplates}
-                    onRemoveCustomTemplate={setTemplateToDelete}
-                    currentXmlName={xmlName}
-                    onSelectTemplate={handleSelectTemplate}
-                    onNewTemplate={handleNewTemplate}
-                    onLoadJson={handleLoadJsonString}
-                    onToggleSidebar={handleToggleSidebar}
-                    onDoubleToggleSidebar={handleDoubleToggleSidebar}
-                    onUploadXml={handleUploadXml}
-                    onUploadJson={handleUploadJson}
-                    onUploadZip={handleUploadZip}
-                    onSaveJson={handleSaveJson}
-                    onSaveZip={handleSaveZip}
-                    onExportWord={handleExportWord}
-                    onExportPdf={handleExportPdf}
-                    
-                    onOpenModelModal={openModelModal}
-                    onClearForm={handleClearForm}
-                    variaveisVermelhasWord={variaveisVermelhasWord}
-                    onToggleVariaveisVermelhas={() => setVariaveisVermelhasWord(v => !v)}
-                    numeracaoAtiva={numeracaoAtiva}
-                    onToggleNumeracao={() => setNumeracaoAtiva(!numeracaoAtiva)}
-                    edicaoInline={edicaoInline}
-                    onToggleEdicaoInline={() => setEdicaoInline(!edicaoInline)}
-                    irParaCampoAtivo={irParaCampoAtivo}
-                    onToggleIrParaCampo={() => {
-                      setIrParaCampoAtivo(prev => {
-                        const next = !prev;
-                        showToast(next ? 'Ir para o Campo: Ativado (←)' : 'Ir para o Campo: Desativado');
-                        return next;
-                      });
-                    }}
-                    irParaDocumentoAtivo={irParaDocumentoAtivo}
-                    onToggleIrParaDocumento={() => {
-                      setIrParaDocumentoAtivo(prev => {
-                        const next = !prev;
-                        showToast(next ? 'Ir para o Documento: Ativado (→)' : 'Ir para o Documento: Desativado');
-                        return next;
-                      });
-                    }}
-                    modoA4={modoA4}
-                    onToggleModoA4={() => setModoA4(m => !m)}
-                    darkMode={darkMode}
-                    onToggleDarkMode={() => setDarkMode(m => !m)}
-                    collapsed={toolbarLateral || sidebarCollapsed}
-                    zoom={modoA4 ? zoomA4 : zoomFluido}
-                    onZoomIn={() => {
-                      if (modoA4) {
-                        setZoomA4(z => Math.min(200, z + 10));
-                      } else {
-                        setZoomFluido(z => Math.min(200, z + 10));
-                      }
-                    }}
-                    onZoomOut={() => {
-                      if (modoA4) {
-                        setZoomA4(z => Math.max(50, z - 10));
-                      } else {
-                        setZoomFluido(z => Math.max(50, z - 10));
-                      }
-                    }}
-                    onResetZoom={() => {
-                      if (modoA4) {
-                        setZoomA4(100);
-                        showToast('Zoom da página A4 restaurado para 100%');
-                      } else {
-                        setZoomFluido(100);
-                        showToast('Tamanho da fonte restaurado para 100%');
-                      }
-                    }}
-                    onCopiarTexto={handleCopiarTexto}
-                    copiado={copiado}
-                  />
-                }
-              />
+            {/* 1. Editor XML Lateral (Far Left quando isSideBySideEditing está ativo) */}
+            {isSideBySideEditing && (
+              <>
+                <div 
+                  style={{ width: `${xmlEditorWidth}px` }}
+                  className="flex flex-col h-full bg-slate-900 border-r border-slate-800 shrink-0 relative shadow-xl z-10"
+                >
+                  {/* Header do Editor Lateral */}
+                  <div className="flex items-center justify-between px-4 py-3 bg-slate-950 border-b border-slate-800 text-xs text-purple-300">
+                    <div className="flex items-center gap-2 truncate">
+                      <FileCode className="w-4 h-4 text-purple-400 shrink-0" />
+                      <span className="font-mono font-semibold truncate" title={xmlName}>{xmlName}</span>
+                      <span className="text-[10px] bg-purple-950 text-purple-300 px-1.5 py-0.5 rounded border border-purple-800/60 uppercase">Lado a Lado</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          aplicarNovoXmlEJson(sideBySideXmlCode, dados, xmlName);
+                          setIsSideBySideEditing(false);
+                          showToast('XML salvo permanentemente!');
+                        }}
+                        className="flex items-center gap-1 px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium shadow-xs transition"
+                        title="Salvar alterações permanentemente"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Salvar</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (backupOriginalXml) {
+                            aplicarNovoXmlEJson(backupOriginalXml, dados, xmlName);
+                          }
+                          setIsSideBySideEditing(false);
+                          showToast('Edição descartada, conteúdo anterior mantido.');
+                        }}
+                        className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition"
+                        title="Fechar sem salvar (Descartar alterações)"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
 
-            {/* Divisor Redimensionável com Arraste */}
-            {!sidebarCollapsed && (
+                  {/* Editor CodeMirror */}
+                  <div className="flex-1 min-h-0 bg-slate-950 flex flex-col">
+                    <CodeMirrorEditor
+                      value={sideBySideXmlCode}
+                      onChange={(code) => setSideBySideXmlCode(code)}
+                      language="xml"
+                      readOnly={false}
+                      placeholder="Edite o XML aqui..."
+                    />
+                  </div>
+                </div>
+
+                {/* Divisor Redimensionável para o Editor XML */}
+                <div
+                  onMouseDown={startResizingXml}
+                  onDoubleClick={() => {
+                    setXmlEditorWidth(420);
+                    showToast('Largura do editor XML restaurada para 420px');
+                  }}
+                  className={`w-[6px] bg-transparent hover:bg-blue-500/20 cursor-col-resize shrink-0 transition-colors z-20 relative group ${
+                    isResizingXml ? 'bg-blue-500/30' : ''
+                  }`}
+                  title="Arraste para redimensionar editor XML (Duplo clique para 420px)"
+                >
+                  <div
+                    className={`w-[2px] h-full mx-auto transition-colors ${
+                      isResizingXml
+                        ? 'bg-blue-600'
+                        : 'bg-slate-300 dark:bg-slate-700 group-hover:bg-blue-500'
+                    }`}
+                  />
+                  <div className="absolute inset-y-0 left-0 -right-2" />
+                </div>
+              </>
+            )}
+
+            {/* 2. Sidebar (Barra de formulário / Middle) */}
+            <Sidebar
+              estrutura={previewModelo.formulario}
+              dados={dados}
+              onChange={updateField}
+              onFieldFocus={handleFocusFieldFromSidebar}
+              campoFocadoSidebar={campoFocadoSidebar}
+              deslocarSidebar={irParaCampoAtivo}
+              collapsed={sidebarCollapsed}
+              onToggleCollapse={handleToggleSidebar}
+              onDoubleToggleCollapse={handleDoubleToggleSidebar}
+              toolbarLateral={toolbarLateral}
+              onToggleToolbarLateral={handleRestaurarToolbarTopo}
+              sidebarWidth={sidebarWidth}
+              headerActions={
+                <SidebarToolbar
+                  customTemplates={customTemplates}
+                  onRemoveCustomTemplate={setTemplateToDelete}
+                  currentXmlName={xmlName}
+                  onSelectTemplate={handleSelectTemplate}
+                  onNewTemplate={handleNewTemplate}
+                  onLoadJson={handleLoadJsonString}
+                  onToggleSidebar={handleToggleSidebar}
+                  onDoubleToggleSidebar={handleDoubleToggleSidebar}
+                  onUploadXml={handleUploadXml}
+                  onUploadJson={handleUploadJson}
+                  onUploadZip={handleUploadZip}
+                  onSaveJson={handleSaveJson}
+                  onSaveZip={handleSaveZip}
+                  onExportWord={handleExportWord}
+                  onExportPdf={handleExportPdf}
+                  
+                  onOpenModelModal={openModelModal}
+                  onClearForm={handleClearForm}
+                  variaveisVermelhasWord={variaveisVermelhasWord}
+                  onToggleVariaveisVermelhas={() => setVariaveisVermelhasWord(v => !v)}
+                  numeracaoAtiva={numeracaoAtiva}
+                  onToggleNumeracao={() => setNumeracaoAtiva(!numeracaoAtiva)}
+                  edicaoInline={edicaoInline}
+                  onToggleEdicaoInline={() => setEdicaoInline(!edicaoInline)}
+                  irParaCampoAtivo={irParaCampoAtivo}
+                  onToggleIrParaCampo={() => {
+                    setIrParaCampoAtivo(prev => {
+                      const next = !prev;
+                      showToast(next ? 'Ir para o Campo: Ativado (←)' : 'Ir para o Campo: Desativado');
+                      return next;
+                    });
+                  }}
+                  irParaDocumentoAtivo={irParaDocumentoAtivo}
+                  onToggleIrParaDocumento={() => {
+                    setIrParaDocumentoAtivo(prev => {
+                      const next = !prev;
+                      showToast(next ? 'Ir para o Documento: Ativado (→)' : 'Ir para o Documento: Desativado');
+                      return next;
+                    });
+                  }}
+                  modoA4={modoA4}
+                  onToggleModoA4={() => setModoA4(m => !m)}
+                  darkMode={darkMode}
+                  onToggleDarkMode={() => setDarkMode(m => !m)}
+                  collapsed={toolbarLateral || sidebarCollapsed}
+                  zoom={modoA4 ? zoomA4 : zoomFluido}
+                  onZoomIn={() => {
+                    if (modoA4) {
+                      setZoomA4(z => Math.min(200, z + 10));
+                    } else {
+                      setZoomFluido(z => Math.min(200, z + 10));
+                    }
+                  }}
+                  onZoomOut={() => {
+                    if (modoA4) {
+                      setZoomA4(z => Math.max(50, z - 10));
+                    } else {
+                      setZoomFluido(z => Math.max(50, z - 10));
+                    }
+                  }}
+                  onResetZoom={() => {
+                    if (modoA4) {
+                      setZoomA4(100);
+                      showToast('Zoom da página A4 restaurado para 100%');
+                    } else {
+                      setZoomFluido(100);
+                      showToast('Tamanho da fonte restaurado para 100%');
+                    }
+                  }}
+                  onCopiarTexto={handleCopiarTexto}
+                  copiado={copiado}
+                />
+              }
+            />
+
+            {/* Divisor Redimensionável para a Sidebar */}
+            {(!sidebarCollapsed || isSideBySideEditing) && (
               <div
                 onMouseDown={startResizing}
                 onDoubleClick={() => {
                   const defaultWidth = Math.round(window.innerWidth * 0.33);
                   setSidebarWidth(Math.max(280, Math.min(defaultWidth, 800)));
-                  showToast('Largura do formulário restaurada para 33%');
+                  showToast('Largura da barra lateral restaurada para 33%');
                 }}
-                className={`w-[4px] -ml-[2px] -mr-[2px] bg-transparent hover:bg-blue-500/20 cursor-col-resize shrink-0 transition-colors z-20 relative group ${
+                className={`w-[6px] bg-transparent hover:bg-blue-500/20 cursor-col-resize shrink-0 transition-colors z-20 relative group ${
                   isResizing ? 'bg-blue-500/30' : ''
                 }`}
                 title="Arraste para redimensionar (Duplo clique para restaurar 33%)"
               >
-                {/* Linha visual central estática sem alterar largura de layout */}
                 <div
                   className={`w-[2px] h-full mx-auto transition-colors ${
                     isResizing
@@ -496,16 +617,15 @@ export default function App() {
                       : 'bg-slate-300 dark:bg-slate-700 group-hover:bg-blue-500'
                   }`}
                 />
-                {/* Área de clique estendida invisível */}
-                <div className="absolute inset-y-0 -left-1.5 -right-1.5" />
+                <div className="absolute inset-y-0 left-0 -right-2" />
               </div>
             )}
 
             {/* Visualizador do Documento em Tempo Real */}
               <DocumentViewer
-                conteudo={modelo.conteudo}
+                conteudo={previewModelo.conteudo}
                 dados={dados}
-                estrutura={modelo.formulario}
+                estrutura={previewModelo.formulario}
                 ultimoCampoAlterado={ultimoCampoAlterado}
                 versaoCampoAlterado={versaoCampoAlterado}
                 origemCampoAlterado={origemCampoAlterado}
@@ -520,7 +640,7 @@ export default function App() {
                 nomeDocumento={xmlName}
                 zoom={modoA4 ? zoomA4 : zoomFluido}
                 modoA4={modoA4}
-                comentarios={modelo.comentarios}
+                comentarios={previewModelo.comentarios}
               />
           </>
         ) : (
@@ -568,6 +688,12 @@ export default function App() {
             }}
             onApplyAll={aplicarNovoXmlEJson}
             onApplyXml={(novoXml, novoNome) => aplicarNovoXmlEJson(novoXml, dados, novoNome)}
+            onStartSideBySide={(xmlContent) => {
+              setBackupOriginalXml(rawXml);
+              setSideBySideXmlCode(xmlContent);
+              setIsSideBySideEditing(true);
+              showToast('Modo de Edição lado a lado ativado.');
+            }}
           />
       )}
 

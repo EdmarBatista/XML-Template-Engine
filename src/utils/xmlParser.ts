@@ -45,6 +45,9 @@ export function sanitizarXmlParaParser(xmlString: string): string {
     return `${prefix}${quote}${exprSeguro}${quote}`;
   });
 
+  // 5. Converte tags self-closing de checkbox e radio para tags com fechamento explícito para evitar que o parser HTML as trate como containers
+  res = res.replace(/<(checkbox|radio)\b([^>]*?)\/>/gi, '<$1$2></$1>');
+
   return res.trim();
 }
 
@@ -80,7 +83,7 @@ function reconstructXmlFromHtmlNode(node: Node): string {
   });
 
   const children = Array.from(el.childNodes).map(reconstructXmlFromHtmlNode).join('');
-  if (!children && ['input', 'number', 'date', 'textarea', 'br', 'hr', 'coluna'].includes(tagName)) {
+  if (!children && ['input', 'number', 'date', 'textarea', 'checkbox', 'radio', 'br', 'hr', 'coluna'].includes(tagName)) {
     return `<${tagName}${attrs} />`;
   }
   return `<${tagName}${attrs}>${children}</${tagName}>`;

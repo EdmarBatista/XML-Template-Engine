@@ -22,6 +22,8 @@ const SELF_CLOSING_TAGS = new Set([
   'number',
   'date',
   'textarea',
+  'checkbox',
+  'radio',
   'br',
   'hr',
   'coluna',

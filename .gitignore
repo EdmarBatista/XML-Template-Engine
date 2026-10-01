@@ -12,3 +12,17 @@ pandoc_repo/
 app_standalone.html
 pandoc_source/
 pandoc_repo/
+
+# Artefatos de build
+tsconfig.tsbuildinfo
+
+# Backups e pacotes compactados
+*.zip
+*.tar.gz
+*.tgz
+
+# Scratch de analise (probes, DOCX extraido, modulos convertidos)
+tmp_hx/
+
+# Estado de sessao do agente
+.reasonix/
