@@ -40,7 +40,12 @@ function limparPrefixoNumericoTitulo(rawTitle: string): string {
 }
 
 function limparPrefixoItemLista(text: string): string {
-  return text.replace(/^(?:<[^>]+>)*\s*(?:[IVXLCDM]+\)|[ivxlcdm]+\)|[a-zA-Z]\)|\d+\)|•|\-)\s*/i, '').trim();
+  // Preserva as tags inline consumidas pelo prefixo. O `(?:<[^>]+>)*` existe para
+  // remover o marcador mesmo quando o item comeca com tag (ex.: "<i>a) texto"), mas
+  // antes ele descartava a tag de ABERTURA e deixava o fechamento orfao, gerando XML
+  // invalido ("<item>texto;</i></item>"). Aqui o prefixo casado e readicionado.
+  const m = text.match(/^((?:<[^>]+>)*)\s*(?:[IVXLCDM]+\)|[ivxlcdm]+\)|[a-zA-Z]\)|\d+\)|•|\-)\s*/i);
+  return m ? (m[1] + text.slice(m[0].length)).trim() : text.trim();
 }
 
 function limparPrefixoNumericoParagrafo(text: string): string {
