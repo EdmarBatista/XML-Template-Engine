@@ -21,8 +21,8 @@ tsconfig.tsbuildinfo
 *.tar.gz
 *.tgz
 
-# Scratch de analise (probes, DOCX extraido, modulos convertidos)
-tmp_hx/
+# Bancada de analise da refatoracao DOCX->XML (scripts, ground truth e dados de referencia)
+# tmp_hx/ e versionado por decisao explicita — ver DOC_REFATORACAO_DOCXTOXML.md
 
 # Estado de sessao do agente
 .reasonix/
