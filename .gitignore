@@ -16,8 +16,8 @@ pandoc_repo/
 # Artefatos de build
 tsconfig.tsbuildinfo
 
-# Backups e pacotes compactados
-*.zip
+# Backups compactados
+# (*.zip nao e mais ignorado: o pacote em Termo de Referencia/ e versionado)
 *.tar.gz
 *.tgz
 
