@@ -17,6 +17,23 @@ import { exportarParaPdf } from '../utils/pdfExporter';
 import { exportarParaWord } from '../utils/wordExporter';
 import { FilePackageService } from '../services/filePackageService';
 import { XmlPart } from '../types';
+import { ToastTipo } from '../hooks/useToast';
+
+/** Limite de caracteres do detalhe exibido no toast. */
+const MAX_DETALHE_ERRO = 240;
+
+/**
+ * Extrai o motivo real de uma falha para exibir no toast.
+ *
+ * O console continua recebendo o erro cru (com stack); aqui interessa apenas a
+ * mensagem, em uma linha e limitada — erros do pdfmake chegam a despejar os
+ * dados da linha da tabela e estourariam a notificacao.
+ */
+function motivoDoErro(err: unknown): string {
+  const bruto = (err as { message?: unknown })?.message;
+  const texto = String(bruto ?? err ?? 'erro desconhecido').replace(/\s+/g, ' ').trim();
+  return texto.length > MAX_DETALHE_ERRO ? `${texto.slice(0, MAX_DETALHE_ERRO)}...` : texto;
+}
 
 interface UseDocumentExportersProps {
   xmlName: string;
@@ -25,7 +42,7 @@ interface UseDocumentExportersProps {
   dados: Record<string, any>;
   numeracaoAtiva: boolean;
   variaveisVermelhasWord: boolean;
-  showToast: (msg: string) => void;
+  showToast: (msg: string, tipo?: ToastTipo) => void;
 }
 
 export function useDocumentExporters({
@@ -44,7 +61,7 @@ export function useDocumentExporters({
     const docElement = (document.getElementById('documento-visualizado') ||
       document.querySelector('.document-content-a4, .print\\:p-0 > div')) as HTMLElement;
     if (!docElement) {
-      alert('Elemento visual do documento não encontrado no DOM.');
+      showToast('Elemento visual do documento não encontrado no DOM.', 'erro');
       return;
     }
     try {
@@ -54,9 +71,9 @@ export function useDocumentExporters({
         variaveisVermelhas: variaveisVermelhasWord,
       });
       showToast('Documento Word (.docx) gerado com sucesso!');
-    } catch (err: any) {
-      console.error('EXPORT WORD ERROR STACK:', err?.stack || err);
-      alert('Erro ao gerar documento Word: ' + err.message);
+    } catch (err) {
+      console.error('EXPORT WORD ERROR STACK:', err instanceof Error ? err.stack : err);
+      showToast(`Erro ao gerar o Word: ${motivoDoErro(err)}`, 'erro');
     }
   }, [xmlName, numeracaoAtiva, variaveisVermelhasWord, showToast]);
 
@@ -65,7 +82,7 @@ export function useDocumentExporters({
     const docElement = (document.getElementById('documento-visualizado') ||
       document.querySelector('.document-content-a4, .print\\:p-0 > div')) as HTMLElement;
     if (!docElement) {
-      alert('Elemento visual do documento não encontrado no DOM.');
+      showToast('Elemento visual do documento não encontrado no DOM.', 'erro');
       return;
     }
     try {
@@ -75,9 +92,9 @@ export function useDocumentExporters({
         variaveisVermelhas: variaveisVermelhasWord,
       });
       showToast('Arquivo PDF (.pdf) gerado com sucesso!');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Erro ao gerar PDF:', err);
-      showToast('Erro ao gerar o PDF. Consulte o console para mais detalhes.');
+      showToast(`Erro ao gerar o PDF: ${motivoDoErro(err)}`, 'erro');
     }
   }, [xmlName, numeracaoAtiva, variaveisVermelhasWord, showToast]);
 
@@ -93,9 +110,9 @@ export function useDocumentExporters({
       showToast('Empacotando modelo XML e preenchimento JSON...');
       await FilePackageService.exportZipPackage(xmlName, rawXml, dados, xmlParts);
       showToast('Pacote ZIP (XML + JSON) baixado com sucesso!');
-    } catch (err: any) {
-      console.error(err);
-      alert('Erro ao gerar pacote ZIP: ' + err.message);
+    } catch (err) {
+      console.error('Erro ao gerar pacote ZIP:', err);
+      showToast(`Erro ao gerar o pacote ZIP: ${motivoDoErro(err)}`, 'erro');
     }
   }, [xmlName, rawXml, dados, xmlParts, showToast]);
 

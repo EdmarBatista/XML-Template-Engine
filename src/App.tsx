@@ -54,7 +54,7 @@ import { TEMPLATE_NOVO_DOCUMENTO } from './utils/xmlEditorCompletions';
 
 export default function App() {
   // Notificações visuais
-  const { toastMessage, showToast } = useToast();
+  const { toastMessage, toastTipo, showToast } = useToast();
 
   // Estado inicial derivado do LocalStorage para o template atual
   const initialFormState = React.useMemo(() => {
@@ -399,8 +399,18 @@ export default function App() {
     >
       {/* Notificação Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-xl border border-slate-700 text-xs font-medium flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <div
+          className={`fixed bottom-6 right-6 z-50 max-w-md px-4 py-2.5 rounded-lg shadow-xl border text-xs font-medium flex items-start gap-2 break-words text-white animate-in fade-in slide-in-from-bottom-3 duration-200 ${
+            toastTipo === 'erro'
+              ? 'bg-rose-900/95 border-rose-600'
+              : 'bg-slate-900 border-slate-700'
+          }`}
+        >
+          <span
+            className={`mt-1 shrink-0 w-2 h-2 rounded-full ${
+              toastTipo === 'erro' ? 'bg-rose-400' : 'bg-emerald-400 animate-pulse'
+            }`}
+          />
           <span>{toastMessage}</span>
         </div>
       )}
