@@ -3,6 +3,13 @@
  * Utilizado pelos exportadores de Word (DOCX) e PDF para garantir 100% de paridade.
  */
 
+import {
+  WORD_ATTR_NIVEL,
+  WORD_ATTR_TIPO,
+  WORD_TIPO_SECAO_TITULO,
+  WORD_TIPO_TITULO,
+} from './wordDom';
+
 export interface SegmentoDom {
   texto: string;
   bold?: boolean;
@@ -229,10 +236,11 @@ export function extrairSegmentosDeDom(
   const novoEstilo: Partial<SegmentoDom> = { ...estiloAtual };
 
   if (isWordNum) {
-    // Número gerado: somente números de títulos principais (nível 0 / h1) ficam em negrito no documento
+    // Número gerado: somente números de títulos principais (nível 0 / h1) ficam em negrito no documento.
+    // O "0" é a base do título de seção (ver wordDom.ts): a raiz publica nivelSecao = 0.
     const isTituloPrincipal = Boolean(
-      el.closest('[data-word-type="secao-titulo"][data-word-level="0"]') ||
-      el.closest('[data-word-type="titulo"]') ||
+      el.closest(`[${WORD_ATTR_TIPO}="${WORD_TIPO_SECAO_TITULO}"][${WORD_ATTR_NIVEL}="0"]`) ||
+      el.closest(`[${WORD_ATTR_TIPO}="${WORD_TIPO_TITULO}"]`) ||
       el.closest('h1')
     );
     novoEstilo.bold = isTituloPrincipal;

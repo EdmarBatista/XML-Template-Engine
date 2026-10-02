@@ -21,6 +21,31 @@ import {
 import { DOCUMENT_THEME } from '../constants/documentTheme';
 import { WordExportOptions } from '../types';
 import {
+  ehNivelRaiz,
+  lerNivelDeNumeracao,
+  lerNumeracaoEfetiva,
+  lerNumeracaoPropria,
+  lerReinicio,
+  nivelParaIlvl,
+  WORD_ATTR_ALIGN,
+  WORD_ATTR_IGNORE,
+  WORD_ATTR_NUM,
+  WORD_ATTR_NUMERADA,
+  WORD_ATTR_NUMERADO,
+  WORD_ATTR_OUTLINE_LEVEL,
+  WORD_ATTR_TIPO,
+  WORD_ATTR_TIPO_LISTA,
+  WORD_TIPO_LISTA,
+  WORD_TIPO_PARAGRAFO,
+  WORD_TIPO_SECAO,
+  WORD_TIPO_SECAO_CONTEUDO,
+  WORD_TIPO_SECAO_TITULO,
+  WORD_TIPO_SUBTITULO,
+  WORD_TIPO_TABELA_CONTAINER,
+  WORD_TIPO_TITULO,
+  WORD_TIPO_ITEM,
+} from './wordDom';
+import {
   calcularRecuoHierarquicoCm,
   cmParaTwip,
   extrairSegmentosDeDom,
@@ -78,7 +103,33 @@ function alinhamentoWord(valor?: string): (typeof AlignmentType)[keyof typeof Al
   return AlignmentType.JUSTIFIED;
 }
 
-function espacoParagrafo(opcoes: Required<WordExportOptions>, ajustes: any = {}) {
+/** Espacamento do paragrafo, em pontos, sobrescrevendo o padrao das opcoes. */
+interface AjustesEspacamento {
+  espacoAntes?: number;
+  espacoDepois?: number;
+  entreLinhas?: number;
+}
+
+/**
+ * Referencia de numeracao nativa do Word. `indiceAtual` conta quantos reinicios de
+ * secao ja ocorreram e compoe o nome da referencia (`edmsecoes_1`, `edmsecoes_2`, ...):
+ * cada reinicio precisa de um `abstractNum` proprio, senao herda a contagem anterior.
+ */
+interface ReferenciaNumeracao {
+  reference: string;
+  indiceAtual?: number;
+}
+
+/**
+ * O `TableRow` do docx nao expoe as celulas que recebeu, entao a contagem de colunas
+ * precisa inspecionar o array interno `root`. Este tipo descreve o minimo dessa
+ * reflexao — o nome do construtor de cada filho.
+ */
+interface LinhaDocxRefletida {
+  root?: { constructor?: { name?: string } }[];
+}
+
+function espacoParagrafo(opcoes: Required<WordExportOptions>, ajustes: AjustesEspacamento = {}) {
   return {
     before: Math.max(0, Math.round(Number(ajustes.espacoAntes ?? opcoes.espacoAntes ?? DOCUMENT_THEME.spacing.paragraph.beforePt) * 20)),
     after: Math.max(0, Math.round(Number(ajustes.espacoDepois ?? opcoes.espacoDepois ?? DOCUMENT_THEME.spacing.paragraph.afterPt) * 20)),
@@ -130,7 +181,7 @@ function converterTabelaDom(
   trElements.forEach((tr, rIdx) => {
     const cellElements = Array.from(tr.querySelectorAll('th, td')).filter(
       c => c.getAttribute('data-ignore-export') !== 'true' &&
-           c.getAttribute('data-word-ignore') !== 'true'
+           c.getAttribute(WORD_ATTR_IGNORE) !== 'true'
     );
     const isHeaderRow = tr.querySelector('th') !== null || rIdx === 0;
     const cells: TableCell[] = [];
@@ -189,7 +240,8 @@ function converterTabelaDom(
 
   const maxCells = Math.max(
     1,
-    ...rows.map(r => ((r as any).root || []).filter((c: any) => c && c.constructor?.name === 'TableCell').length || 1)
+    ...rows.map(r => (r as unknown as LinhaDocxRefletida).root
+      ?.filter(c => c?.constructor?.name === 'TableCell').length || 1)
   );
   const columnWidths = Array(Math.max(1, maxCells)).fill(Math.floor(100 / Math.max(1, maxCells)));
 
@@ -216,9 +268,9 @@ function converterListaDom(
   opcoes: Required<WordExportOptions>,
   contadorListas: { valor: number }
 ): Paragraph[] {
-  const isOl = listaEl.tagName.toLowerCase() === 'ol' || listaEl.getAttribute('data-word-numerada') === 'true';
-  const tipoLista = (listaEl.getAttribute('data-word-tipo-lista') || '').toLowerCase();
-  const itens = Array.from(listaEl.querySelectorAll(':scope > li, :scope > [data-word-type="item"]'));
+  const isOl = listaEl.tagName.toLowerCase() === 'ol' || listaEl.getAttribute(WORD_ATTR_NUMERADA) === 'true';
+  const tipoLista = (listaEl.getAttribute(WORD_ATTR_TIPO_LISTA) || '').toLowerCase();
+  const itens = Array.from(listaEl.querySelectorAll(`:scope > li, :scope > [${WORD_ATTR_TIPO}="${WORD_TIPO_ITEM}"]`));
   const resultado: Paragraph[] = [];
 
   let refLista = '';
@@ -272,7 +324,7 @@ function converterElementosBlocoDom(
   container: HTMLElement,
   opcoes: Required<WordExportOptions>,
   nivelSecao = 0,
-  numbering: { reference: string } | null = null,
+  numbering: ReferenciaNumeracao | null = null,
   contadorListas: { valor: number } = { valor: 0 },
   recuoSecao = 0
 ): (Paragraph | Table)[] {
@@ -282,11 +334,11 @@ function converterElementosBlocoDom(
   filhos.forEach(el => {
     if (!el || el.getAttribute('data-ignore-export') === 'true') return;
 
-    const wordType = el.getAttribute('data-word-type');
+    const wordType = el.getAttribute(WORD_ATTR_TIPO);
     const tag = el.tagName.toLowerCase();
 
     // 1. Título do Documento (<titulo> ou <h1 data-word-type="titulo">)
-    if (wordType === 'titulo' || tag === 'h1') {
+    if (wordType === WORD_TIPO_TITULO || tag === 'h1') {
       const opcoesTitulo: Required<WordExportOptions> = {
         ...opcoes,
         corTexto: DOCUMENT_THEME.colors.textHex,
@@ -314,12 +366,12 @@ function converterElementosBlocoDom(
     }
 
     // 2. Subtítulo (<subtitulo> ou <h2 data-word-type="subtitulo">)
-    if (wordType === 'subtitulo' || tag === 'h2') {
-      const rawOutline = el.getAttribute('data-word-outline-level');
+    if (wordType === WORD_TIPO_SUBTITULO || tag === 'h2') {
+      const rawOutline = el.getAttribute(WORD_ATTR_OUTLINE_LEVEL);
       const nivelOutline = rawOutline ? parseInt(rawOutline, 10) : 2;
       const { heading, outlineLevel } = obterNivelOutline(nivelOutline);
 
-      const alinhamento = el.getAttribute('data-word-align') || 'esquerda';
+      const alinhamento = el.getAttribute(WORD_ATTR_ALIGN) || 'esquerda';
       const segmentos = extrairSegmentosDeDom(el, {
         bold: true,
         italic: true,
@@ -341,26 +393,20 @@ function converterElementosBlocoDom(
     }
 
     // 3. Container de Seção (<div data-word-type="secao">)
-    if (wordType === 'secao') {
-      const rawLevel = el.getAttribute('data-word-level');
-      const currentLevel = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
-      // A numeracao EFETIVA considera o contexto herdado: uma secao dentro de
-      // outra com numerar="false" nao e numerada pelo renderizador. O atributo
-      // data-word-numerar traz apenas a flag propria da secao, enquanto o valor
-      // efetivo vem em data-word-numerar-efetivo. Sem isso o Word numerava
-      // tambem as secoes que a tela e o PDF deixam sem numero, deslocando toda a
-      // contagem a partir dali.
-      const numerarEfetivo = el.getAttribute('data-word-numerar-efetivo');
-      const numerarAttr = numerarEfetivo !== null ? numerarEfetivo : el.getAttribute('data-word-numerar');
-      const numerarSecao = numerarAttr !== 'false';
-      const reiniciarAttr = el.getAttribute('data-word-reiniciar') === 'true' || el.getAttribute('data-word-reiniciar') === '1';
+    if (wordType === WORD_TIPO_SECAO) {
+      const currentLevel = lerNivelDeNumeracao(el, nivelSecao);
+      // A numeracao efetiva considera o contexto herdado: uma secao dentro de outra com
+      // numerar="false" nao e numerada pelo renderizador, entao o Word tambem nao pode
+      // numera-la — senao a contagem seguinte toda se desloca.
+      const numerarEfetivo = lerNumeracaoEfetiva(el);
+      const reiniciarAttr = lerReinicio(el);
 
       if (reiniciarAttr && numbering) {
-        (numbering as any).indiceAtual = ((numbering as any).indiceAtual || 0) + 1;
-        numbering.reference = `edmsecoes_${(numbering as any).indiceAtual}`;
+        numbering.indiceAtual = (numbering.indiceAtual || 0) + 1;
+        numbering.reference = `edmsecoes_${numbering.indiceAtual}`;
       }
 
-      const tituloH3 = el.querySelector(':scope > [data-word-type="secao-titulo"], :scope > h3') as HTMLElement | null;
+      const tituloH3 = el.querySelector(`:scope > [${WORD_ATTR_TIPO}="${WORD_TIPO_SECAO_TITULO}"], :scope > h3`) as HTMLElement | null;
 
       if (tituloH3) {
         const opcoesTitulo: Required<WordExportOptions> = {
@@ -370,14 +416,14 @@ function converterElementosBlocoDom(
           variaveisVermelhas: false,
         };
 
-        const rawOutline = tituloH3.getAttribute('data-word-outline-level');
+        const rawOutline = tituloH3.getAttribute(WORD_ATTR_OUTLINE_LEVEL);
         const nivelSecaoNum = rawOutline ? parseInt(rawOutline, 10) : (currentLevel + 1);
         const { heading, outlineLevel } = obterNivelOutline(nivelSecaoNum);
 
-        const deveUsarNumeracaoNativa = Boolean(numbering && numerarSecao);
+        const deveUsarNumeracaoNativa = Boolean(numbering && numerarEfetivo);
         const segmentos = extrairSegmentosDeDom(tituloH3, {
           bold: Boolean(opcoes.secaoNegrito),
-          tamanhoFonte: currentLevel === 0 ? (opcoes.secaoTamanhoFonte || DOCUMENT_THEME.typography.sizes.sectionTitlePt) : opcoes.tamanhoFonte,
+          tamanhoFonte: ehNivelRaiz(currentLevel) ? (opcoes.secaoTamanhoFonte || DOCUMENT_THEME.typography.sizes.sectionTitlePt) : opcoes.tamanhoFonte,
           cor: DOCUMENT_THEME.colors.textHex,
           underline: opcoes.secaoSublinhado,
         }, opcoesTitulo, deveUsarNumeracaoNativa);
@@ -394,14 +440,9 @@ function converterElementosBlocoDom(
               outlineLevel,
               numbering: {
                 reference: numbering!.reference,
-                // data-word-level e 1-based (o nivel 0 do topo vira 1 em
-                // DocumentSectionNode), enquanto o ilvl do Word e 0-based — e o
-                // lvlText do abstractNum reflete isso (%1. no ilvl 0, %1.%2. no
-                // ilvl 1). Sem o -1, todo nivel subia um degrau e ganhava um "1."
-                // fantasma: 1.1. no lugar de 1.
-                level: Math.max(0, Math.min(currentLevel - 1, (opcoes.nivelMaximoNumeracao || 9) - 1)),
+                level: nivelParaIlvl(currentLevel, opcoes.nivelMaximoNumeracao),
               },
-              espacoAntes: currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
+              espacoAntes: ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
               espacoDepois: DOCUMENT_THEME.spacing.sectionTitle.afterPt,
             })
           );
@@ -412,17 +453,17 @@ function converterElementosBlocoDom(
               recuoEsquerdo: recuoTitulo,
               heading,
               outlineLevel,
-              espacoAntes: currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
+              espacoAntes: ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
               espacoDepois: DOCUMENT_THEME.spacing.sectionTitle.afterPt,
             })
           );
         }
       }
 
-      const proximoNivel = numerarSecao ? currentLevel + 1 : currentLevel;
+      const proximoNivel = numerarEfetivo ? currentLevel + 1 : currentLevel;
       const recuoConteudo = calcularRecuoHierarquicoCm(proximoNivel);
 
-      const conteudoContainer = (el.querySelector(':scope > [data-word-type="secao-conteudo"]') || el) as HTMLElement;
+      const conteudoContainer = (el.querySelector(`:scope > [${WORD_ATTR_TIPO}="${WORD_TIPO_SECAO_CONTEUDO}"]`) || el) as HTMLElement;
       const filhosAProcessar = conteudoContainer === el
         ? Array.from(el.children).filter(child => child !== tituloH3) as HTMLElement[]
         : Array.from(conteudoContainer.children) as HTMLElement[];
@@ -444,11 +485,9 @@ function converterElementosBlocoDom(
     }
 
     // 4. Título de Seção isolado (<h3 data-word-type="secao-titulo">)
-    if (wordType === 'secao-titulo' || (tag === 'h3' && !el.closest('[data-word-type="secao"]'))) {
-      const rawLevel = el.getAttribute('data-word-level');
-      const currentLevel = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
-      const numerarAttr = el.getAttribute('data-word-numerar');
-      const numerarSecao = numerarAttr !== 'false';
+    if (wordType === WORD_TIPO_SECAO_TITULO || (tag === 'h3' && !el.closest(`[${WORD_ATTR_TIPO}="${WORD_TIPO_SECAO}"]`))) {
+      const currentLevel = lerNivelDeNumeracao(el, nivelSecao);
+      const numerarSecao = lerNumeracaoPropria(el);
 
       const opcoesTitulo: Required<WordExportOptions> = {
         ...opcoes,
@@ -460,7 +499,7 @@ function converterElementosBlocoDom(
       const deveUsarNumeracaoNativa = Boolean(numbering && numerarSecao);
       const segmentos = extrairSegmentosDeDom(el, {
         bold: Boolean(opcoes.secaoNegrito),
-        tamanhoFonte: currentLevel === 0 ? (opcoes.secaoTamanhoFonte || DOCUMENT_THEME.typography.sizes.sectionTitlePt) : opcoes.tamanhoFonte,
+        tamanhoFonte: ehNivelRaiz(currentLevel) ? (opcoes.secaoTamanhoFonte || DOCUMENT_THEME.typography.sizes.sectionTitlePt) : opcoes.tamanhoFonte,
         cor: DOCUMENT_THEME.colors.textHex,
         underline: opcoes.secaoSublinhado,
       }, opcoesTitulo, deveUsarNumeracaoNativa);
@@ -475,10 +514,9 @@ function converterElementosBlocoDom(
             recuoEsquerdo: recuoTitulo,
             numbering: {
               reference: numbering!.reference,
-              // -1: data-word-level e 1-based, ilvl do Word e 0-based
-              level: Math.max(0, Math.min(currentLevel - 1, (opcoes.nivelMaximoNumeracao || 9) - 1)),
+              level: nivelParaIlvl(currentLevel, opcoes.nivelMaximoNumeracao),
             },
-            espacoAntes: currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
+            espacoAntes: ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
             espacoDepois: DOCUMENT_THEME.spacing.sectionTitle.afterPt,
           })
         );
@@ -487,7 +525,7 @@ function converterElementosBlocoDom(
           criarParagrafo(runs, opcoesTitulo, {
             alinhamento: 'esquerda',
             recuoEsquerdo: recuoTitulo,
-            espacoAntes: currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
+            espacoAntes: ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
             espacoDepois: DOCUMENT_THEME.spacing.sectionTitle.afterPt,
           })
         );
@@ -496,14 +534,13 @@ function converterElementosBlocoDom(
     }
 
     // 5. Parágrafo (<p> ou <div data-word-type="paragrafo">)
-    if (wordType === 'paragrafo' || tag === 'p') {
-      const rawLevel = el.getAttribute('data-word-level');
-      const levelPara = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
-      const isNumerado = el.getAttribute('data-word-numerado') === 'true' || Boolean(el.querySelector('[data-word-num]'));
-      const alignAttr = el.getAttribute('data-word-align') || el.style.textAlign;
+    if (wordType === WORD_TIPO_PARAGRAFO || tag === 'p') {
+      const levelPara = lerNivelDeNumeracao(el, nivelSecao);
+      const isNumerado = el.getAttribute(WORD_ATTR_NUMERADO) === 'true' || Boolean(el.querySelector(`[${WORD_ATTR_NUM}]`));
+      const alignAttr = el.getAttribute(WORD_ATTR_ALIGN) || el.style.textAlign;
       const alinhamentoFinal = alignAttr === 'center' ? 'centro' : alignAttr === 'right' ? 'direita' : alignAttr === 'left' ? 'esquerda' : opcoes.alinhamento || 'justificado';
 
-      const tableInside = el.querySelector('table, [data-word-type="tabela-container"]');
+      const tableInside = el.querySelector(`table, [${WORD_ATTR_TIPO}="${WORD_TIPO_TABELA_CONTAINER}"]`);
       if (tableInside) {
         const childNodes = Array.from(el.childNodes);
         let bufferNodes: Node[] = [];
@@ -544,8 +581,7 @@ function converterElementosBlocoDom(
                     recuoEsquerdo: recuoFinal,
                     numbering: {
                       reference: numbering!.reference,
-                      // -1: data-word-level e 1-based, ilvl do Word e 0-based
-                      level: Math.max(0, Math.min(levelPara - 1, (opcoes.nivelMaximoNumeracao || 9) - 1)),
+                      level: nivelParaIlvl(levelPara, opcoes.nivelMaximoNumeracao),
                     },
                     espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
                     espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
@@ -570,7 +606,7 @@ function converterElementosBlocoDom(
             const childEl = child as HTMLElement;
             if (
               childEl.tagName === 'TABLE' ||
-              childEl.getAttribute('data-word-type') === 'tabela-container' ||
+              childEl.getAttribute(WORD_ATTR_TIPO) === WORD_TIPO_TABELA_CONTAINER ||
               childEl.querySelector('table')
             ) {
               flushBufferAsParagraph(isFirstPart);
@@ -618,8 +654,7 @@ function converterElementosBlocoDom(
               recuoEsquerdo: recuoFinal,
               numbering: {
                 reference: numbering!.reference,
-                // -1: data-word-level e 1-based, ilvl do Word e 0-based
-                level: Math.max(0, Math.min(levelPara - 1, (opcoes.nivelMaximoNumeracao || 9) - 1)),
+                level: nivelParaIlvl(levelPara, opcoes.nivelMaximoNumeracao),
               },
               espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
               espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
@@ -640,7 +675,7 @@ function converterElementosBlocoDom(
     }
 
     // 6. Listas (<ol>, <ul>, <div data-word-type="lista">)
-    if (wordType === 'lista' || tag === 'ol' || tag === 'ul') {
+    if (wordType === WORD_TIPO_LISTA || tag === 'ol' || tag === 'ul') {
       resultado.push(...converterListaDom(el, opcoes, contadorListas));
       return;
     }
@@ -650,7 +685,7 @@ function converterElementosBlocoDom(
       resultado.push(converterTabelaDom(el, opcoes));
       return;
     }
-    if (wordType === 'tabela-container' || el.querySelector('table')) {
+    if (wordType === WORD_TIPO_TABELA_CONTAINER || el.querySelector('table')) {
       const tableEl = el.querySelector('table');
       if (tableEl) {
         resultado.push(converterTabelaDom(tableEl as HTMLElement, opcoes));

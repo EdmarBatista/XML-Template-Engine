@@ -1,5 +1,10 @@
 import React from 'react';
 import { AstNode, NumberingContext } from '../../../types';
+import {
+  ATRIBUTOS_SECAO_CONTEUDO,
+  atributosDeSecao,
+  atributosDeTituloDeSecao,
+} from '../../../utils/wordDom';
 
 export interface DocumentSectionNodeProps {
   node: AstNode;
@@ -136,18 +141,22 @@ export function renderDocumentSectionNode(
   return (
     <div
       key={blockKey}
-      data-word-type="secao"
-      data-word-level={safeNivelSecao}
-      data-word-numerar={numerarSecao ? 'true' : 'false'}
-      data-word-numerar-efetivo={numerar ? 'true' : 'false'}
-      data-word-reiniciar={reiniciar ? 'true' : 'false'}
+      {...atributosDeSecao({
+        nivel: safeNivelSecao,
+        numeracaoPropria: numerarSecao,
+        numeracaoEfetiva: numerar,
+        reiniciar,
+      })}
       className={containerClass}
     >
       {titulo && (
         <h3
-          data-word-type="secao-titulo"
-          data-word-level={nivelSecao}
-          data-word-numerar={numerarSecao ? 'true' : 'false'}
+          {...atributosDeTituloDeSecao({
+            // A base do titulo e a bruta: 0 na secao raiz (o extrator usa esse valor
+            // para por em negrito so o numero do titulo principal).
+            nivel: nivelSecao,
+            numeracaoPropria: numerarSecao,
+          })}
           className={titleClass}
           style={{
             fontSize: `${fontSizePx}px`,
@@ -160,7 +169,7 @@ export function renderDocumentSectionNode(
             : titulo}
         </h3>
       )}
-      <div className="space-y-2" data-word-type="secao-conteudo">
+      <div className="space-y-2" {...ATRIBUTOS_SECAO_CONTEUDO}>
         {filhosRenderizados}
       </div>
     </div>

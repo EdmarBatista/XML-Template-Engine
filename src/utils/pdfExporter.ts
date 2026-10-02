@@ -6,6 +6,24 @@
 
 import { DOCUMENT_THEME, PdfExportOptions } from '../constants/documentTheme';
 import {
+  ehNivelRaiz,
+  lerNivelDeNumeracao,
+  lerNumeracaoPropria,
+  WORD_ATTR_IGNORE,
+  WORD_ATTR_NUMERADA,
+  WORD_ATTR_TIPO,
+  WORD_ATTR_TIPO_LISTA,
+  WORD_TIPO_ITEM,
+  WORD_TIPO_LISTA,
+  WORD_TIPO_PARAGRAFO,
+  WORD_TIPO_SECAO,
+  WORD_TIPO_SECAO_CONTEUDO,
+  WORD_TIPO_SECAO_TITULO,
+  WORD_TIPO_SUBTITULO,
+  WORD_TIPO_TABELA_CONTAINER,
+  WORD_TIPO_TITULO,
+} from './wordDom';
+import {
   calcularLargurasColunasTabela,
   calcularRecuoHierarquicoCm,
   cmParaPt,
@@ -38,8 +56,8 @@ export type { PdfExportOptions };
  *   (pdfMake as any).vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
  * =====================================================================
  */
-function getPdfMake() {
-  const inst = (window as any).pdfMake;
+function getPdfMake(): PdfMakeGlobal | null {
+  const inst = (window as unknown as { pdfMake?: PdfMakeGlobal }).pdfMake;
   if (!inst) {
     console.warn(
       'pdfmake não está disponível. Verifique se os scripts CDN (pdfmake.min.js + vfs_fonts.js) foram carregados no index.html.'
@@ -53,9 +71,66 @@ const PDF_PADROES: Required<PdfExportOptions> = {
   ...DOCUMENT_THEME.pdf.defaultOptions,
 };
 
-function segmentosParaPdfText(segmentos: SegmentoDom[], corPadrao?: string): any[] {
+/**
+ * Subconjunto das estruturas de conteudo do pdfmake que este projeto escreve.
+ *
+ * O pdfmake entra por CDN em tempo de execucao (ver getPdfMake). Estes tipos cobrem
+ * apenas os campos que este modulo escreve, com foco na grade da tabela — onde uma
+ * posicao `undefined` faz o pdfmake abortar a exportacao inteira com
+ * "Malformed table row, a cell is undefined".
+ */
+interface PdfTexto {
+  text: string;
+  fontSize?: number;
+  bold?: boolean;
+  italics?: boolean;
+  decoration?: ('underline' | 'lineThrough')[];
+  background?: string;
+  color?: string;
+}
+
+interface PdfCelula {
+  text?: string | PdfTexto[];
+  fontSize?: number;
+  bold?: boolean;
+  fillColor?: string;
+  lineHeight?: number;
+  colSpan?: number;
+  rowSpan?: number;
+}
+
+interface PdfTabela {
+  table: {
+    headerRows: number;
+    widths: (string | number)[];
+    body: PdfCelula[][];
+  };
+  layout: Record<string, () => number | string>;
+  margin: number[];
+}
+
+/**
+ * O pdfmake entra pelo CDN no `index.html` e fica exposto em `window.pdfMake`. A
+ * tipagem oficial (@types/pdfmake) modela o conteudo pela uniao `Content`, que usa
+ * `ForbidOtherElementProperties` para proibir campos de tipos distintos no mesmo
+ * objeto — incompativel com a definicao montada dinamicamente aqui. Este contrato
+ * minimo cobre apenas o que o modulo chama.
+ */
+interface PdfMakeGlobal {
+  createPdf: (definicao: unknown) => {
+    download: (nome: string, aoConcluir?: () => void) => void;
+  };
+}
+
+/** Posicao da grade da tabela: `null` = coberta por mesclagem, `undefined` = ainda vazia. */
+type PosicaoGradeTabela = PdfCelula | null | undefined;
+
+/** Tipos de lista aceitos pelo pdfmake nos itens `ol` e `ul`. */
+type PdfTipoLista = 'upper-roman' | 'lower-roman' | 'lower-alpha' | 'upper-alpha' | 'circle' | 'square';
+
+function segmentosParaPdfText(segmentos: SegmentoDom[], corPadrao?: string): PdfTexto[] {
   return (segmentos || []).map(seg => {
-    const decorations = [];
+    const decorations: ('underline' | 'lineThrough')[] = [];
     if (seg.underline) decorations.push('underline');
     if (seg.strike) decorations.push('lineThrough');
     const cor = seg.cor ? paraHexCorComHash(seg.cor) : (corPadrao ? paraHexCorComHash(corPadrao) : undefined);
@@ -77,7 +152,7 @@ function segmentosParaPdfText(segmentos: SegmentoDom[], corPadrao?: string): any
 function converterTabelaDomPdf(
   tabelaEl: HTMLElement,
   opcoes: Required<PdfExportOptions>
-): any {
+): PdfTabela | null {
   const trElements = Array.from(tabelaEl.querySelectorAll('tr'));
   if (!trElements.length) return null;
 
@@ -87,14 +162,13 @@ function converterTabelaDomPdf(
   // linha (como era feito antes) deixava linhas mais curtas que `widths` quando o
   // documento usava células mescladas — o pdfmake então abortava com
   // "Malformed table row, a cell is undefined".
-  type CelulaPdf = Record<string, any> | null;
-  const grid: CelulaPdf[][] = [];   // grid[r][c]: célula, null = posição coberta
+  const grid: PosicaoGradeTabela[][] = [];   // grid[r][c]: célula, null = posição coberta
   const textos: string[][] = [];    // texto bruto por posição, para o cálculo de larguras
 
   trElements.forEach((tr, rIdx) => {
     const cellElements = Array.from(tr.querySelectorAll('th, td')).filter(
       c => c.getAttribute('data-ignore-export') !== 'true' &&
-           c.getAttribute('data-word-ignore') !== 'true'
+           c.getAttribute(WORD_ATTR_IGNORE) !== 'true'
     );
     const isHeaderRow = tr.querySelector('th') !== null || rIdx === 0;
     if (!grid[rIdx]) grid[rIdx] = [];
@@ -122,7 +196,7 @@ function converterTabelaDomPdf(
       const normalizados = normalizarSegmentos(segmentos);
       const textRuns = segmentosParaPdfText(normalizados);
 
-      const celulaPdf: Record<string, any> = {
+      const celulaPdf: PdfCelula = {
         text: textRuns.length ? textRuns : rawText,
         fontSize: isHeader ? DOCUMENT_THEME.typography.sizes.tableHeaderPt : DOCUMENT_THEME.typography.sizes.tableBodyPt,
         bold: isHeader,
@@ -160,7 +234,7 @@ function converterTabelaDomPdf(
 
   // Fecha a grade: buraco vira célula vazia
   const body = grid.map(linha => {
-    const out: Record<string, any>[] = [];
+    const out: PdfCelula[] = [];
     for (let c = 0; c < maxCols; c++) {
       const cel = linha ? linha[c] : undefined;
       out.push(cel === undefined || cel === null ? {} : cel);
@@ -219,11 +293,11 @@ function converterElementosBlocoDomPdf(
   filhos.forEach(el => {
     if (!el || el.getAttribute('data-ignore-export') === 'true') return;
 
-    const wordType = el.getAttribute('data-word-type');
+    const wordType = el.getAttribute(WORD_ATTR_TIPO);
     const tag = el.tagName.toLowerCase();
 
     // 1. Título do Documento (<titulo> ou <h1 data-word-type="titulo">)
-    if (wordType === 'titulo' || tag === 'h1') {
+    if (wordType === WORD_TIPO_TITULO || tag === 'h1') {
       const opcoesTitulo: Required<PdfExportOptions> = {
         ...opcoes,
         corTexto: DOCUMENT_THEME.colors.text,
@@ -249,7 +323,7 @@ function converterElementosBlocoDomPdf(
     }
 
     // 2. Subtítulo (<subtitulo> ou <h2 data-word-type="subtitulo">)
-    if (wordType === 'subtitulo' || tag === 'h2') {
+    if (wordType === WORD_TIPO_SUBTITULO || tag === 'h2') {
       const segmentos = extrairSegmentosDeDom(el, {
         italic: true,
         tamanhoFonte: DOCUMENT_THEME.typography.sizes.subtitlePt,
@@ -270,12 +344,10 @@ function converterElementosBlocoDomPdf(
 
     // 3. Container de Seção (<div data-word-type="secao">)
     if (wordType === 'secao') {
-      const rawLevel = el.getAttribute('data-word-level');
-      const currentLevel = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
-      const numerarAttr = el.getAttribute('data-word-numerar');
-      const numerarSecao = numerarAttr !== 'false';
+      const currentLevel = lerNivelDeNumeracao(el, nivelSecao);
+      const numerarSecao = lerNumeracaoPropria(el);
 
-      const tituloH3 = el.querySelector(':scope > [data-word-type="secao-titulo"], :scope > h3') as HTMLElement | null;
+      const tituloH3 = el.querySelector(`:scope > [${WORD_ATTR_TIPO}="${WORD_TIPO_SECAO_TITULO}"], :scope > h3`) as HTMLElement | null;
 
       if (tituloH3) {
         const opcoesTitulo: Required<PdfExportOptions> = {
@@ -287,7 +359,7 @@ function converterElementosBlocoDomPdf(
 
         const segmentos = extrairSegmentosDeDom(tituloH3, {
           bold: true,
-          tamanhoFonte: currentLevel === 0 ? DOCUMENT_THEME.typography.sizes.sectionTitlePt : opcoes.tamanhoFonte,
+          tamanhoFonte: ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.typography.sizes.sectionTitlePt : opcoes.tamanhoFonte,
           cor: DOCUMENT_THEME.colors.text,
         }, opcoesTitulo);
         const textRuns = segmentosParaPdfText(normalizarSegmentos(segmentos));
@@ -297,10 +369,10 @@ function converterElementosBlocoDomPdf(
 
         resultado.push({
           text: textRuns.length > 0 ? textRuns : (tituloH3.textContent?.trim() || ''),
-          fontSize: currentLevel === 0 ? DOCUMENT_THEME.typography.sizes.sectionTitlePt : opcoes.tamanhoFonte,
+          fontSize: ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.typography.sizes.sectionTitlePt : opcoes.tamanhoFonte,
           bold: true,
           alignment: 'left',
-          margin: [recuoTituloPt, currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt, 0, DOCUMENT_THEME.spacing.sectionTitle.afterPt],
+          margin: [recuoTituloPt, ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt, 0, DOCUMENT_THEME.spacing.sectionTitle.afterPt],
           color: DOCUMENT_THEME.colors.text,
         });
       }
@@ -308,7 +380,7 @@ function converterElementosBlocoDomPdf(
       const proximoNivel = numerarSecao ? currentLevel + 1 : currentLevel;
       const recuoConteudoCm = calcularRecuoHierarquicoCm(proximoNivel);
 
-      const conteudoContainer = (el.querySelector(':scope > [data-word-type="secao-conteudo"]') || el) as HTMLElement;
+      const conteudoContainer = (el.querySelector(`:scope > [${WORD_ATTR_TIPO}="${WORD_TIPO_SECAO_CONTEUDO}"]`) || el) as HTMLElement;
       const filhosAProcessar = conteudoContainer === el
         ? Array.from(el.children).filter(child => child !== tituloH3) as HTMLElement[]
         : Array.from(conteudoContainer.children) as HTMLElement[];
@@ -328,9 +400,8 @@ function converterElementosBlocoDomPdf(
     }
 
     // 4. Título de Seção isolado (<h3 data-word-type="secao-titulo">)
-    if (wordType === 'secao-titulo' || (tag === 'h3' && !el.closest('[data-word-type="secao"]'))) {
-      const rawLevel = el.getAttribute('data-word-level');
-      const currentLevel = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
+    if (wordType === WORD_TIPO_SECAO_TITULO || (tag === 'h3' && !el.closest(`[${WORD_ATTR_TIPO}="${WORD_TIPO_SECAO}"]`))) {
+      const currentLevel = lerNivelDeNumeracao(el, nivelSecao);
 
       const opcoesTitulo: Required<PdfExportOptions> = {
         ...opcoes,
@@ -341,7 +412,7 @@ function converterElementosBlocoDomPdf(
 
       const segmentos = extrairSegmentosDeDom(el, {
         bold: true,
-        tamanhoFonte: currentLevel === 0 ? DOCUMENT_THEME.typography.sizes.sectionTitlePt : opcoes.tamanhoFonte,
+        tamanhoFonte: ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.typography.sizes.sectionTitlePt : opcoes.tamanhoFonte,
         cor: DOCUMENT_THEME.colors.text,
       }, opcoesTitulo);
       const textRuns = segmentosParaPdfText(normalizarSegmentos(segmentos));
@@ -351,21 +422,20 @@ function converterElementosBlocoDomPdf(
 
       resultado.push({
         text: textRuns.length > 0 ? textRuns : (el.textContent?.trim() || ''),
-        fontSize: currentLevel === 0 ? DOCUMENT_THEME.typography.sizes.sectionTitlePt : opcoes.tamanhoFonte,
+        fontSize: ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.typography.sizes.sectionTitlePt : opcoes.tamanhoFonte,
         bold: true,
         alignment: 'left',
-        margin: [recuoTituloPt, currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt, 0, DOCUMENT_THEME.spacing.sectionTitle.afterPt],
+        margin: [recuoTituloPt, ehNivelRaiz(currentLevel) ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt, 0, DOCUMENT_THEME.spacing.sectionTitle.afterPt],
         color: DOCUMENT_THEME.colors.text,
       });
       return;
     }
 
     // 5. Parágrafo (<p> ou <div data-word-type="paragrafo">)
-    if (wordType === 'paragrafo' || tag === 'p') {
-      const rawLevel = el.getAttribute('data-word-level');
-      const levelPara = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
+    if (wordType === WORD_TIPO_PARAGRAFO || tag === 'p') {
+      const levelPara = lerNivelDeNumeracao(el, nivelSecao);
 
-      const tableInside = el.querySelector('table, [data-word-type="tabela-container"]');
+      const tableInside = el.querySelector(`table, [${WORD_ATTR_TIPO}="${WORD_TIPO_TABELA_CONTAINER}"]`);
       if (tableInside) {
         const childNodes = Array.from(el.childNodes);
         let bufferNodes: Node[] = [];
@@ -399,7 +469,7 @@ function converterElementosBlocoDomPdf(
             const childEl = child as HTMLElement;
             if (
               childEl.tagName === 'TABLE' ||
-              childEl.getAttribute('data-word-type') === 'tabela-container' ||
+              childEl.getAttribute(WORD_ATTR_TIPO) === WORD_TIPO_TABELA_CONTAINER ||
               childEl.querySelector('table')
             ) {
               flushBufferAsPdfParagraph();
@@ -438,10 +508,10 @@ function converterElementosBlocoDomPdf(
     }
 
     // 6. Listas (<ol>, <ul>, <div data-word-type="lista">)
-    if (wordType === 'lista' || tag === 'ol' || tag === 'ul') {
-      const isOl = tag === 'ol' || el.getAttribute('data-word-numerada') === 'true';
-      const tipoLista = (el.getAttribute('data-word-tipo-lista') || '').toLowerCase();
-      const itensEl = Array.from(el.querySelectorAll(':scope > li, :scope > [data-word-type="item"]'));
+    if (wordType === WORD_TIPO_LISTA || tag === 'ol' || tag === 'ul') {
+      const isOl = tag === 'ol' || el.getAttribute(WORD_ATTR_NUMERADA) === 'true';
+      const tipoLista = (el.getAttribute(WORD_ATTR_TIPO_LISTA) || '').toLowerCase();
+      const itensEl = Array.from(el.querySelectorAll(`:scope > li, :scope > [${WORD_ATTR_TIPO}="${WORD_TIPO_ITEM}"]`));
 
       const itens = itensEl.map(item => {
         const segs = extrairSegmentosDeDom(item, {}, opcoes);
@@ -452,7 +522,7 @@ function converterElementosBlocoDomPdf(
       const recuoPt = cmParaPt(recuoSecaoCm > 0 ? recuoSecaoCm : DOCUMENT_THEME.margins.indentation.listIndentCm);
 
       if (isOl) {
-        let pdfListType: any = undefined;
+        let pdfListType: PdfTipoLista | undefined;
         if (tipoLista === 'upper-roman' || tipoLista === 'romano') pdfListType = 'upper-roman';
         else if (tipoLista === 'lower-roman' || tipoLista === 'romano_minusculo') pdfListType = 'lower-roman';
         else if (tipoLista === 'lower-alpha' || tipoLista === 'letra') pdfListType = 'lower-alpha';
@@ -464,7 +534,7 @@ function converterElementosBlocoDomPdf(
           margin: [recuoPt + 10, DOCUMENT_THEME.spacing.list.beforePt, 0, DOCUMENT_THEME.spacing.list.afterPt],
         });
       } else {
-        let pdfListType: any = undefined;
+        let pdfListType: PdfTipoLista | undefined;
         if (tipoLista === 'circle' || tipoLista === 'circulo') pdfListType = 'circle';
         else if (tipoLista === 'square' || tipoLista === 'quadrado') pdfListType = 'square';
 
@@ -483,7 +553,7 @@ function converterElementosBlocoDomPdf(
       if (tabela) resultado.push(tabela);
       return;
     }
-    if (wordType === 'tabela-container' || el.querySelector('table')) {
+    if (wordType === WORD_TIPO_TABELA_CONTAINER || el.querySelector('table')) {
       const tableEl = el.querySelector('table');
       if (tableEl) {
         const tabela = converterTabelaDomPdf(tableEl as HTMLElement, opcoes);
