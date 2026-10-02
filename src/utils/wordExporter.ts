@@ -344,7 +344,14 @@ function converterElementosBlocoDom(
     if (wordType === 'secao') {
       const rawLevel = el.getAttribute('data-word-level');
       const currentLevel = rawLevel !== null ? parseInt(rawLevel, 10) : nivelSecao;
-      const numerarAttr = el.getAttribute('data-word-numerar');
+      // A numeracao EFETIVA considera o contexto herdado: uma secao dentro de
+      // outra com numerar="false" nao e numerada pelo renderizador. O atributo
+      // data-word-numerar traz apenas a flag propria da secao, enquanto o valor
+      // efetivo vem em data-word-numerar-efetivo. Sem isso o Word numerava
+      // tambem as secoes que a tela e o PDF deixam sem numero, deslocando toda a
+      // contagem a partir dali.
+      const numerarEfetivo = el.getAttribute('data-word-numerar-efetivo');
+      const numerarAttr = numerarEfetivo !== null ? numerarEfetivo : el.getAttribute('data-word-numerar');
       const numerarSecao = numerarAttr !== 'false';
       const reiniciarAttr = el.getAttribute('data-word-reiniciar') === 'true' || el.getAttribute('data-word-reiniciar') === '1';
 

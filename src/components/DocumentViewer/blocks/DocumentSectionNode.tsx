@@ -139,6 +139,8 @@ export function renderDocumentSectionNode(
       data-word-type="secao"
       data-word-level={safeNivelSecao}
       data-word-numerar={numerarSecao ? 'true' : 'false'}
+      data-word-numerar-efetivo={numerar ? 'true' : 'false'}
+      data-word-reiniciar={reiniciar ? 'true' : 'false'}
       className={containerClass}
     >
       {titulo && (
