@@ -81,20 +81,34 @@ function converterTabelaDomPdf(
   const trElements = Array.from(tabelaEl.querySelectorAll('tr'));
   if (!trElements.length) return null;
 
-  const cellTexts: string[][] = [];
+  // O pdfmake exige uma GRADE RETANGULAR: toda linha precisa ter exatamente o
+  // mesmo número de posições que `widths`, e as posições cobertas por colspan /
+  // rowspan devem existir como células vazias ({}). Contar apenas os th/td de cada
+  // linha (como era feito antes) deixava linhas mais curtas que `widths` quando o
+  // documento usava células mescladas — o pdfmake então abortava com
+  // "Malformed table row, a cell is undefined".
+  type CelulaPdf = Record<string, any> | null;
+  const grid: CelulaPdf[][] = [];   // grid[r][c]: célula, null = posição coberta
+  const textos: string[][] = [];    // texto bruto por posição, para o cálculo de larguras
 
-  const body = trElements.map((tr, rIdx) => {
+  trElements.forEach((tr, rIdx) => {
     const cellElements = Array.from(tr.querySelectorAll('th, td')).filter(
       c => c.getAttribute('data-ignore-export') !== 'true' &&
            c.getAttribute('data-word-ignore') !== 'true'
     );
     const isHeaderRow = tr.querySelector('th') !== null || rIdx === 0;
-    const rowTexts: string[] = [];
+    if (!grid[rIdx]) grid[rIdx] = [];
+    if (!textos[rIdx]) textos[rIdx] = [];
 
-    const cells = cellElements.map(cell => {
+    let col = 0;
+    cellElements.forEach(cell => {
+      // Pula posições já ocupadas por um rowspan vindo de linha anterior
+      while (grid[rIdx][col] !== undefined) col++;
+
       const isHeader = cell.tagName.toLowerCase() === 'th' || isHeaderRow;
       const rawText = cell.textContent?.trim() || '';
-      rowTexts.push(rawText);
+      const colSpan = Math.max(1, parseInt(cell.getAttribute('colspan') || '1', 10) || 1);
+      const rowSpan = Math.max(1, parseInt(cell.getAttribute('rowspan') || '1', 10) || 1);
 
       const segmentos = extrairSegmentosDeDom(
         cell,
@@ -108,22 +122,60 @@ function converterTabelaDomPdf(
       const normalizados = normalizarSegmentos(segmentos);
       const textRuns = segmentosParaPdfText(normalizados);
 
-      return {
+      const celulaPdf: Record<string, any> = {
         text: textRuns.length ? textRuns : rawText,
         fontSize: isHeader ? DOCUMENT_THEME.typography.sizes.tableHeaderPt : DOCUMENT_THEME.typography.sizes.tableBodyPt,
         bold: isHeader,
         fillColor: isHeader ? DOCUMENT_THEME.colors.tableHeaderBg : undefined,
         lineHeight: DOCUMENT_THEME.typography.lineHeights.table,
       };
-    });
+      if (colSpan > 1) celulaPdf.colSpan = colSpan;
+      if (rowSpan > 1) celulaPdf.rowSpan = rowSpan;
 
-    cellTexts.push(rowTexts);
-    return cells;
-  }).filter(row => row.length > 0);
+      grid[rIdx][col] = celulaPdf;
+      textos[rIdx][col] = rawText;
+
+      // Posições cobertas pelo colspan, na mesma linha
+      for (let k = 1; k < colSpan; k++) {
+        grid[rIdx][col + k] = null;
+        textos[rIdx][col + k] = '';
+      }
+
+      // Posições cobertas pelo rowspan, nas linhas seguintes
+      for (let rr = rIdx + 1; rr < rIdx + rowSpan && rr < trElements.length; rr++) {
+        if (!grid[rr]) grid[rr] = [];
+        if (!textos[rr]) textos[rr] = [];
+        for (let k = 0; k < colSpan; k++) {
+          if (grid[rr][col + k] === undefined) grid[rr][col + k] = null;
+          if (textos[rr][col + k] === undefined) textos[rr][col + k] = '';
+        }
+      }
+
+      col += colSpan;
+    });
+  });
+
+  const maxCols = Math.max(...grid.map(r => r?.length || 0), 1);
+  if (!grid.length || maxCols < 1) return null;
+
+  // Fecha a grade: buraco vira célula vazia
+  const body = grid.map(linha => {
+    const out: Record<string, any>[] = [];
+    for (let c = 0; c < maxCols; c++) {
+      const cel = linha ? linha[c] : undefined;
+      out.push(cel === undefined || cel === null ? {} : cel);
+    }
+    return out;
+  });
 
   if (!body.length) return null;
 
-  const maxCols = Math.max(...body.map(r => r?.length || 0), 1);
+  const cellTexts: string[][] = textos.map(linha => {
+    const out: string[] = [];
+    for (let c = 0; c < maxCols; c++) out.push(linha && linha[c] != null ? String(linha[c]) : '');
+    return out;
+  });
+
   const widths = calcularLargurasColunasTabela(cellTexts, maxCols);
 
   return {
