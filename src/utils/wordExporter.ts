@@ -387,7 +387,12 @@ function converterElementosBlocoDom(
               outlineLevel,
               numbering: {
                 reference: numbering!.reference,
-                level: Math.min(currentLevel, (opcoes.nivelMaximoNumeracao || 9) - 1),
+                // data-word-level e 1-based (o nivel 0 do topo vira 1 em
+                // DocumentSectionNode), enquanto o ilvl do Word e 0-based — e o
+                // lvlText do abstractNum reflete isso (%1. no ilvl 0, %1.%2. no
+                // ilvl 1). Sem o -1, todo nivel subia um degrau e ganhava um "1."
+                // fantasma: 1.1. no lugar de 1.
+                level: Math.max(0, Math.min(currentLevel - 1, (opcoes.nivelMaximoNumeracao || 9) - 1)),
               },
               espacoAntes: currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
               espacoDepois: DOCUMENT_THEME.spacing.sectionTitle.afterPt,
@@ -463,7 +468,8 @@ function converterElementosBlocoDom(
             recuoEsquerdo: recuoTitulo,
             numbering: {
               reference: numbering!.reference,
-              level: Math.min(currentLevel, (opcoes.nivelMaximoNumeracao || 9) - 1),
+              // -1: data-word-level e 1-based, ilvl do Word e 0-based
+              level: Math.max(0, Math.min(currentLevel - 1, (opcoes.nivelMaximoNumeracao || 9) - 1)),
             },
             espacoAntes: currentLevel === 0 ? DOCUMENT_THEME.spacing.sectionTitle.beforePt : DOCUMENT_THEME.spacing.sectionTitle.afterPt,
             espacoDepois: DOCUMENT_THEME.spacing.sectionTitle.afterPt,
@@ -531,7 +537,8 @@ function converterElementosBlocoDom(
                     recuoEsquerdo: recuoFinal,
                     numbering: {
                       reference: numbering!.reference,
-                      level: Math.min(levelPara, (opcoes.nivelMaximoNumeracao || 9) - 1),
+                      // -1: data-word-level e 1-based, ilvl do Word e 0-based
+                      level: Math.max(0, Math.min(levelPara - 1, (opcoes.nivelMaximoNumeracao || 9) - 1)),
                     },
                     espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
                     espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
@@ -604,7 +611,8 @@ function converterElementosBlocoDom(
               recuoEsquerdo: recuoFinal,
               numbering: {
                 reference: numbering!.reference,
-                level: Math.min(levelPara, (opcoes.nivelMaximoNumeracao || 9) - 1),
+                // -1: data-word-level e 1-based, ilvl do Word e 0-based
+                level: Math.max(0, Math.min(levelPara - 1, (opcoes.nivelMaximoNumeracao || 9) - 1)),
               },
               espacoAntes: DOCUMENT_THEME.spacing.paragraph.beforePt,
               espacoDepois: DOCUMENT_THEME.spacing.paragraph.afterPt,
