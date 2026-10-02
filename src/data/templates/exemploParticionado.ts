@@ -2,7 +2,7 @@ import { TemplateItem } from '../defaultTemplates';
 
 const parte1Xml = `<documento>
     <formulario>
-        <grupo titulo="1. Identificação das Partes e Objeto">
+        <grupo titulo="Identificação das Partes e Objeto">
             <input id="numero_contrato" label="Número do Contrato" />
             <input id="contratante_razao" label="Razão Social do Contratante" />
             <input id="contratante_cnpj" label="CNPJ do Contratante" />
@@ -28,7 +28,7 @@ const parte1Xml = `<documento>
 
 const parte2Xml = `<documento>
     <formulario>
-        <grupo titulo="2. Obrigações e Prazo de Execução">
+        <grupo titulo="Obrigações e Prazo de Execução">
             <number id="prazo_meses" label="Prazo de Execução (em meses)" />
             <input id="data_inicio" label="Data Prevista de Início" />
             <input id="local_execucao" label="Local Principal de Execução" />
@@ -55,7 +55,7 @@ const parte2Xml = `<documento>
 
 const parte3Xml = `<documento>
     <formulario>
-        <grupo titulo="3. Valores, Preços e Tabela de Itens">
+        <grupo titulo="Valores, Preços e Tabela de Itens">
             <input id="valor_total_contrato" label="Valor Total Global do Contrato (R$)" />
             <input id="condicao_faturamento" label="Condição de Pagamento" />
             <tabela id="itens_orcamentarios" label="Detalhamento dos Itens do Contrato">
@@ -83,7 +83,7 @@ const parte3Xml = `<documento>
 
 const parte4Xml = `<documento>
     <formulario>
-        <grupo titulo="4. Foro, Disposições Finais e Assinaturas">
+        <grupo titulo="Foro, Disposições Finais e Assinaturas">
             <input id="cidade_foro" label="Comarca do Foro de Eleição" />
             <input id="estado_foro" label="UF do Foro" />
             <input id="cidade_assinatura" label="Cidade de Assinatura" />
@@ -123,7 +123,7 @@ const parte4Xml = `<documento>
 
 const xmlConcatenado = `<documento>
     <formulario>
-        <grupo titulo="1. Identificação das Partes e Objeto">
+        <grupo titulo="Identificação das Partes e Objeto">
             <input id="numero_contrato" label="Número do Contrato" />
             <input id="contratante_razao" label="Razão Social do Contratante" />
             <input id="contratante_cnpj" label="CNPJ do Contratante" />
@@ -131,7 +131,7 @@ const xmlConcatenado = `<documento>
             <input id="contratada_cnpj" label="CNPJ da Contratada" />
             <textarea id="objeto_resumo" label="Descrição do Objeto Contratual" />
         </grupo>
-        <grupo titulo="2. Obrigações e Prazo de Execução">
+        <grupo titulo="Obrigações e Prazo de Execução">
             <number id="prazo_meses" label="Prazo de Execução (em meses)" />
             <input id="data_inicio" label="Data Prevista de Início" />
             <input id="local_execucao" label="Local Principal de Execução" />
@@ -141,7 +141,7 @@ const xmlConcatenado = `<documento>
                 <option valor="fianca">Fiança Bancária</option>
             </select>
         </grupo>
-        <grupo titulo="3. Valores, Preços e Tabela de Itens">
+        <grupo titulo="Valores, Preços e Tabela de Itens">
             <input id="valor_total_contrato" label="Valor Total Global do Contrato (R$)" />
             <input id="condicao_faturamento" label="Condição de Pagamento" />
             <tabela id="itens_orcamentarios" label="Detalhamento dos Itens do Contrato">
@@ -152,7 +152,7 @@ const xmlConcatenado = `<documento>
                 <coluna id="valor_total" label="Subtotal" tipo="input" />
             </tabela>
         </grupo>
-        <grupo titulo="4. Foro, Disposições Finais e Assinaturas">
+        <grupo titulo="Foro, Disposições Finais e Assinaturas">
             <input id="cidade_foro" label="Comarca do Foro de Eleição" />
             <input id="estado_foro" label="UF do Foro" />
             <input id="cidade_assinatura" label="Cidade de Assinatura" />

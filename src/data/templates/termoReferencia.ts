@@ -8,7 +8,7 @@ export const termoReferencia: TemplateItem =
     categoria: 'Administrativo',
     xml: `<documento>
     <formulario>
-        <grupo titulo="1. Identificação da Contratação">
+        <grupo titulo="Identificação da Contratação">
             <input id="orgao" label="Órgão/Entidade" tipo="texto" descricao="Nome do órgão ou entidade responsável pela contratação"/>
             <input id="unidade" label="Unidade Administrativa" tipo="texto" descricao="Unidade responsável pela contratação"/>
             <input id="responsavel" label="Responsável pela elaboração" tipo="texto" descricao="Nome do responsável pela elaboração"/>
@@ -20,7 +20,7 @@ export const termoReferencia: TemplateItem =
             <number id="cep" label="CEP da Unidade" tipo="cep" descricao="CEP para demonstração de formatação"/>
         </grupo>
 
-        <grupo titulo="2. Objeto">
+        <grupo titulo="Objeto">
             <input id="objeto" label="Objeto da Contratação" tipo="texto" descricao="Descrição resumida do objeto"/>
 
             <select id="tipo_contratacao" label="Tipo de Contratação" descricao="Natureza da contratação">
@@ -59,7 +59,7 @@ export const termoReferencia: TemplateItem =
             </if>
         </grupo>
 
-        <grupo titulo="3. Características do Serviço">
+        <grupo titulo="Características do Serviço">
             <select id="manutencao" label="Tipo de Manutenção" descricao="Tipo de manutenção a ser executada">
                 <option>Preventiva e corretiva</option>
                 <if expr="urgente == true">
@@ -103,7 +103,7 @@ export const termoReferencia: TemplateItem =
             <textarea id="servicos" label="Serviços que poderão ser executados" descricao="Descrição complementar dos serviços"/>
         </grupo>
 
-        <grupo titulo="4. Prazo e Vigência">
+        <grupo titulo="Prazo e Vigência">
             <number id="prazo_execucao_dias" label="Prazo de Execução (dias)" min="1" step="1" descricao="Prazo de execução em dias"/>
             <input id="prazo_execucao" label="Prazo de Execução" tipo="texto" descricao="Descrição textual do prazo"/>
             <input id="vigencia" label="Prazo de Vigência" tipo="texto" descricao="Descrição textual da vigência"/>
@@ -111,14 +111,14 @@ export const termoReferencia: TemplateItem =
             <date id="fim_execucao" label="Previsão de Término da Execução" descricao="Data prevista para término"/>
         </grupo>
 
-        <grupo titulo="5. Estimativa da Contratação">
+        <grupo titulo="Estimativa da Contratação">
             <number id="valor_estimado" label="Valor Estimado (R$)" min="0" step="0.01" tipo="moeda" descricao="Valor estimado da contratação"/>
             <number id="valor_unitario" label="Valor Unitário de Referência (R$)" min="0" step="0.01" tipo="moeda" descricao="Valor unitário para demonstração de moeda"/>
             <input id="fonte_recurso" label="Fonte dos Recursos" tipo="texto" descricao="Fonte dos recursos orçamentários"/>
             <input id="dotacao" label="Dotação Orçamentária" tipo="texto" descricao="Dotação orçamentária"/>
         </grupo>
 
-        <grupo titulo="6. Critérios da Contratação">
+        <grupo titulo="Critérios da Contratação">
             <select id="criterio_julgamento" label="Critério de Julgamento" descricao="Critério utilizado no julgamento">
                 <option>Menor preço</option>
                 <option>Maior desconto</option>
@@ -136,7 +136,7 @@ export const termoReferencia: TemplateItem =
             </select>
         </grupo>
 
-        <grupo titulo="7. Itens e Serviços">
+        <grupo titulo="Itens e Serviços">
             <tabela id="tabela_servicos" label="Planilha Orçamentária de Serviços">
                 <coluna id="item" label="Item" tipo="input" placeholder="Ex: Manutenção de Quadros"/>
                 <coluna id="unidade" label="Unidade" tipo="input" placeholder="Ex: Mês, UN, Horas"/>
@@ -151,7 +151,7 @@ export const termoReferencia: TemplateItem =
             </if>
         </grupo>
 
-        <grupo titulo="8. Fiscalização">
+        <grupo titulo="Fiscalização">
             <input id="fiscal" label="Fiscal do Contrato" tipo="texto" descricao="Responsável pela fiscalização"/>
             <input id="gestor" label="Gestor do Contrato" tipo="texto" descricao="Responsável pela gestão"/>
             <input id="local_fiscalizacao" label="Local de Execução" tipo="texto" descricao="Local onde os serviços serão executados"/>

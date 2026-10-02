@@ -7,21 +7,21 @@ export const contratoServicos: TemplateItem =  {
     categoria: 'Jurídico',
     xml: `<documento>
     <formulario>
-        <grupo titulo="1. Contratante">
+        <grupo titulo="Contratante">
             <input id="contratante_nome" label="Razão Social / Nome do Contratante" tipo="texto" placeholder="Empresa Alpha Ltda" descricao="Nome completo do contratante"/>
             <number id="contratante_cnpj" label="CNPJ / CPF do Contratante" tipo="cnpj" placeholder="12.345.678/0001-99" descricao="Documento do contratante"/>
             <input id="contratante_endereco" label="Endereço Completo" tipo="texto" placeholder="Rua das Flores, 100 - Centro" descricao="Endereço da sede"/>
             <input id="contratante_representante" label="Representante Legal" tipo="texto" placeholder="Ana Beatriz Mendes" descricao="Nome do representante legal"/>
         </grupo>
         
-        <grupo titulo="2. Contratada">
+        <grupo titulo="Contratada">
             <input id="contratada_nome" label="Razão Social / Nome da Contratada" tipo="texto" placeholder="Beta Soluções Digitais ME" descricao="Nome completo da contratada"/>
             <number id="contratada_cnpj" label="CNPJ da Contratada" tipo="cnpj" placeholder="98.765.432/0001-88" descricao="CNPJ da contratada"/>
             <input id="contratada_endereco" label="Endereço da Contratada" tipo="texto" placeholder="Av. Paulista, 1000 - Bela Vista" descricao="Endereço da sede da contratada"/>
             <input id="contratada_email" label="E-mail de Contato" tipo="email" placeholder="contato@empresa.com.br" descricao="E-mail oficial de notificações"/>
         </grupo>
         
-        <grupo titulo="3. Escopo e Entregas">
+        <grupo titulo="Escopo e Entregas">
             <textarea id="descricao_servico" label="Descrição dos Serviços" placeholder="Detalhamento das entregas e escopo técnico..." descricao="Detalhamento das entregas e escopo técnico"/>
             
             <radio id="regime_trabalho" label="Regime de Execução dos Serviços">
@@ -39,7 +39,7 @@ export const contratoServicos: TemplateItem =  {
             </tabela>
         </grupo>
         
-        <grupo titulo="4. Disposições Finais">
+        <grupo titulo="Disposições Finais">
             <number id="valor_total" label="Valor Total dos Serviços (R$)" tipo="moeda" min="0" step="0.01" placeholder="0,00"/>
             <select id="forma_pagamento" label="Forma de Pagamento" descricao="Condição de quitação">
                 <option>À vista via PIX / Transferência</option>

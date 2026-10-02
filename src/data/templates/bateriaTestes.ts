@@ -8,25 +8,25 @@ export const bateriaTestes: TemplateItem =
     categoria: 'Testes',
     xml: `<documento>
     <formulario>
-        <grupo titulo="1. Campos de texto">
+        <grupo titulo="Campos de texto">
             <input id="texto" label="Texto [tipo=&quot;texto&quot;]" tipo="texto" placeholder="Contratação de Tecnologia" descricao="Campo de texto simples"/>
             <textarea id="texto_multilinha" label="Texto multilinha" placeholder="Digite o texto detalhado aqui..." descricao="Campo de texto com várias linhas"/>
             <input id="email" label="E-mail [tipo=&quot;email&quot;]" tipo="email" placeholder="contato@empresa.com.br" descricao="Campo de e-mail"/>
         </grupo>
 
-        <grupo titulo="2. Data e documentos">
+        <grupo titulo="Data e documentos">
             <date id="data" label="Data" descricao="Campo de data"/>
             <number id="cnpj" label="CNPJ [tipo=&quot;cnpj&quot;]" tipo="cnpj" placeholder="00.000.000/0000-00" descricao="Campo com máscara de CNPJ"/>
             <number id="cep" label="CEP [tipo=&quot;cep&quot;]" tipo="cep" placeholder="00000-000" descricao="Campo com máscara de CEP"/>
         </grupo>
 
-        <grupo titulo="3. Números">
+        <grupo titulo="Números">
             <number id="numero" label="Número [sem tipo]" min="0" step="1" placeholder="0" descricao="Número sem tipo especial"/>
             <number id="inteiro" label="Número inteiro" min="0" step="1" placeholder="0" descricao="Número inteiro"/>
             <number id="moeda" label="Valor [tipo=&quot;moeda&quot;]" min="0" step="0.01" tipo="moeda" placeholder="0,00" descricao="Campo monetário"/>
         </grupo>
 
-        <grupo titulo="4. Seleções">
+        <grupo titulo="Seleções">
             <select id="selecao" label="Seleção" descricao="Campo select">
                 <option>Opção A</option>
                 <option>Opção B</option>
@@ -47,7 +47,7 @@ export const bateriaTestes: TemplateItem =
             </radio>
         </grupo>
 
-        <grupo titulo="5. Tabelas e Listas">
+        <grupo titulo="Tabelas e Listas">
             <tabela id="tabela_testes" label="Tabela Dinâmica de Produtos / Serviços">
                 <coluna id="codigo" label="Código" tipo="input" placeholder="Ex: COD-01"/>
                 <coluna id="descricao" label="Descrição" tipo="input" placeholder="Ex: Servidor Cloud"/>
