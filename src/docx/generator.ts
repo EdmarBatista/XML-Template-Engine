@@ -29,13 +29,18 @@ function runsToXml(runs: TextRun[]): string {
  * Remove numeração manual digitada no início de títulos (ex.: "7. ", "1.1 ", "CLÁUSULA PRIMEIRA - ")
  * para que o atributo titulo="..." contenha apenas o texto puro e a hierarquia automática do frontend
  * forneça a numeração correta sem duplicidade.
+ *
+ * O grupo `((?:<[^>]+>)*)` existe para casar o prefixo mesmo quando o texto comeca com
+ * tag (ex.: "<i>1. Titulo"). Sem readicionar esse grupo na substituicao (`'$1'`) o
+ * prefixo casado descarta a tag de ABERTURA e deixa o fechamento orfao, gerando XML
+ * invalido (ex.: "<titulo>Titulo</i></titulo>").
  */
 function limparPrefixoNumericoTitulo(rawTitle: string): string {
   let s = rawTitle.trim();
   // Remove prefixos como "1. ", "7. ", "1.1. ", "1.1.1 - ", "1) "
-  s = s.replace(/^(?:<[^>]+>)*\s*(?:(?:\d+[\.\)])+(?:\s*-\s*|\s+)|(?:\d+\s*-\s*))/i, '');
+  s = s.replace(/^((?:<[^>]+>)*)\s*(?:(?:\d+[\.\)])+(?:\s*-\s*|\s+)|(?:\d+\s*-\s*))/i, '$1');
   // Remove prefixos como "CLÁUSULA PRIMEIRA - ", "CLÁUSULA 1ª: ", "SEÇÃO I - "
-  s = s.replace(/^(?:<[^>]+>)*\s*(?:CL[ÁA]USULA\s+[A-Z0-9ªº\.\-]+\s*[:\-–—]\s*|SE[ÇC][ÃA]O\s+[IVXLCDM0-9\.\-]+\s*[:\-–—]\s*)/i, '');
+  s = s.replace(/^((?:<[^>]+>)*)\s*(?:CL[ÁA]USULA\s+[A-Z0-9ªº\.\-]+\s*[:\-–—]\s*|SE[ÇC][ÃA]O\s+[IVXLCDM0-9\.\-]+\s*[:\-–—]\s*)/i, '$1');
   return s.trim() || rawTitle.trim();
 }
 
@@ -49,7 +54,8 @@ function limparPrefixoItemLista(text: string): string {
 }
 
 function limparPrefixoNumericoParagrafo(text: string): string {
-  return text.replace(/^(?:<[^>]+>)*\s*\d+(?:\.\d+)*\.+\s+/, '').trim();
+  // Mesmo cuidado do titulo: `$1` devolve as tags inline que antecedem o prefixo.
+  return text.replace(/^((?:<[^>]+>)*)\s*\d+(?:\.\d+)*\.+\s+/, '$1').trim();
 }
 
 export function generateXmlFromAst(
