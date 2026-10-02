@@ -58,6 +58,20 @@ function limparPrefixoNumericoParagrafo(text: string): string {
   return text.replace(/^((?:<[^>]+>)*)\s*\d+(?:\.\d+)*\.+\s+/, '$1').trim();
 }
 
+/**
+ * Texto corrido de um bloco do docx. `DocxBlock` e uma uniao (`DocxParagraph |
+ * DocxTable`), entao o guard `'runs' in` e o que permite ler o texto sem recorrer a
+ * `any`: tabela aninhada nao tem runs.
+ */
+function textoDoBloco(bloco: DocxBlock): string {
+  return 'runs' in bloco && Array.isArray(bloco.runs) ? bloco.runs.map(run => run.text).join('') : '';
+}
+
+/** Igual a `textoDoBloco`, mas preservando as tags inline ao emitir XML. */
+function xmlDoBloco(bloco: DocxBlock): string {
+  return 'runs' in bloco && Array.isArray(bloco.runs) ? runsToXml(bloco.runs) : '';
+}
+
 export function generateXmlFromAst(
   blocks: DocxBlock[],
   fileName: string = 'documento.docx'
@@ -280,10 +294,7 @@ export function generateXmlFromAst(
       );
       const isFormulaTable = (t.rows || []).some((r) =>
         (r.cells || []).some((c) => {
-          const txt = (c.blocks || [])
-            .map((b: any) => (b.runs ? b.runs.map((run: any) => run.text).join('') : ''))
-            .join(' ')
-            .trim();
+          const txt = (c.blocks || []).map(textoDoBloco).join(' ').trim();
           return /^(LG|SG|LC)\s*=/i.test(txt);
         })
       );
@@ -296,10 +307,7 @@ export function generateXmlFromAst(
             // Células absorvidas por mesclagem vertical não emitem coluna duplicada
             if (cell.isMergedContinuation) continue;
 
-            const cellText = (cell.blocks || [])
-              .map((b: any) => (b.runs ? runsToXml(b.runs) : ''))
-              .join('\n')
-              .trim();
+            const cellText = (cell.blocks || []).map(xmlDoBloco).join('\n').trim();
 
             let attrs = '';
             if (cell.colSpan && cell.colSpan > 1) {
@@ -339,15 +347,12 @@ export function generateXmlFromAst(
       if (t.rows && t.rows.length > 0) {
         // Verifica se a primeira linha é um banner (ex.: "Órgão Gerenciador:")
         const firstRowCells = t.rows[0].cells;
-        const nonBlankCells = firstRowCells.filter((c: any) =>
-          c.blocks.some((b: any) => b.runs && b.runs.some((r: any) => r.text.trim()))
+        const nonBlankCells = firstRowCells.filter(c =>
+          (c.blocks || []).some(b => 'runs' in b && Boolean(b.runs?.some(r => r.text.trim())))
         );
 
         if (nonBlankCells.length === 1 && t.rows.length > 1) {
-          const bannerText = nonBlankCells[0].blocks
-            .map((b: any) => (b.runs ? b.runs.map((r: any) => r.text).join('') : ''))
-            .join(' ')
-            .trim();
+          const bannerText = nonBlankCells[0].blocks.map(textoDoBloco).join(' ').trim();
           if (bannerText) {
             // Emite banner como subtítulo para não consumir número de parágrafo decimal
             conteudoXml += `${indentStr}<subtitulo alinhamento="esquerda">${escapeXml(bannerText)}</subtitulo>\n`;
@@ -357,25 +362,19 @@ export function generateXmlFromAst(
 
         const headerRow = t.rows[headerRowIndex] || t.rows[0];
         for (let c = 0; c < headerRow.cells.length; c++) {
-          const rawHeaderText = headerRow.cells[c].blocks
-            .map((b: any) => (b.runs ? b.runs.map((r: any) => r.text).join('') : ''))
-            .join(' ')
-            .trim();
+          const rawHeaderText = headerRow.cells[c].blocks.map(textoDoBloco).join(' ').trim();
           const label = rawHeaderText || `Coluna ${c + 1}`;
           colLabels.push(label);
           colIds.push(normalizarIdentificadorValido(label, `coluna_${c + 1}`));
         }
       }
 
-      const rowsJson: any[] = [];
+      const rowsJson: Record<string, string>[] = [];
       for (let r = headerRowIndex + 1; r < (t.rows?.length || 0); r++) {
         const rowData: Record<string, string> = {};
         for (let c = 0; c < t.rows[r].cells.length; c++) {
           const cId = colIds[c] || `coluna_${c + 1}`;
-          rowData[cId] = t.rows[r].cells[c].blocks
-            .map((b: any) => (b.runs ? b.runs.map((run: any) => run.text).join('') : ''))
-            .join('\n')
-            .trim();
+          rowData[cId] = t.rows[r].cells[c].blocks.map(textoDoBloco).join('\n').trim();
         }
         rowsJson.push(rowData);
       }
