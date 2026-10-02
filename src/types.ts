@@ -127,9 +127,43 @@ export interface XmlPart {
   index: number;
 }
 
+/**
+ * Valor que um campo de formulario carrega: texto digitado, numero, booleano, data, uma
+ * linha de tabela ({@link DadosDocumento}) ou a lista de linhas de um campo de tabela.
+ * Usado onde o valor apenas transita e e coagido (String/Number), sem que o tipo seja
+ * conhecido na origem — no lugar de `any`, que desligava a verificacao tambem para quem
+ * recebe o valor.
+ */
+export type ValorCampo =
+  | string
+  | number
+  | boolean
+  | Date
+  | DadosDocumento
+  | ValorCampo[]
+  | null
+  | undefined;
+
+/**
+ * Dados preenchidos do documento, indexados pelo id do campo (ou pelo id da coluna, numa
+ * linha de tabela). O conteudo continua `any` de proposito: a forma do valor so e conhecida
+ * pela definicao do campo no XML. Nomear a fronteira deixa um unico ponto de fuga, em vez
+ * de repetir `Record<string, any>` em dezenas de assinaturas — e permite aperta-la em um
+ * lugar so.
+ */
+export type DadosDocumento = Record<string, any>;
+
+/**
+ * Escopo local resolvido durante a renderizacao (variavel corrente de um `foreach`, campos
+ * declarados por um `if`). Mesma justificativa de {@link DadosDocumento}.
+ */
+export type ContextoLocal = Record<string, any>;
+
 export interface AstNode {
   tipo: string;
   texto?: string;
+  /** Valor resolvido de um no de tipo valor/campo, anexado pelo parser. */
+  valor?: ValorCampo;
   atributos?: Record<string, string>;
   filhos?: AstNode[];
 }
@@ -144,7 +178,7 @@ export interface IntermediateModel {
   tipo: 'documento';
   xmlName?: string;
   formulario: FormStructure;
-  dados: Record<string, any>;
+  dados: DadosDocumento;
   conteudo: AstNode;
   xmlParts?: XmlPart[];
   comentarios?: WordComment[];

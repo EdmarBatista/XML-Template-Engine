@@ -15,12 +15,13 @@
 import React from 'react';
 import { DEFAULT_TEMPLATES, TemplateItem } from '../data/defaultTemplates';
 import { StorageService } from '../services/storageService';
-import { IntermediateModel, XmlPart } from '../types';
+import { IntermediateModel, XmlPart, DadosDocumento } from '../types';
 import { construirEstadoInicial, criarModeloIntermediario, parseXmlDocument, concatenarXmlsParticionados } from '../utils/xmlParser';
 
+import { motivoDoErro } from '../utils/erros';
 interface UseDocumentEngineProps {
   showToast: (msg: string) => void;
-  onNovoEstadoGerado?: (novoEstado: Record<string, any>) => void;
+  onNovoEstadoGerado?: (novoEstado: DadosDocumento) => void;
 }
 
 export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocumentEngineProps) {
@@ -70,7 +71,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
     try {
       const doc = parseXmlDocument(currentTemplate.xml);
       return criarModeloIntermediario(doc, currentTemplate.nome, currentTemplate.xmlParts);
-    } catch (e: any) {
+    } catch (e) {
       console.warn('Erro ao compilar template inicial, revertendo para template padrão:', e);
       try {
         const fallbackDoc = parseXmlDocument(DEFAULT_TEMPLATES[0].xml);
@@ -118,9 +119,9 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         }
         StorageService.setLastTemplateId(template.id);
         showToast(`Modelo "${template.nome}" selecionado.`);
-      } catch (err: any) {
-        setXmlError(err.message);
-        alert(`Erro ao abrir modelo: ${err.message}`);
+      } catch (err) {
+        setXmlError(motivoDoErro(err));
+        alert(`Erro ao abrir modelo: ${motivoDoErro(err)}`);
       }
     },
     [onNovoEstadoGerado, showToast]
@@ -130,7 +131,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
   const aplicarNovoXmlEJson = React.useCallback(
     (
       novoXml: string,
-      novosDados: Record<string, any>,
+      novosDados: DadosDocumento,
       novoNome?: string,
       novasXmlParts?: XmlPart[]
     ) => {
@@ -222,9 +223,9 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         }
 
         showToast(`Modelo e dados de "${nomeFinal}" salvos com sucesso!`);
-      } catch (err: any) {
-        setXmlError(err.message);
-        alert(`Erro ao compilar: ${err.message}`);
+      } catch (err) {
+        setXmlError(motivoDoErro(err));
+        alert(`Erro ao compilar: ${motivoDoErro(err)}`);
       }
     },
     [currentTemplate, xmlName, xmlParts, onNovoEstadoGerado, showToast]
@@ -232,7 +233,7 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
 
   // Carrega arquivo XML e opcionalmente preenchimento JSON e partes XML
   const carregarXmlEJson = React.useCallback(
-    (novoXml: string, nomeArquivoXml: string, jsonPayload?: any, partesCarregadas?: XmlPart[]) => {
+    (novoXml: string, nomeArquivoXml: string, jsonPayload?: DadosDocumento, partesCarregadas?: XmlPart[]) => {
       try {
         let nomeLimpo = (nomeArquivoXml || '').trim() || 'Modelo Personalizado.xml';
         if (nomeLimpo.includes('<') || nomeLimpo.includes('\n') || nomeLimpo.length > 80) {
@@ -329,9 +330,9 @@ export function useDocumentEngine({ showToast, onNovoEstadoGerado }: UseDocument
         } else {
           showToast(`Modelo "${nomeLimpo}" carregado com sucesso!`);
         }
-      } catch (err: any) {
-        setXmlError(err.message);
-        alert(`Erro ao processar modelo XML: ${err.message}`);
+      } catch (err) {
+        setXmlError(motivoDoErro(err));
+        alert(`Erro ao processar modelo XML: ${motivoDoErro(err)}`);
       }
     },
     [onNovoEstadoGerado, showToast]

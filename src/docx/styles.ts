@@ -97,7 +97,7 @@ export async function parseStyles(zip: JSZip): Promise<Map<string, DocxStyleInfo
 
   // Second pass: resolve inheritance
   for (const [styleId, raw] of rawStyles.entries()) {
-    let current: any = raw;
+    let current: typeof raw = raw;
     let finalOutlineLvl = raw.outlineLvl;
     let finalNumId = raw.numId;
     let finalIlvl = raw.ilvl;

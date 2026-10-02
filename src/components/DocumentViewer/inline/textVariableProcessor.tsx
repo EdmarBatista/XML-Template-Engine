@@ -1,5 +1,6 @@
 import React from 'react';
-import { FormStructure } from '../../../types';
+import type { NumberingContext } from '../../../types';
+import { FormStructure, ContextoLocal, DadosDocumento, ValorCampo } from '../../../types';
 import { aplicarFiltroDocumento, obterValorPorCaminho, valoresDaLista } from '../../../utils/documentUtils';
 import { DocumentInlineTableAccess } from './DocumentInlineTableAccess';
 import { DocumentInlineVariable } from './DocumentInlineVariable';
@@ -17,17 +18,17 @@ export const extrairTooltip = (id: string, estrutura?: FormStructure): string =>
 export interface ProcessarTextoOptions {
   textoOriginal: string;
   prefixKey?: string;
-  ctxLocal?: Record<string, any>;
-  dados: Record<string, any>;
+  ctxLocal?: ContextoLocal;
+  dados: DadosDocumento;
   estrutura: FormStructure;
   destaquesAtivos: Record<string, number>;
   onFocusField: (fieldId: string) => void;
-  onUpdateField: (fieldId: string, value: any, origem?: string) => void;
+  onUpdateField: (fieldId: string, value: ValorCampo, origem?: string) => void;
   edicaoInline: boolean;
   variaveisVermelhasWord: boolean;
   fontScale: number;
   comentarios?: import('../../../types').WordComment[];
-  numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
+  numeracaoInfo?: { contextoNumeracao?: NumberingContext; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
 }
 
 export function processarTextoComVariaveis({
@@ -60,7 +61,7 @@ export function processarTextoComVariaveis({
     const filtro = match[2]?.trim();
     const isLocalVar = ctxLocal && Object.prototype.hasOwnProperty.call(ctxLocal, chave);
     let valorBruto = escopo[chave] !== undefined ? escopo[chave] : obterValorPorCaminho(escopo, chave);
-    const valorFormatado = filtro ? aplicarFiltroDocumento(valorBruto, filtro as any) : valorBruto;
+    const valorFormatado = filtro ? aplicarFiltroDocumento(valorBruto, filtro) : valorBruto;
 
     const primeiroSegmentoCaminho = chave.includes('.') ? chave.split('.')[0] : chave;
     const ehCelulaForeachPorPonto =
@@ -169,7 +170,7 @@ export function processarTextoComVariaveis({
         listaNome: string;
         coluna: string;
         indice: number | null;
-        listaAtual: any[];
+        listaAtual: ValorCampo[];
       } | null = null;
 
       if (ehVariavelForeach && baseListaFromFor && loopIndexFromFor !== undefined) {

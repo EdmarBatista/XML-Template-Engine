@@ -1,10 +1,11 @@
 import React from 'react';
+import type { ValorCampo } from '../../../types';
 import { FieldMetadata } from '../../../types';
 
 interface TextFieldInputProps {
   campo: FieldMetadata;
-  valor: any;
-  onChange: (id: string, valor: any) => void;
+  valor: ValorCampo;
+  onChange: (id: string, valor: ValorCampo) => void;
   statusValidacao: { valido: boolean; msg?: string };
 }
 
@@ -24,7 +25,7 @@ export const TextFieldInput: React.FC<TextFieldInputProps> = ({
       <div>
         <textarea
           id={campo.id}
-          value={valor ?? ''}
+          value={valor == null ? '' : String(valor)}
           placeholder={campo.placeholder || ''}
           onChange={e => onChange(campo.id, e.target.value)}
           rows={3}
@@ -39,7 +40,7 @@ export const TextFieldInput: React.FC<TextFieldInputProps> = ({
       <input
         id={campo.id}
         type={campo.tipoInput === 'email' ? 'email' : 'text'}
-        value={valor ?? ''}
+        value={valor == null ? '' : String(valor)}
         placeholder={campo.placeholder || ''}
         onChange={e => onChange(campo.id, e.target.value)}
         className={baseClassName}

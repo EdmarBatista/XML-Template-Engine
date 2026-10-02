@@ -12,19 +12,20 @@
 
 import React from 'react';
 import { FilePackageService } from '../services/filePackageService';
-import { XmlPart } from '../types';
+import { XmlPart, DadosDocumento } from '../types';
 import { concatenarXmlsParticionados, extrairIndiceParteXml } from '../utils/xmlParser';
 
+import { motivoDoErro } from '../utils/erros';
 interface UseFilePackageActionsProps {
   xmlName: string;
   rawXml: string;
   xmlParts?: XmlPart[] | null;
-  dados: Record<string, any>;
-  setDados: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  dados: DadosDocumento;
+  setDados: React.Dispatch<React.SetStateAction<DadosDocumento>>;
   carregarXmlEJson: (
     novoXml: string,
     nomeArquivoXml: string,
-    jsonPayload?: any,
+    jsonPayload?: DadosDocumento,
     partesCarregadas?: XmlPart[]
   ) => void;
   adicionarTemplateSilencioso: (nome: string, xml: string) => void;
@@ -61,9 +62,9 @@ export function useFilePackageActions({
           setDados(prev => ({ ...prev, ...payload }));
           showToast('Preenchimento JSON do arquivo ZIP importado com sucesso!');
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error(err);
-        alert('Erro ao ler arquivo ZIP: ' + err.message);
+        alert('Erro ao ler arquivo ZIP: ' + motivoDoErro(err));
       }
     },
     [carregarXmlEJson, setDados, showToast]
@@ -99,12 +100,12 @@ export function useFilePackageActions({
         f => f.name.toLowerCase().endsWith('.json') || f.type.includes('json')
       );
 
-      let jsonData: any = null;
+      let jsonData: DadosDocumento | null = null;
       if (jsonFile) {
         try {
           const jsonText = await jsonFile.text();
           jsonData = JSON.parse(jsonText);
-        } catch (err: any) {
+        } catch (err) {
           console.warn('JSON inválido:', err);
         }
       }
@@ -163,8 +164,8 @@ export function useFilePackageActions({
             : undefined;
 
           carregarXmlEJson(xmlText, targetXml.name, jsonData, partes);
-        } catch (err: any) {
-          alert('Erro ao ler arquivo XML: ' + err.message);
+        } catch (err) {
+          alert('Erro ao ler arquivo XML: ' + motivoDoErro(err));
         }
         return;
       }
@@ -224,8 +225,8 @@ export function useFilePackageActions({
           setDados(prev => ({ ...prev, ...payload }));
           showToast('Preenchimento JSON importado com sucesso!');
         }
-      } catch (err: any) {
-        alert('Arquivo JSON inválido: ' + err.message);
+      } catch (err) {
+        alert('Arquivo JSON inválido: ' + motivoDoErro(err));
       }
       // e.target.value = '';
     },
@@ -244,9 +245,9 @@ export function useFilePackageActions({
       showToast('Empacotando modelo XML e preenchimento JSON...');
       await FilePackageService.exportZipPackage(xmlName, rawXml, dados, xmlParts);
       showToast('Pacote ZIP baixado com sucesso!');
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      alert('Erro ao gerar pacote ZIP: ' + err.message);
+      alert('Erro ao gerar pacote ZIP: ' + motivoDoErro(err));
     }
   }, [xmlName, rawXml, dados, xmlParts, showToast]);
 

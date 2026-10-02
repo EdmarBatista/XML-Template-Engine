@@ -1,5 +1,5 @@
 import React from 'react';
-import { TableColumnMetadata } from '../../../types';
+import { TableColumnMetadata, ValorCampo, DadosDocumento } from '../../../types';
 import {
   aplicarMascaraCampo,
   normalizarValorCampo,
@@ -7,17 +7,32 @@ import {
   converterFormatoData,
 } from '../../../utils/documentUtils';
 
+/**
+ * `listaAtual` de um acesso inline e heterogeneo: ou uma lista de linhas (objetos, tabela
+ * com colunas) ou uma lista de valores soltos (lista_csv). Este guard separa os dois casos
+ * sem recorrer a `any` — e de quebra descarta arrays e Date, que antes eram espalhados
+ * como se fossem linhas.
+ */
+function ehLinhaTabela(valor: ValorCampo): valor is DadosDocumento {
+  return (
+    Boolean(valor) &&
+    typeof valor === 'object' &&
+    !Array.isArray(valor) &&
+    !(valor instanceof Date)
+  );
+}
+
 export interface TabelaAcessoInfo {
   listaNome: string;
   coluna: string;
   indice: number | null; // null = coluna inteira (lista de valores)
-  listaAtual: any[];
+  listaAtual: ValorCampo[];
 }
 
 export interface DocumentInlineTableAccessProps {
   id: string; // id do campo da tabela (usado no foco/destaque)
   caminho: string; // caminho original no template (ex.: tabela_testes.descricao[0])
-  valorBruto: any; // valor da célula ou lista concatenada da coluna
+  valorBruto: ValorCampo; // valor da célula ou lista concatenada da coluna
   valorExibido: string;
   filtro?: string;
   tooltip: string;
@@ -25,7 +40,7 @@ export interface DocumentInlineTableAccessProps {
   edicaoInline: boolean;
   variaveisVermelhasWord: boolean;
   onFocusField: (fieldId: string) => void;
-  onUpdateField: (fieldId: string, value: any, origem?: string) => void;
+  onUpdateField: (fieldId: string, value: ValorCampo, origem?: string) => void;
   fontScale?: number;
   tabelaAcesso: TabelaAcessoInfo;
   colMeta?: TableColumnMetadata;
@@ -55,11 +70,11 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
   colMeta,
 }) => {
   const [editando, setEditando] = React.useState(false);
-  const [valorTemp, setValorTemp] = React.useState<any>('');
+  const [valorTemp, setValorTemp] = React.useState<ValorCampo>('');
   const containerRef = React.useRef<HTMLSpanElement>(null);
   const valorTempRef = React.useRef(valorTemp);
   valorTempRef.current = valorTemp;
-  const clickTimerRef = React.useRef<any>(null);
+  const clickTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const ehColunaInteira = tabelaAcesso.indice === null;
   const colTipo = colMeta
@@ -88,7 +103,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
   }, []);
 
   // Salva alterações de célula/coluna na tabela de origem
-  const salvarAcesso = React.useCallback((val: any) => {
+  const salvarAcesso = React.useCallback((val: ValorCampo) => {
     const listaAtual = Array.isArray(tabelaAcesso.listaAtual) ? [...tabelaAcesso.listaAtual] : [];
 
     if (!ehColunaInteira) {
@@ -97,9 +112,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
         listaAtual.push(tabelaAcesso.coluna ? {} : '');
       }
       if (tabelaAcesso.coluna) {
-        const item = typeof listaAtual[indice] === 'object' && listaAtual[indice] !== null
-          ? { ...listaAtual[indice] }
-          : {};
+        const item: DadosDocumento = ehLinhaTabela(listaAtual[indice]) ? { ...listaAtual[indice] } : {};
         item[tabelaAcesso.coluna] = val;
         listaAtual[indice] = item;
         onUpdateField(tabelaAcesso.listaNome, listaAtual, 'inline');
@@ -112,7 +125,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
         onUpdateField(tabelaAcesso.listaNome, csvString, 'inline');
       }
     } else {
-      const itens = parseListaPreservandoVazios(val);
+      const itens = parseListaPreservandoVazios(String(val ?? ''));
 
       if (!tabelaAcesso.coluna) {
         // É uma lista_csv inteira
@@ -126,9 +139,10 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
 
       // Preserva o número de linhas existentes, atribuindo cada item à linha correspondente.
       const numLinhas = Math.max(listaAtual.length, itens.length);
-      const novaLista: any[] = [];
+      const novaLista: DadosDocumento[] = [];
       for (let i = 0; i < numLinhas; i++) {
-        const linhaPrev = listaAtual[i] && typeof listaAtual[i] === 'object' ? listaAtual[i] : {};
+        const anterior = listaAtual[i];
+        const linhaPrev: DadosDocumento = ehLinhaTabela(anterior) ? anterior : {};
         const linha = { ...linhaPrev };
         const valorItem = i < itens.length ? itens[i] : '';
         if (tabelaAcesso.coluna) {
@@ -148,11 +162,11 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
 
   const salvar = () => {
     const raw = valorTempRef.current;
-    let valFinal: any = raw;
+    let valFinal: ValorCampo = raw;
     if (isCheckbox) {
       valFinal = Boolean(raw);
     } else if (isMasked) {
-      valFinal = normalizarValorCampo(raw, maskName as any);
+      valFinal = normalizarValorCampo(raw, maskName);
     } else if (isNumberField && !ehColunaInteira) {
       valFinal = raw === '' || raw === null ? '' : Number(String(raw).replace(/[^\d.-]/g, ''));
     }
@@ -197,7 +211,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
     }, 260);
   };
 
-  const citarValor = (valor: any): string => {
+  const citarValor = (valor: ValorCampo): string => {
     const str = String(valor ?? '').trim();
     if (str === '') return '""';
     return `"${str.replace(/"/g, '\\"')}"`;
@@ -255,7 +269,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
     }
     if (!edicaoInline) return;
 
-    let initialVal: any = '';
+    let initialVal: ValorCampo = '';
     if (ehColunaInteira) {
       const lista = Array.isArray(tabelaAcesso.listaAtual) ? tabelaAcesso.listaAtual : [];
       initialVal = lista
@@ -272,7 +286,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
         initialVal = Boolean(valorBruto);
       } else {
         initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
-        if (isMasked) initialVal = aplicarMascaraCampo(initialVal, maskName as any);
+        if (isMasked) initialVal = aplicarMascaraCampo(initialVal, maskName);
       }
     }
     setValorTemp(initialVal);
@@ -472,7 +486,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
           }}
           onChange={e => {
             if (isMasked) {
-              setValorTemp(aplicarMascaraCampo(e.target.value, maskName as any));
+              setValorTemp(aplicarMascaraCampo(e.target.value, maskName));
             } else {
               setValorTemp(e.target.value);
             }

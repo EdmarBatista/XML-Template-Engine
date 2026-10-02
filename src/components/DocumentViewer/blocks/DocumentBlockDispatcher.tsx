@@ -1,5 +1,5 @@
 import React from 'react';
-import { AstNode, NumberingContext } from '../../../types';
+import { AstNode, NumberingContext, ContextoLocal } from '../../../types';
 import { formatarItemForeach, obterValorPorCaminho, valoresDaLista } from '../../../utils/documentUtils';
 import { renderDocumentSectionNode } from './DocumentSectionNode';
 import { DocumentTableNode } from './DocumentTableNode';
@@ -20,7 +20,7 @@ export function renderDocumentAstBlocks(
   blocos: AstNode[],
   ctxNum: NumberingContext,
   prefix: string = 'blk',
-  ctxLocal: Record<string, any> | undefined,
+  ctxLocal: ContextoLocal | undefined,
   nivel: number,
   ctx: BlockDispatcherContext
 ): React.ReactNode[] {
@@ -42,15 +42,15 @@ export function renderDocumentAstBlocks(
   const selfRenderInline = (
     childInlineNodes: AstNode[],
     childPath: string = 'inline',
-    childCtxLocal?: Record<string, any>,
-    numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } }
+    childCtxLocal?: ContextoLocal,
+    numeracaoInfo?: { contextoNumeracao?: NumberingContext; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } }
   ) => renderInlineAstNodes(childInlineNodes, childPath, childCtxLocal, { ...ctx, numeracaoInfo });
 
   const selfRenderBlocks = (
     childBlocos: AstNode[],
     childCtxNum: NumberingContext,
     childPrefix: string = 'blk',
-    childCtxLocal?: Record<string, any>,
+    childCtxLocal?: ContextoLocal,
     childNivel: number = 0
   ) => renderDocumentAstBlocks(childBlocos, childCtxNum, childPrefix, childCtxLocal, childNivel, ctx);
 

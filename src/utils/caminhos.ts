@@ -1,5 +1,6 @@
+import type { ValorCampo } from '../types';
 
-import { ColumnType } from '../types';
+import { ColumnType, DadosDocumento } from '../types';
 
 const TIPOS_COLUNA_GENERICOS = new Set(['', 'input', 'texto']);
 const TIPOS_COLUNA_MASCARA = new Set(['moeda', 'cpf', 'cnpj', 'cep', 'email', 'telefone']);
@@ -25,7 +26,7 @@ export function obterTipoEfetivoColuna(tipo?: string): ColumnType {
   return 'input';
 }
 
-export function obterValorPorCaminho(dados: Record<string, any>, caminho: string): any {
+export function obterValorPorCaminho(dados: DadosDocumento, caminho: string): ValorCampo {
   if (!caminho) return '';
   if (Object.prototype.hasOwnProperty.call(dados, caminho)) {
     return dados[caminho];

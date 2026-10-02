@@ -1,5 +1,5 @@
 import React from 'react';
-import { AstNode, FormStructure } from '../../../types';
+import { AstNode, FormStructure, ContextoLocal, DadosDocumento, ValorCampo } from '../../../types';
 import {
   formatarItemForeach,
   obterValorPorCaminho,
@@ -13,15 +13,15 @@ export interface DocumentTableNodeProps {
   node: AstNode;
   blockKey: string;
   fontScale: number;
-  renderInlineNodes: (nodes: AstNode[], path: string, contextoLocal?: Record<string, any>) => React.ReactNode[];
-  contextoLocal?: Record<string, any>;
-  dados?: Record<string, any>;
+  renderInlineNodes: (nodes: AstNode[], path: string, contextoLocal?: ContextoLocal) => React.ReactNode[];
+  contextoLocal?: ContextoLocal;
+  dados?: DadosDocumento;
   estrutura?: FormStructure;
   destaquesAtivos?: Record<string, number>;
   onFocusField?: (fieldId: string) => void;
   edicaoInline?: boolean;
   variaveisVermelhasWord?: boolean;
-  onUpdateField?: (fieldId: string, value: any, origem?: string) => void;
+  onUpdateField?: (fieldId: string, value: ValorCampo, origem?: string) => void;
 }
 
 interface CondicionalContextoItem {
@@ -73,7 +73,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
         }
       }
       if (n.tipo === 'texto') {
-        const txt = n.texto || (n as any).valor || '';
+        const txt = String(n.texto || n.valor || '');
         const matches = txt.matchAll(/\{\{\s*([^}.|]+?)\.([^}|]+?)\s*(?:\|\s*([^}]+?)\s*)?\}\}/g);
         for (const m of matches) {
           colunasDetectadas.add(m[2].trim());
@@ -90,7 +90,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
     Array.from(listasDetectadas)[0] ||
     '';
 
-  const extrairVarInfoDaCelula = (celulaNode: AstNode, ctx: Record<string, any>) => {
+  const extrairVarInfoDaCelula = (celulaNode: AstNode, ctx: ContextoLocal) => {
     let varName = '';
     let filtro = '';
 
@@ -103,7 +103,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
           return;
         }
         if (f.tipo === 'texto') {
-          const txt = f.texto || (f as any).valor || '';
+          const txt = String(f.texto || f.valor || '');
           const match = txt.match(/\{\{\s*([^}|]+?)\s*(?:\|\s*([^}]+?)\s*)?\}\}/);
           if (match) {
             varName = match[1].trim();
@@ -152,7 +152,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
   const processarLinha = (
     linhaNode: AstNode,
     rKey: string,
-    ctx: Record<string, any>,
+    ctx: ContextoLocal,
     isHeader: boolean,
     rowCondContext?: CondicionalContextoItem
   ) => {
@@ -326,7 +326,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
   const processarFilhos = (
     filhos: AstNode[],
     pathKey: string,
-    ctx: Record<string, any>,
+    ctx: ContextoLocal,
     parentCondContext?: CondicionalContextoItem
   ) => {
     filhos.forEach((child, idx) => {
@@ -423,7 +423,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
     if (!listaPrincipal || !onUpdateField) return;
 
     const listaAtual = Array.isArray(dados?.[listaPrincipal]) ? [...dados[listaPrincipal]] : [];
-    const novaLinha: Record<string, any> = {};
+    const novaLinha: DadosDocumento = {};
 
     const colunasMeta = estrutura?.campos?.[listaPrincipal]?.colunas;
     if (colunasMeta && colunasMeta.length > 0) {

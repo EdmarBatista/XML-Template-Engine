@@ -1,3 +1,4 @@
+import type { ValorCampo } from '../types';
 /**
  * =========================================================================================
  * PROPOSTA DE DECOMPOSIÇÃO APLICADA (Sidebar):
@@ -26,7 +27,7 @@ import {
   MapPin,
   Sliders,
 } from 'lucide-react';
-import { FieldMetadata, FormItem, FormStructure, XmlPart } from '../types';
+import { FieldMetadata, FormItem, FormStructure, XmlPart, DadosDocumento } from '../types';
 import {
   normalizarDigitos,
   validarCampo,
@@ -45,8 +46,8 @@ import { TableFieldInput } from './Sidebar/fields/TableFieldInput';
 
 interface SidebarProps {
   estrutura: FormStructure;
-  dados: Record<string, any>;
-  onChange: (id: string, valor: any, origem?: string) => void;
+  dados: DadosDocumento;
+  onChange: (id: string, valor: ValorCampo, origem?: string) => void;
   onFieldFocus?: (id: string) => void;
   campoFocadoSidebar?: { id: string; timestamp: number } | null;
   collapsed: boolean;

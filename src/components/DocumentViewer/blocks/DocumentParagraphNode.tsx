@@ -5,7 +5,7 @@ import { obterValorPorCaminho } from '../../../utils/documentUtils';
 
 
 
-import { AstNode, NumberingContext } from '../../../types';
+import { AstNode, NumberingContext, ContextoLocal, DadosDocumento } from '../../../types';
 import { dividirEmLinhas } from '../../../utils/paragraphs';
 
 export interface DocumentParagraphNodeProps {
@@ -27,12 +27,12 @@ export interface DocumentParagraphNodeProps {
   renderInlineNodes: (
     inlineNodes: AstNode[],
     path: string,
-    contextoLocal?: Record<string, any>,
-    numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } }
+    contextoLocal?: ContextoLocal,
+    numeracaoInfo?: { contextoNumeracao?: NumberingContext; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } }
   ) => React.ReactNode[];
   /** Escopo local de variáveis (ex: repetições foreach) */
-  contextoLocal?: Record<string, any>;
-  dados?: Record<string, any>;
+  contextoLocal?: ContextoLocal;
+  dados?: DadosDocumento;
   comentarios?: import('../../../types').WordComment[];
 }
 
@@ -86,7 +86,7 @@ export function renderDocumentParagraphNodes({
     if (shouldNumber) {
       let extraLineBreaks = 0;
       const escopo = { ...(dados || {}), ...(contextoLocal || {}) };
-      const processNodeForLineBreaks = (n: any) => {
+      const processNodeForLineBreaks = (n: AstNode) => {
         if (n.tipo === 'texto' && n.texto) {
           const matches = n.texto.match(/\{\{\s*([^}|]+?)(?:\s*\|[^}]+)?\s*\}\}/g);
           if (matches && escopo) {

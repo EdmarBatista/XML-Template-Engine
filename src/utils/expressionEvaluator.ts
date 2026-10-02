@@ -2,6 +2,8 @@
  * Avaliador de expressões lógicas e de comparação para tags <if expr="...">
  */
 
+import type { DadosDocumento, ValorCampo } from '../types';
+
 function dividirExpressao(expr: string, operador: string): [string, string] | null {
   let aspas: string | null = null;
   let nivel = 0;
@@ -23,7 +25,7 @@ function dividirExpressao(expr: string, operador: string): [string, string] | nu
   return null;
 }
 
-function avaliarComparacao(expr: string, dados: Record<string, any>): boolean {
+function avaliarComparacao(expr: string, dados: DadosDocumento): boolean {
   expr = expr.trim().replace(/^\((.*)\)$/, '$1').trim();
   const match = expr.match(/^([a-zA-Z_]\w*)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
   if (!match) {
@@ -40,7 +42,7 @@ function avaliarComparacao(expr: string, dados: Record<string, any>): boolean {
 
   const [, varName, operator, rawValue] = match;
   const leftValue = dados[varName] !== undefined ? dados[varName] : '';
-  let rightValue: any = rawValue.trim();
+  let rightValue: ValorCampo = rawValue.trim();
 
   if ((rightValue.startsWith("'") && rightValue.endsWith("'")) || (rightValue.startsWith('"') && rightValue.endsWith('"'))) {
     rightValue = rightValue.slice(1, -1);
@@ -103,7 +105,7 @@ export function decodificarEntidadesXml(str: string): string {
   return res;
 }
 
-export function avaliarExpressao(expr: string, dados: Record<string, any>): boolean {
+export function avaliarExpressao(expr: string, dados: DadosDocumento): boolean {
   if (!expr) return true;
 
   const limpa = decodificarEntidadesXml(expr).trim();

@@ -2,7 +2,7 @@
 
 import { converterFormatoData, dataPorExtenso, formatarMoeda, numeroPorExtenso, moedaPorExtenso, converterParaRomano } from './formatacao';
 
-export function formatarCPF(valor: any): string {
+export function formatarCPF(valor: ValorCampo): string {
   if (valor === null || valor === undefined) return '';
   const cpf = String(valor).replace(/\D/g, '').substring(0, 11);
 
@@ -19,7 +19,7 @@ export function formatarCPF(valor: any): string {
 }
 
 
-export function formatarCNPJ(valor: any): string {
+export function formatarCNPJ(valor: ValorCampo): string {
   if (valor === null || valor === undefined) return '';
   const cnpj = String(valor).replace(/\D/g, '').substring(0, 14);
 
@@ -39,12 +39,12 @@ export function formatarCNPJ(valor: any): string {
 }
 
 
-export function normalizarDigitos(valor: any): string {
+export function normalizarDigitos(valor: ValorCampo): string {
   return String(valor ?? '').replace(/\D/g, '');
 }
 
 
-export function formatarCEP(valor: any): string {
+export function formatarCEP(valor: ValorCampo): string {
   if (valor === null || valor === undefined) return '';
   let cep = String(valor).replace(/\D/g, '').substring(0, 8);
   if (cep.length > 5) {
@@ -53,7 +53,7 @@ export function formatarCEP(valor: any): string {
   return cep;
 }
 
-export function formatarTelefone(valor: any): string {
+export function formatarTelefone(valor: ValorCampo): string {
   if (valor === null || valor === undefined) return '';
   const digits = String(valor).replace(/\D/g, '').substring(0, 11);
   if (digits.length > 10) {
@@ -69,10 +69,10 @@ export function formatarTelefone(valor: any): string {
 }
 
 
-import { DocumentFilterType } from '../types';
+import { DocumentFilterType, ValorCampo } from '../types';
 
-export function aplicarMascaraCampo(valor: any, tipo: DocumentFilterType | string): string {
-  if (!tipo) return valor ?? '';
+export function aplicarMascaraCampo(valor: ValorCampo, tipo: DocumentFilterType | string): string {
+  if (!tipo) return String(valor ?? '');
   const nome = String(tipo).toLowerCase().trim();
   switch (nome) {
     case 'moeda':
@@ -86,12 +86,12 @@ export function aplicarMascaraCampo(valor: any, tipo: DocumentFilterType | strin
     case 'telefone':
       return formatarTelefone(valor);
     default:
-      return valor ?? '';
+      return String(valor ?? '');
   }
 }
 
 
-export function normalizarValorCampo(valor: any, tipo: DocumentFilterType | string): any {
+export function normalizarValorCampo(valor: ValorCampo, tipo: DocumentFilterType | string): ValorCampo {
   const nome = String(tipo || '').toLowerCase().trim();
   if (valor === null || valor === undefined || valor === '') {
     return '';
@@ -132,7 +132,7 @@ export function normalizarValorCampo(valor: any, tipo: DocumentFilterType | stri
 }
 
 
-export function aplicarFiltroDocumento(valor: any, filtro: DocumentFilterType | string): string {
+export function aplicarFiltroDocumento(valor: ValorCampo, filtro: DocumentFilterType | string): string {
   if (valor === null || valor === undefined || valor === '') {
     return '';
   }

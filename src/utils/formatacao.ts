@@ -1,6 +1,7 @@
 
+import type { ValorCampo } from '../types';
 
-export function formatarMoeda(valor: any): string {
+export function formatarMoeda(valor: ValorCampo): string {
   if (valor === null || valor === undefined || valor === '') {
     return '';
   }
@@ -24,9 +25,9 @@ export function formatarMoeda(valor: any): string {
 }
 
 
-export function converterFormatoData(data: any, formatoDestino: 'BR' | 'ISO' | 'US' = 'BR'): string {
+export function converterFormatoData(data: ValorCampo, formatoDestino: 'BR' | 'ISO' | 'US' = 'BR'): string {
   if (data === null || data === undefined || data === '') {
-    return data ?? '';
+    return '';
   }
 
   const str = String(data).trim();
@@ -47,7 +48,7 @@ export function converterFormatoData(data: any, formatoDestino: 'BR' | 'ISO' | '
 }
 
 
-export function dataPorExtenso(dataInput: any): string {
+export function dataPorExtenso(dataInput: ValorCampo): string {
   if (!dataInput) return '';
 
   let data: Date | null = null;
@@ -148,7 +149,7 @@ function extensoGrupoCentenas(n: number, numDois = true): string {
 }
 
 
-export function numeroPorExtenso(numeroInput: any, numDois = true): string {
+export function numeroPorExtenso(numeroInput: ValorCampo, numDois = true): string {
   if (numeroInput === null || numeroInput === undefined || numeroInput === '') {
     return '';
   }
@@ -219,7 +220,7 @@ export function numeroPorExtenso(numeroInput: any, numDois = true): string {
 
 
 
-export function parseNumeroMoeda(valor: any): number {
+export function parseNumeroMoeda(valor: ValorCampo): number {
   if (valor === null || valor === undefined || valor === '') {
     return NaN;
   }
@@ -238,7 +239,7 @@ export function parseNumeroMoeda(valor: any): number {
 }
 
 
-export function moedaPorExtenso(numeroInput: any): string {
+export function moedaPorExtenso(numeroInput: ValorCampo): string {
   if (numeroInput === null || numeroInput === undefined || numeroInput === '') {
     return '';
   }
@@ -284,7 +285,7 @@ export function moedaPorExtenso(numeroInput: any): string {
 }
 
 
-export function converterParaRomano(numeroInput: any): string {
+export function converterParaRomano(numeroInput: ValorCampo): string {
   let numero = Number(numeroInput);
   if (!Number.isFinite(numero) || numero <= 0) return '';
   numero = Math.floor(numero);

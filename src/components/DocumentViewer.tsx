@@ -13,7 +13,7 @@
 
 import React from 'react';
 import { FileText } from 'lucide-react';
-import { AstNode, FormStructure, NumberingContext } from '../types';
+import { AstNode, FormStructure, NumberingContext, DadosDocumento, ValorCampo } from '../types';
 import { DocumentA4Canvas } from './DocumentViewer/DocumentA4Canvas';
 import { DocumentNodeRenderer, extrairTooltip } from './DocumentViewer/DocumentNodeRenderer';
 
@@ -22,14 +22,14 @@ import { WordComment } from '../types';
 
 interface DocumentViewerProps {
   conteudo: AstNode;
-  dados: Record<string, any>;
+  dados: DadosDocumento;
   estrutura: FormStructure;
   ultimoCampoAlterado: string | null;
   versaoCampoAlterado: number;
   origemCampoAlterado: string | null;
   campoFocadoDoc?: { id: string; timestamp: number; origem?: string } | null;
   onFocusField: (fieldId: string) => void;
-  onUpdateField: (fieldId: string, value: any, origem?: string) => void;
+  onUpdateField: (fieldId: string, value: ValorCampo, origem?: string) => void;
   numeracaoAtiva: boolean;
   edicaoInline: boolean;
   irParaCampoAtivo: boolean;

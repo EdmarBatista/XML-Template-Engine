@@ -1,3 +1,4 @@
+import type { ValorCampo } from '../types';
 /**
  * Utilitário compartilhado para extração e processamento semântico de documentos DOM.
  * Utilizado pelos exportadores de Word (DOCX) e PDF para garantir 100% de paridade.
@@ -33,7 +34,7 @@ export interface OpcoesBaseDocumento {
   alinhamento?: string;
 }
 
-export function limparTexto(valor: any): string {
+export function limparTexto(valor: ValorCampo): string {
   return String(valor ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
 }
 

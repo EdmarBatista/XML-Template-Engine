@@ -4,7 +4,7 @@
  * ============================================================================
  *
  * Atribuições & Responsabilidades:
- * 1. Manter o estado `dados: Record<string, any>` dos campos do documento ativo.
+ * 1. Manter o estado `dados: DadosDocumento` dos campos do documento ativo.
  * 2. Gerenciar histórico de Desfazer/Refazer (Undo/Redo) com pilha de snapshots.
  * 3. Indicar se o formulário possui alterações não salvas (`isDirty`).
  * 4. Fornecer atualizações pontuais (`updateField`) e em lote (`batchUpdateFields`).
@@ -12,26 +12,28 @@
  * 6. Integrar a emissão de destaques e rastreamento do último campo modificado.
  */
 
+import type { DadosDocumento, ValorCampo } from '../types';
+
 import React from 'react';
 
 export interface FormHistoryOptions {
-  initialData?: Record<string, any>;
+  initialData?: DadosDocumento;
   maxHistory?: number;
-  onDataChange?: (data: Record<string, any>) => void;
+  onDataChange?: (data: DadosDocumento) => void;
 }
 
 export function useFormHistory(options: FormHistoryOptions = {}) {
   const { initialData = {}, maxHistory = 50, onDataChange } = options;
 
   // Estado dos dados do formulário
-  const [dados, setDadosState] = React.useState<Record<string, any>>(initialData);
+  const [dados, setDadosState] = React.useState<DadosDocumento>(initialData);
 
   // Pilha de histórico para Undo / Redo
-  const [history, setHistory] = React.useState<Record<string, any>[]>([initialData]);
+  const [history, setHistory] = React.useState<DadosDocumento[]>([initialData]);
   const [currentIndex, setCurrentIndex] = React.useState<number>(0);
 
   // Referência do estado original inicial para cálculo de isDirty
-  const baselineDataRef = React.useRef<Record<string, any>>(initialData);
+  const baselineDataRef = React.useRef<DadosDocumento>(initialData);
 
   // Metadados de rastreamento do último campo alterado
   const [ultimoCampoAlterado, setUltimoCampoAlterado] = React.useState<string | null>(null);
@@ -39,7 +41,7 @@ export function useFormHistory(options: FormHistoryOptions = {}) {
   const [origemCampoAlterado, setOrigemCampoAlterado] = React.useState<string | null>(null);
 
   // Sincroniza quando o baseline/initialData muda externamente (ex.: ao trocar de template)
-  const resetFormState = React.useCallback((novoEstado: Record<string, any>) => {
+  const resetFormState = React.useCallback((novoEstado: DadosDocumento) => {
     baselineDataRef.current = novoEstado;
     setDadosState(novoEstado);
     setHistory([novoEstado]);
@@ -49,7 +51,7 @@ export function useFormHistory(options: FormHistoryOptions = {}) {
 
   // Setter compatível com React.Dispatch<React.SetStateAction<...>>
   const setDados = React.useCallback(
-    (action: React.SetStateAction<Record<string, any>>) => {
+    (action: React.SetStateAction<DadosDocumento>) => {
       setDadosState(prev => {
         const next = typeof action === 'function' ? action(prev) : action;
         // Empurra para o histórico
@@ -71,7 +73,7 @@ export function useFormHistory(options: FormHistoryOptions = {}) {
 
   // Atualização pontual de campo único
   const updateField = React.useCallback(
-    (id: string, value: any, origem = 'painel') => {
+    (id: string, value: ValorCampo, origem = 'painel') => {
       setDados(prev => ({ ...prev, [id]: value }));
       setUltimoCampoAlterado(id);
       setOrigemCampoAlterado(origem);
@@ -82,7 +84,7 @@ export function useFormHistory(options: FormHistoryOptions = {}) {
 
   // Atualização em lote de múltiplos campos
   const batchUpdateFields = React.useCallback(
-    (novosCampos: Record<string, any>, origem = 'lote') => {
+    (novosCampos: DadosDocumento, origem = 'lote') => {
       setDados(prev => ({ ...prev, ...novosCampos }));
       const chaves = Object.keys(novosCampos);
       if (chaves.length > 0) {

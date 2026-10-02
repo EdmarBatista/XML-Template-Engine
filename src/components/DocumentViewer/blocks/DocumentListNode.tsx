@@ -1,5 +1,5 @@
 import React from 'react';
-import { AstNode, ListStyleType } from '../../../types';
+import { AstNode, ListStyleType, ContextoLocal } from '../../../types';
 import { avaliarExpressao, extrairVariaveisDaExpressao } from '../../../utils/expressionEvaluator';
 import { formatarItemForeach, obterValorPorCaminho, valoresDaLista } from '../../../utils/documentUtils';
 
@@ -11,15 +11,15 @@ export interface DocumentListNodeProps {
   /** Escala da fonte aplicada */
   fontScale: number;
   /** Escopo de dados atual para interpolação e repetições */
-  escopo: Record<string, any>;
+  escopo: ContextoLocal;
   /** Função de renderização de nós inline para o corpo dos itens */
   renderInlineNodes: (
     inlineNodes: AstNode[],
     path: string,
-    contextoLocal?: Record<string, any>
+    contextoLocal?: ContextoLocal
   ) => React.ReactNode[];
   /** Contexto local de variáveis */
-  contextoLocal?: Record<string, any>;
+  contextoLocal?: ContextoLocal;
   /** Dicionário de destaques ativos */
   destaquesAtivos?: Record<string, number>;
   /** Callback para focar no campo do formulário ao clicar */
@@ -110,7 +110,7 @@ export const DocumentListNode: React.FC<DocumentListNodeProps> = ({
   const processarFilhosLista = (
     filhos: AstNode[],
     parentPath: string,
-    localCtx?: Record<string, any>,
+    localCtx?: ContextoLocal,
     condContext?: CondicionalContextoItem
   ) => {
     filhos.forEach((itemNode, lIdx) => {

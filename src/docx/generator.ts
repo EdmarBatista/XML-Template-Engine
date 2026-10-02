@@ -1,3 +1,4 @@
+import type { DadosDocumento } from '../types';
 import { DocxBlock, DocxParagraph, DocxTable, TextRun } from './ast';
 import { escapeXml, normalizarIdentificadorValido, decodificarEntidadesXml } from './domText';
 
@@ -75,8 +76,8 @@ function xmlDoBloco(bloco: DocxBlock): string {
 export function generateXmlFromAst(
   blocks: DocxBlock[],
   fileName: string = 'documento.docx'
-): { xml: string; jsonInicial: Record<string, any> } {
-  const jsonInicial: Record<string, any> = {};
+): { xml: string; jsonInicial: DadosDocumento } {
+  const jsonInicial: DadosDocumento = {};
   const camposExtraidos = new Map<string, FormFieldDef>();
   const tabelasExtraidas = new Map<string, Map<string, FormFieldDef>>();
 

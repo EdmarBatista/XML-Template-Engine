@@ -1,3 +1,4 @@
+import type { DadosDocumento } from '../types';
 import JSZip from 'jszip';
 import { parseStyles } from './styles';
 import { parseNumbering } from './numbering';
@@ -14,7 +15,7 @@ import { extrairComentariosDoZip, gerarXmlDeComentarios } from './word';
  */
 export async function converterDocxParaModeloXml(
   file: File
-): Promise<{ xml: string; jsonInicial: Record<string, any>; comentariosXml: string; nomeSugerido: string }> {
+): Promise<{ xml: string; jsonInicial: DadosDocumento; comentariosXml: string; nomeSugerido: string }> {
   const arrayBuffer = await file.arrayBuffer();
   let zip: JSZip | null = null;
   try {

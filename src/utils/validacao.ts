@@ -1,15 +1,16 @@
+import type { ValorCampo } from '../types';
 
 
 import { normalizarDigitos } from './mascaras';
 
-export function validarEmail(email: any): boolean {
+export function validarEmail(email: ValorCampo): boolean {
   if (email === null || email === undefined) return false;
   const valor = String(email).trim();
   return !!valor && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(valor);
 }
 
 
-export function validarCPF(valor: any): boolean {
+export function validarCPF(valor: ValorCampo): boolean {
   const cpf = normalizarDigitos(valor);
   if (!cpf) return true;
   if (cpf.length !== 11) return false;
@@ -35,7 +36,7 @@ export function validarCPF(valor: any): boolean {
 }
 
 
-export function validarCNPJ(valor: any): boolean {
+export function validarCNPJ(valor: ValorCampo): boolean {
   const cnpj = normalizarDigitos(valor);
   if (!cnpj) return true;
   if (cnpj.length !== 14) return false;
@@ -64,7 +65,7 @@ export function validarCNPJ(valor: any): boolean {
 }
 
 
-export function validarCEP(valor: any): boolean {
+export function validarCEP(valor: ValorCampo): boolean {
   const cep = normalizarDigitos(valor);
   return !cep || cep.length === 8;
 }
@@ -75,7 +76,7 @@ export function validarCEP(valor: any): boolean {
  */
 export function validarCampo(
   campo: import('../types').FieldMetadata | import('../types').TableColumnMetadata,
-  valor: any
+  valor: ValorCampo
 ): { valido: boolean; msg?: string } {
   const v = String(valor ?? '').trim();
   if (!v) {

@@ -14,7 +14,7 @@ export function dividirEmLinhas(nos: AstNode[]): AstNode[][] {
   (nos || []).forEach(node => {
     if (!node) return;
     if (node.tipo === 'texto') {
-      const partes = String(node.texto ?? (node as any).valor ?? '').split('\n');
+      const partes = String(node.texto ?? node.valor ?? '').split('\n');
       partes.forEach((parte, pi) => {
         if (pi > 0) {
           if (atual.length) {

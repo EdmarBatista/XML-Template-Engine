@@ -1,4 +1,5 @@
 import React from 'react';
+import type { DadosDocumento, ValorCampo } from '../types';
 
 export interface CampoFocoDoc {
   id: string;
@@ -10,7 +11,7 @@ export interface CamposFocoArgs {
   sidebarCollapsed: boolean;
   irParaCampoAtivo: boolean;
   setSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
-  setDados: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  setDados: React.Dispatch<React.SetStateAction<DadosDocumento>>;
 }
 
 /**
@@ -45,7 +46,7 @@ export function useCamposFoco({ sidebarCollapsed, irParaCampoAtivo, setSidebarCo
   }, []);
 
   // Atualização de campos com emissão de destaque e posicionamento
-  const handleUpdateField = React.useCallback((id: string, value: any, origem = 'painel') => {
+  const handleUpdateField = React.useCallback((id: string, value: ValorCampo, origem = 'painel') => {
     setDados(prev => ({ ...prev, [id]: value }));
     setUltimoCampoAlterado(id);
     setOrigemCampoAlterado(origem);

@@ -1,12 +1,13 @@
 import React from 'react';
-import { FieldMetadata } from '../../../types';
+import type { ValorCampo } from '../../../types';
+import { FieldMetadata, DadosDocumento } from '../../../types';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { aplicarMascaraCampo, normalizarValorCampo, obterTipoEfetivoColuna } from '../../../utils/documentUtils';
 
 interface TableFieldInputProps {
   campo: FieldMetadata;
-  valor: any[];
-  onChange: (id: string, valor: any[]) => void;
+  valor: DadosDocumento[];
+  onChange: (id: string, valor: DadosDocumento[]) => void;
 }
 
 export const TableFieldInput: React.FC<TableFieldInputProps> = ({
@@ -17,7 +18,7 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
   const colunas = campo.colunas || [];
   const linhas = Array.isArray(valor) && valor.length > 0 ? valor : [{}];
 
-  const handleCellChange = (linhaIdx: number, colId: string, val: any, tipoCol?: string) => {
+  const handleCellChange = (linhaIdx: number, colId: string, val: ValorCampo, tipoCol?: string) => {
     const tipo = (tipoCol || 'input').toLowerCase();
     const novasLinhas = linhas.map((linha, idx) => {
       if (idx !== linhaIdx) return linha;
@@ -27,8 +28,8 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
         const limpo = strVal === '' ? '' : strVal.replace(/[^\d.-]/g, '');
         valFinal = limpo === '' ? '' : Number(limpo);
       } else if (['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(tipo)) {
-        const fmt = aplicarMascaraCampo(val, tipo as any);
-        valFinal = normalizarValorCampo(fmt, tipo as any);
+        const fmt = aplicarMascaraCampo(val, tipo);
+        valFinal = normalizarValorCampo(fmt, tipo);
       } else if (tipo === 'checkbox') {
         valFinal = Boolean(val);
       }
@@ -38,7 +39,7 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
   };
 
   const handleAddRow = () => {
-    const novaLinha: Record<string, any> = {};
+    const novaLinha: DadosDocumento = {};
     colunas.forEach(c => {
       novaLinha[c.id] = c.tipo === 'checkbox' ? false : '';
     });
@@ -48,7 +49,7 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
   const handleRemoveRow = (linhaIdx: number) => {
     if (linhas.length <= 1) {
       // Limpa os campos da única linha restante
-      const limpa: Record<string, any> = {};
+      const limpa: DadosDocumento = {};
       colunas.forEach(c => {
         limpa[c.id] = c.tipo === 'checkbox' ? false : '';
       });
@@ -122,7 +123,7 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
                   const valorCelula = linha[col.id] ?? '';
                   const colTipo = obterTipoEfetivoColuna(col.tipo);
                   const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipo);
-                  const valorExibido = isMasked ? aplicarMascaraCampo(valorCelula, colTipo as any) : valorCelula;
+                  const valorExibido = isMasked ? aplicarMascaraCampo(valorCelula, colTipo) : valorCelula;
 
                   return (
                     <div key={col.id} className="space-y-0.5">

@@ -51,7 +51,7 @@ import { StorageService } from './services/storageService';
 import { construirEstadoInicial, parseXmlDocument, criarModeloIntermediario } from './utils/xmlParser';
 import { converterDocxParaModeloXml } from './docx/converter';
 import { TEMPLATE_NOVO_DOCUMENTO } from './utils/xmlEditorCompletions';
-
+import { motivoDoErro } from './utils/erros';
 export default function App() {
   // Notificações visuais
   const { toastMessage, toastTipo, showToast } = useToast();
@@ -284,7 +284,7 @@ export default function App() {
       showToast(`Modelo importado com sucesso: ${nomeSugerido}`);
       setWordFileToConvert(null);
       openModelModal(); // Abre o painel para edição imediata
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
       alert('Erro ao converter o documento Word: ' + error.message);
     } finally {
@@ -335,8 +335,8 @@ export default function App() {
           }
           showToast('Preenchimento do template carregado com sucesso!');
         }
-      } catch (err: any) {
-        showToast('Erro ao carregar dados do template: ' + err.message);
+      } catch (err) {
+        showToast('Erro ao carregar dados do template: ' + motivoDoErro(err));
       }
     },
     [resetFormState, currentTemplate?.id, showToast]

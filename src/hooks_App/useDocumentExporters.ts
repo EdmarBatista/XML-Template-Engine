@@ -16,30 +16,15 @@ import React from 'react';
 import { exportarParaPdf } from '../utils/pdfExporter';
 import { exportarParaWord } from '../utils/wordExporter';
 import { FilePackageService } from '../services/filePackageService';
-import { XmlPart } from '../types';
+import { XmlPart, DadosDocumento } from '../types';
 import { ToastTipo } from '../hooks/useToast';
-
-/** Limite de caracteres do detalhe exibido no toast. */
-const MAX_DETALHE_ERRO = 240;
-
-/**
- * Extrai o motivo real de uma falha para exibir no toast.
- *
- * O console continua recebendo o erro cru (com stack); aqui interessa apenas a
- * mensagem, em uma linha e limitada — erros do pdfmake chegam a despejar os
- * dados da linha da tabela e estourariam a notificacao.
- */
-function motivoDoErro(err: unknown): string {
-  const bruto = (err as { message?: unknown })?.message;
-  const texto = String(bruto ?? err ?? 'erro desconhecido').replace(/\s+/g, ' ').trim();
-  return texto.length > MAX_DETALHE_ERRO ? `${texto.slice(0, MAX_DETALHE_ERRO)}...` : texto;
-}
+import { motivoDoErro } from '../utils/erros';
 
 interface UseDocumentExportersProps {
   xmlName: string;
   rawXml: string;
   xmlParts?: XmlPart[] | null;
-  dados: Record<string, any>;
+  dados: DadosDocumento;
   numeracaoAtiva: boolean;
   variaveisVermelhasWord: boolean;
   showToast: (msg: string, tipo?: ToastTipo) => void;

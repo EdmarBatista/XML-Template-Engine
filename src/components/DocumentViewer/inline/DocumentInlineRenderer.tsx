@@ -1,5 +1,6 @@
 import React from 'react';
-import { AstNode, FormStructure } from '../../../types';
+import type { NumberingContext } from '../../../types';
+import { AstNode, FormStructure, ContextoLocal, DadosDocumento, ValorCampo } from '../../../types';
 import { aplicarFiltroDocumento, formatarItemForeach, obterValorPorCaminho, valoresDaLista } from '../../../utils/documentUtils';
 import { DocumentInlineVariable } from './DocumentInlineVariable';
 import { DocumentInlineTableAccess } from './DocumentInlineTableAccess';
@@ -8,22 +9,22 @@ import { DocumentInlineConditionalNode } from '../logic/DocumentConditionalNode'
 import { extrairTooltip, processarTextoComVariaveis } from './textVariableProcessor';
 
 export interface InlineRenderContext {
-  dados: Record<string, any>;
+  dados: DadosDocumento;
   estrutura: FormStructure;
   destaquesAtivos: Record<string, number>;
   onFocusField: (fieldId: string) => void;
-  onUpdateField: (fieldId: string, value: any, origem?: string) => void;
+  onUpdateField: (fieldId: string, value: ValorCampo, origem?: string) => void;
   edicaoInline: boolean;
   variaveisVermelhasWord: boolean;
   fontScale: number;
   comentarios?: import('../../../types').WordComment[];
-  numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
+  numeracaoInfo?: { contextoNumeracao?: NumberingContext; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
 }
 
 export function renderInlineAstNodes(
   inlineNodes: AstNode[],
   path: string = 'inline',
-  ctxLocal: Record<string, any> | undefined,
+  ctxLocal: ContextoLocal | undefined,
   ctx: InlineRenderContext
 ): React.ReactNode[] {
   const {
@@ -44,14 +45,14 @@ export function renderInlineAstNodes(
   const selfRenderInline = (
     childInlineNodes: AstNode[],
     childPath: string,
-    childCtxLocal?: Record<string, any>
+    childCtxLocal?: ContextoLocal
   ) => renderInlineAstNodes(childInlineNodes, childPath, childCtxLocal, ctx);
 
   inlineNodes.forEach((node, idx) => {
     const key = `${path}_${idx}`;
 
     if (node.tipo === 'texto') {
-      const texto = node.texto || (node as any).valor || '';
+      const texto = String(node.texto || node.valor || '');
       items.push(
         ...processarTextoComVariaveis({
           textoOriginal: texto,

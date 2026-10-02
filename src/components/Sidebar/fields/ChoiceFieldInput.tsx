@@ -1,12 +1,13 @@
 import React from 'react';
-import { FieldMetadata } from '../../../types';
+import type { ValorCampo } from '../../../types';
+import { FieldMetadata, DadosDocumento } from '../../../types';
 import { avaliarExpressao } from '../../../utils/expressionEvaluator';
 
 interface ChoiceFieldInputProps {
   campo: FieldMetadata;
-  valor: any;
-  dados: Record<string, any>;
-  onChange: (id: string, valor: any) => void;
+  valor: ValorCampo;
+  dados: DadosDocumento;
+  onChange: (id: string, valor: ValorCampo) => void;
   nivel: number;
   renderCampo: (campoId: string, nivel?: number) => React.ReactNode;
 }

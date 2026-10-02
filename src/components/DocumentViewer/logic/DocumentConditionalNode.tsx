@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { AstNode, NumberingContext } from '../../../types';
+import { AstNode, NumberingContext, ContextoLocal } from '../../../types';
 import { avaliarExpressao, extrairVariaveisDaExpressao } from '../../../utils/expressionEvaluator';
 
 export interface DocumentInlineConditionalNodeProps {
@@ -17,7 +17,7 @@ export interface DocumentInlineConditionalNodeProps {
   /** Chave única para o nó React */
   nodeKey: string;
   /** Escopo de dados atual (incluindo escopos locais de loop se houver) */
-  escopo: Record<string, any>;
+  escopo: ContextoLocal;
   /** Dicionário de variáveis atualmente sob destaque visual ativo */
   destaquesAtivos: Record<string, number>;
   /** Callback para focar no campo do formulário ao clicar */
@@ -26,10 +26,10 @@ export interface DocumentInlineConditionalNodeProps {
   renderInlineNodes: (
     inlineNodes: AstNode[],
     path: string,
-    contextoLocal?: Record<string, any>
+    contextoLocal?: ContextoLocal
   ) => React.ReactNode[];
   /** Contexto local de variáveis */
-  contextoLocal?: Record<string, any>;
+  contextoLocal?: ContextoLocal;
 }
 
 /**
@@ -76,7 +76,7 @@ export interface DocumentBlockConditionalNodeProps {
   /** Chave única para o bloco React */
   blockKey: string;
   /** Escopo de dados atual */
-  escopo: Record<string, any>;
+  escopo: ContextoLocal;
   /** Dicionário de variáveis atualmente sob destaque visual */
   destaquesAtivos: Record<string, number>;
   /** Callback para focar no campo do formulário ao clicar */

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AstNode, FormStructure, NumberingContext } from '../../types';
+import { AstNode, FormStructure, NumberingContext, ContextoLocal, DadosDocumento, ValorCampo } from '../../types';
 import { renderDocumentAstBlocks } from './blocks';
 import { extrairTooltip } from './inline';
 
@@ -7,17 +7,17 @@ export { extrairTooltip };
 
 export interface DocumentNodeRendererProps {
   nodes: AstNode[];
-  dados: Record<string, any>;
+  dados: DadosDocumento;
   estrutura: FormStructure;
   destaquesAtivos: Record<string, number>;
   onFocusField: (fieldId: string) => void;
-  onUpdateField: (fieldId: string, value: any, origem?: string) => void;
+  onUpdateField: (fieldId: string, value: ValorCampo, origem?: string) => void;
   edicaoInline: boolean;
   variaveisVermelhasWord: boolean;
   fontScale: number;
   contextoNumeracao: NumberingContext;
   pathPrefix?: string;
-  contextoLocal?: Record<string, any>;
+  contextoLocal?: ContextoLocal;
   nivelSecao?: number;
   comentarios?: import('../../types').WordComment[];
 }

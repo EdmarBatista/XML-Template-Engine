@@ -1,4 +1,4 @@
-import { AstNode, ColumnType, FieldMetadata, FieldOption, FormGroup, FormItem, FormStructure, IntermediateModel, TableColumnMetadata, XmlPart } from '../types';
+import { AstNode, ColumnType, FieldMetadata, FieldOption, FormGroup, FormItem, FormStructure, IntermediateModel, TableColumnMetadata, XmlPart, DadosDocumento } from '../types';
 
 export function sanitizarXmlParaParser(xmlString: string): string {
   let res = String(xmlString || '');
@@ -500,15 +500,15 @@ export function converterConteudoParaAst(conteudoNode: Element): AstNode {
   };
 }
 
-export function construirEstadoInicial(campos: Record<string, FieldMetadata>): Record<string, any> {
-  const estado: Record<string, any> = {};
+export function construirEstadoInicial(campos: Record<string, FieldMetadata>): DadosDocumento {
+  const estado: DadosDocumento = {};
   Object.values(campos).forEach(campo => {
     if (campo.tipo === 'checkbox') {
       estado[campo.id] = false;
     } else if (campo.tipo === 'number') {
       estado[campo.id] = '';
     } else if (campo.tipo === 'tabela') {
-      const linhaPadrao: Record<string, any> = {};
+      const linhaPadrao: DadosDocumento = {};
       (campo.colunas || []).forEach(col => {
         linhaPadrao[col.id] = '';
       });

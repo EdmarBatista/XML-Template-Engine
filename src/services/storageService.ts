@@ -4,6 +4,8 @@
  * modelos personalizados e dados preenchidos de formulários.
  */
 
+import type { DadosDocumento } from '../types';
+
 import { TemplateItem } from '../data/defaultTemplates';
 
 export interface UserPreferences {
@@ -142,7 +144,7 @@ export const StorageService = {
   /**
    * Carrega os dados preenchidos de um template específico ou todo o mapa de formulários.
    */
-  loadFormData(templateId?: string): Record<string, any> {
+  loadFormData(templateId?: string): DadosDocumento {
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.SAVED_FORM_DATA);
       const allData = raw ? JSON.parse(raw) : {};
@@ -159,7 +161,7 @@ export const StorageService = {
   /**
    * Salva os dados de preenchimento para um template específico no mapa persistido.
    */
-  saveFormDataForTemplate(templateId: string, data: Record<string, any>): void {
+  saveFormDataForTemplate(templateId: string, data: DadosDocumento): void {
     try {
       const allData = this.loadFormData();
       allData[templateId] = data;

@@ -1,6 +1,7 @@
+import type { ValorCampo } from '../types';
 
 
-export function formatarItemForeach(valor: any): any {
+export function formatarItemForeach(valor: ValorCampo): ValorCampo {
   if (valor === null || valor === undefined) return '';
   if (typeof valor === 'object') return valor;
 
@@ -23,7 +24,7 @@ export function formatarItemForeach(valor: any): any {
  * suportando itens com aspas que contenham vírgulas internamente (ex: "Pintura, de fogo").
  */
 
-export function valoresDaLista(valor: any): any[] {
+export function valoresDaLista(valor: ValorCampo): ValorCampo[] {
   if (Array.isArray(valor)) return valor.map(v => formatarItemForeach(v)).filter(v => v !== '' && v !== null && v !== undefined);
 
   const texto = String(valor ?? '');
@@ -34,7 +35,7 @@ export function valoresDaLista(valor: any): any[] {
 
   const adicionar = () => {
     const item = formatarItemForeach(atual.trim());
-    if (item) itens.push(item);
+    if (item) itens.push(String(item));
     atual = '';
     inicioItem = true;
   };

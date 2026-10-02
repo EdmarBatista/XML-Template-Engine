@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ValorCampo } from '../../../types';
 import { FieldMetadata } from '../../../types';
 import {
   aplicarMascaraCampo,
@@ -7,8 +8,8 @@ import {
 
 interface NumberFieldInputProps {
   campo: FieldMetadata;
-  valor: any;
-  onChange: (id: string, valor: any) => void;
+  valor: ValorCampo;
+  onChange: (id: string, valor: ValorCampo) => void;
   statusValidacao?: { valido: boolean; msg?: string };
 }
 
@@ -20,7 +21,7 @@ export const NumberFieldInput: React.FC<NumberFieldInputProps> = ({
 }) => {
   const mascara = (campo.tipoInput || '').toLowerCase();
   const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(mascara);
-  const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara as any) : valor;
+  const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara) : valor == null ? '' : String(valor);
 
   return (
     <div>
@@ -42,8 +43,8 @@ export const NumberFieldInput: React.FC<NumberFieldInputProps> = ({
         onChange={e => {
           const raw = e.target.value;
           if (isMasked) {
-            const formatado = aplicarMascaraCampo(raw, mascara as any);
-            const valBruto = normalizarValorCampo(formatado, mascara as any);
+            const formatado = aplicarMascaraCampo(raw, mascara);
+            const valBruto = normalizarValorCampo(formatado, mascara);
             onChange(campo.id, valBruto);
           } else {
             onChange(campo.id, raw === '' ? '' : Number(raw));

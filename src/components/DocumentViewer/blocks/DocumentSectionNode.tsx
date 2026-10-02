@@ -1,5 +1,5 @@
 import React from 'react';
-import { AstNode, NumberingContext } from '../../../types';
+import { AstNode, NumberingContext, ContextoLocal } from '../../../types';
 import {
   ATRIBUTOS_SECAO_CONTEUDO,
   atributosDeSecao,
@@ -12,15 +12,15 @@ export interface DocumentSectionNodeProps {
   contextoNumeracao: NumberingContext;
   nivelSecao: number;
   fontScale: number;
-  processarTextoComVariaveis: (texto: string, prefixKey: string, contextoLocal?: Record<string, any>) => React.ReactNode[];
+  processarTextoComVariaveis: (texto: string, prefixKey: string, contextoLocal?: ContextoLocal) => React.ReactNode[];
   renderAstBlocos: (
     nodes: AstNode[],
     contextoNumeracao: NumberingContext,
     pathPrefix: string,
-    contextoLocal?: Record<string, any>,
+    contextoLocal?: ContextoLocal,
     nivelSecao?: number
   ) => React.ReactNode[];
-  contextoLocal?: Record<string, any>;
+  contextoLocal?: ContextoLocal;
 }
 
 /**
@@ -33,15 +33,15 @@ export function renderDocumentSectionNode(
   contextoNumeracao: NumberingContext,
   nivelSecao: number,
   fontScale: number,
-  processarTextoComVariaveis: (texto: string, prefixKey: string, contextoLocal?: Record<string, any>) => React.ReactNode[],
+  processarTextoComVariaveis: (texto: string, prefixKey: string, contextoLocal?: ContextoLocal) => React.ReactNode[],
   renderAstBlocos: (
     nodes: AstNode[],
     contextoNumeracao: NumberingContext,
     pathPrefix: string,
-    contextoLocal?: Record<string, any>,
+    contextoLocal?: ContextoLocal,
     nivelSecao?: number
   ) => React.ReactNode[],
-  contextoLocal?: Record<string, any>
+  contextoLocal?: ContextoLocal
 ): React.ReactNode {
   const titulo = String(node.atributos?.titulo || '').trim();
   const numerarSecao = node.atributos?.numerar !== 'false';

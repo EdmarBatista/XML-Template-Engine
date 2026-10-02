@@ -1,21 +1,21 @@
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { FormStructure } from '../../../types';
+import { FormStructure, DadosDocumento, ValorCampo } from '../../../types';
 import { aplicarFiltroDocumento, obterTipoEfetivoColuna } from '../../../utils/documentUtils';
 import { DocumentTableCell } from './DocumentTableCell';
 
 export interface DocumentInlineAutoTableProps {
   chaveReal: string;
   colunas: string[];
-  valorFormatado: any[];
-  dados: Record<string, any>;
+  valorFormatado: DadosDocumento[];
+  dados: DadosDocumento;
   estrutura: FormStructure;
   destaquesAtivos: Record<string, number>;
   edicaoInline: boolean;
   variaveisVermelhasWord?: boolean;
   fontScale: number;
   onFocusField?: (fieldId: string) => void;
-  onUpdateField?: (fieldId: string, value: any, origem?: string) => void;
+  onUpdateField?: (fieldId: string, value: ValorCampo, origem?: string) => void;
 }
 
 export const DocumentInlineAutoTable: React.FC<DocumentInlineAutoTableProps> = ({
@@ -37,7 +37,7 @@ export const DocumentInlineAutoTable: React.FC<DocumentInlineAutoTableProps> = (
     e.stopPropagation();
     if (!chaveReal || !onUpdateField) return;
     const listaAtual = Array.isArray(dados?.[chaveReal]) ? [...dados[chaveReal]] : [];
-    const novaLinha: Record<string, any> = {};
+    const novaLinha: DadosDocumento = {};
     const colunasMeta = estrutura?.campos?.[chaveReal]?.colunas;
     if (colunasMeta && colunasMeta.length > 0) {
       colunasMeta.forEach(c => {
@@ -96,7 +96,7 @@ export const DocumentInlineAutoTable: React.FC<DocumentInlineAutoTableProps> = (
           </tr>
         </thead>
         <tbody>
-          {valorFormatado.map((row: any, rIdx: number) => {
+          {valorFormatado.map((row: DadosDocumento, rIdx: number) => {
             const rowObj = typeof row === 'object' && row !== null ? row : {};
             return (
               <tr
@@ -114,7 +114,7 @@ export const DocumentInlineAutoTable: React.FC<DocumentInlineAutoTableProps> = (
                   let formattedVal = '';
                   if (val !== null && val !== undefined && val !== '') {
                     if (['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipoEfetivo)) {
-                      formattedVal = aplicarFiltroDocumento(val, colTipoEfetivo as any);
+                      formattedVal = aplicarFiltroDocumento(val, colTipoEfetivo);
                     } else if (colTipoEfetivo === 'number') {
                       formattedVal = typeof val === 'number' ? String(val) : String(val);
                     } else if (typeof val === 'boolean') {

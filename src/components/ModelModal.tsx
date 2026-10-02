@@ -21,7 +21,7 @@ import {
   Sliders,
   X,
 } from 'lucide-react';
-import { IntermediateModel, XmlPart } from '../types';
+import { IntermediateModel, XmlPart, DadosDocumento, ValorCampo } from '../types';
 import { TEMPLATE_NOVO_DOCUMENTO } from '../utils/xmlEditorCompletions';
 import { concatenarXmlsParticionados, parseXmlDocument } from '../utils/xmlParser';
 import { formatarXmlString } from '../utils/xmlFormatter';
@@ -30,6 +30,7 @@ import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { VarsTabEditor, VarsTableResumo } from './ModelModal/VarsTabs';
 import { usePreferencias } from '../hooks/usePreferencias';
 
+import { motivoDoErro } from '../utils/erros';
 export interface ModelModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,10 +38,10 @@ export interface ModelModalProps {
   rawXml?: string;
   xmlParts?: XmlPart[] | null;
   xmlName: string;
-  onUpdateField: (id: string, value: any) => void;
-  onUpdateMultipleFields?: (novosDados: Record<string, any>) => void;
+  onUpdateField: (id: string, value: ValorCampo) => void;
+  onUpdateMultipleFields?: (novosDados: DadosDocumento) => void;
   onApplyXml?: (novoXml: string, novoNome?: string) => void;
-  onApplyAll?: (novoXml: string, novosDados: Record<string, any>, novoNome?: string, novasPartes?: XmlPart[]) => void;
+  onApplyAll?: (novoXml: string, novosDados: DadosDocumento, novoNome?: string, novasPartes?: XmlPart[]) => void;
   onStartSideBySide?: (xmlContent: string) => void;
   initialTab?: TabType;
 }
@@ -168,7 +169,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   };
 
   // Validação JSON
-  const validarJson = (jsonStr: string): { valido: boolean; extrairDados?: Record<string, any> } => {
+  const validarJson = (jsonStr: string): { valido: boolean; extrairDados?: DadosDocumento } => {
     try {
       const parsed = JSON.parse(jsonStr);
       if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
@@ -182,8 +183,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       }
       setErroSintaxeJson(null);
       return { valido: true, extrairDados: targetDados };
-    } catch (err: any) {
-      setErroSintaxeJson(err.message || 'Erro de sintaxe no JSON');
+    } catch (err) {
+      setErroSintaxeJson(motivoDoErro(err, '') || 'Erro de sintaxe no JSON');
       return { valido: false };
     }
   };
@@ -194,8 +195,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       const parsed = JSON.parse(jsonCode);
       setJsonCode(JSON.stringify(parsed, null, 2));
       setErroSintaxeJson(null);
-    } catch (e: any) {
-      setErroSintaxeJson(e.message || 'JSON inválido para formatar');
+    } catch (e) {
+      setErroSintaxeJson(motivoDoErro(e, '') || 'JSON inválido para formatar');
     }
   };
 
@@ -225,7 +226,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       parseXmlDocument(xmlStr);
       setErroSintaxeXml(null);
       return true;
-    } catch (err: any) {
+    } catch (err) {
       // Se for uma parte individual com apenas tags parciais, tenta envolver em <documento> para testar
       if (localParts && localParts.length > 0) {
         try {
@@ -234,7 +235,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           return true;
         } catch {}
       }
-      setErroSintaxeXml(err.message || 'Erro de sintaxe no XML');
+      setErroSintaxeXml(motivoDoErro(err, '') || 'Erro de sintaxe no XML');
       return false;
     }
   }, [localParts]);

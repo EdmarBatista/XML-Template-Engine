@@ -1,5 +1,5 @@
 import React from 'react';
-import { TableColumnMetadata } from '../../../types';
+import { TableColumnMetadata, ValorCampo, DadosDocumento } from '../../../types';
 import {
   aplicarMascaraCampo,
   converterFormatoData,
@@ -8,7 +8,7 @@ import {
 } from '../../../utils/documentUtils';
 
 export interface DocumentTableCellProps {
-  valorBruto: any;
+  valorBruto: ValorCampo;
   filtro?: string;
   colMeta?: TableColumnMetadata;
   isHeader?: boolean;
@@ -24,8 +24,8 @@ export interface DocumentTableCellProps {
   conditionalHighlight?: boolean;
   conditionalFocusVar?: string;
   onFocusField?: (fieldId: string) => void;
-  onUpdateField?: (fieldId: string, value: any, origem?: string) => void;
-  dadosTabela?: any[];
+  onUpdateField?: (fieldId: string, value: ValorCampo, origem?: string) => void;
+  dadosTabela?: DadosDocumento[];
   actions?: React.ReactNode;
   children?: React.ReactNode;
   fontScale?: number;
@@ -67,7 +67,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   rowSpan,
 }) => {
   const [editando, setEditando] = React.useState(false);
-  const [valorTemp, setValorTemp] = React.useState<any>('');
+  const [valorTemp, setValorTemp] = React.useState<ValorCampo>('');
   const inputRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const containerRef = React.useRef<HTMLTableCellElement>(null);
   const valorTempRef = React.useRef(valorTemp);
@@ -107,7 +107,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     }
   }, [editando]);
 
-  const aplicarValorNaTabela = React.useCallback((valFinal: any) => {
+  const aplicarValorNaTabela = React.useCallback((valFinal: ValorCampo) => {
     if (!listaNome || rowIndex === undefined || !colKey || !onUpdateField) return;
     const listaAtual = Array.isArray(dadosTabela) ? [...dadosTabela] : [];
     while (listaAtual.length <= rowIndex) {
@@ -126,17 +126,17 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     }
 
     const valTexto = valorTempRef.current;
-    let valFinal: any = valTexto;
+    let valFinal: ValorCampo = valTexto;
 
     if (isCurrency) {
-      valFinal = normalizarValorCampo(valTexto, 'moeda' as any);
+      valFinal = normalizarValorCampo(valTexto, 'moeda');
     } else if (isNumber) {
       const clean = String(valTexto).replace(/[^\d.-]/g, '');
       valFinal = clean === '' ? '' : Number(clean);
     } else if (isCheckbox) {
       valFinal = Boolean(valTexto);
     } else if (isMasked) {
-      valFinal = normalizarValorCampo(valTexto, maskName as any);
+      valFinal = normalizarValorCampo(valTexto, maskName);
     }
 
     aplicarValorNaTabela(valFinal);
@@ -158,7 +158,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     };
   }, [editando, salvar]);
 
-  const salvarValorDireto = (val: any) => {
+  const salvarValorDireto = (val: ValorCampo) => {
     aplicarValorNaTabela(val);
     setEditando(false);
   };
@@ -199,13 +199,13 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
     }
 
     if (isEditable) {
-      let initialVal: any = '';
+      let initialVal: ValorCampo = '';
       if (isCheckbox) {
         initialVal = Boolean(valorBruto);
       } else {
         initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
         if (isMasked) {
-          initialVal = aplicarMascaraCampo(initialVal, maskName as any);
+          initialVal = aplicarMascaraCampo(initialVal, maskName);
         }
       }
       setValorTemp(initialVal);
@@ -357,7 +357,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
             </select>
           ) : isDate ? (
             <input
-              ref={inputRef as any}
+              ref={inputRef as React.Ref<HTMLInputElement>}
               type="date"
               autoFocus
               value={converterFormatoData(valorTemp, 'ISO')}
@@ -373,7 +373,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
             />
           ) : isTextArea ? (
             <textarea
-              ref={inputRef as any}
+              ref={inputRef as React.Ref<HTMLTextAreaElement>}
               rows={2}
               autoFocus
               value={String(valorTemp)}
@@ -393,7 +393,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
             />
           ) : isNumber ? (
             <input
-              ref={inputRef as any}
+              ref={inputRef as React.Ref<HTMLInputElement>}
               type="number"
               inputMode="numeric"
               autoFocus
@@ -423,14 +423,14 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
             />
           ) : isMasked ? (
             <input
-              ref={inputRef as any}
+              ref={inputRef as React.Ref<HTMLInputElement>}
               type="text"
               inputMode="numeric"
               autoFocus
               value={String(valorTemp)}
               placeholder={placeholderText}
               onChange={e => {
-                const fmt = aplicarMascaraCampo(e.target.value, maskName as any);
+                const fmt = aplicarMascaraCampo(e.target.value, maskName);
                 setValorTemp(fmt);
               }}
               onBlur={salvar}
@@ -440,7 +440,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
             />
           ) : (
             <input
-              ref={inputRef as any}
+              ref={inputRef as React.Ref<HTMLInputElement>}
               type="text"
               autoFocus
               value={String(valorTemp)}

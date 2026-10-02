@@ -1,5 +1,6 @@
 import React from 'react';
-import { FieldMetadata } from '../../../types';
+import type { NumberingContext } from '../../../types';
+import { FieldMetadata, ValorCampo } from '../../../types';
 import {
   aplicarMascaraCampo,
   normalizarValorCampo,
@@ -7,7 +8,7 @@ import {
 
 export interface DocumentInlineVariableProps {
   id: string;
-  valorBruto: any;
+  valorBruto: ValorCampo;
   valorExibido: string;
   filtro?: string;
   listaForeach?: boolean;
@@ -17,9 +18,9 @@ export interface DocumentInlineVariableProps {
   edicaoInline: boolean;
   variaveisVermelhasWord: boolean;
   onFocusField: (fieldId: string) => void;
-  onUpdateField: (fieldId: string, value: any, origem?: string) => void;
+  onUpdateField: (fieldId: string, value: ValorCampo, origem?: string) => void;
   fontScale?: number;
-  numeracaoInfo?: { contextoNumeracao?: any; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
+  numeracaoInfo?: { contextoNumeracao?: NumberingContext; effectiveNivel: number; nivelBase: number; isNumerado: boolean; extraNumbers?: string[]; extraNumbersState?: { currentIndex: number } };
   extraNumbers?: string[];
 }
 
@@ -48,7 +49,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
   const containerRef = React.useRef<HTMLSpanElement>(null);
   const valorTempRef = React.useRef(valorTemp);
   valorTempRef.current = valorTemp;
-  const clickTimerRef = React.useRef<any>(null);
+  const clickTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const tipoMascara = (campo?.tipoInput || filtro || '').toLowerCase();
   const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(tipoMascara);
@@ -74,7 +75,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
     const handlePointerDownOutside = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         const valFinal = isMasked
-          ? normalizarValorCampo(valorTempRef.current, tipoMascara as any)
+          ? normalizarValorCampo(valorTempRef.current, tipoMascara)
           : valorTempRef.current;
         onUpdateField(id, valFinal, 'inline');
         setEditando(false);
@@ -91,7 +92,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
 
   const salvar = () => {
     const valFinal = isMasked
-      ? normalizarValorCampo(valorTempRef.current, tipoMascara as any)
+      ? normalizarValorCampo(valorTempRef.current, tipoMascara)
       : valorTempRef.current;
     onUpdateField(id, valFinal, 'inline');
     setEditando(false);
@@ -128,7 +129,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
     }
     if (edicaoInline) {
       const valInicial = isMasked
-        ? aplicarMascaraCampo(valorBruto ?? '', tipoMascara as any)
+        ? aplicarMascaraCampo(valorBruto ?? '', tipoMascara)
         : valorBruto ?? '';
       setValorTemp(valInicial);
       setEditando(true);
@@ -226,7 +227,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
             autoFocus
             onFocus={e => {
               try {
-                (e.target as any).showPicker?.();
+                (e.target as HTMLInputElement).showPicker?.();
               } catch {}
             }}
             onChange={e => {
@@ -334,7 +335,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
           onChange={e => {
             const raw = e.target.value;
             if (isMasked) {
-              const formatado = aplicarMascaraCampo(raw, tipoMascara as any);
+              const formatado = aplicarMascaraCampo(raw, tipoMascara);
               setValorTemp(formatado);
             } else {
               setValorTemp(raw);

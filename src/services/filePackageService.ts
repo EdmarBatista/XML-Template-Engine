@@ -5,13 +5,13 @@
  */
 
 import JSZip from 'jszip';
-import { XmlPart } from '../types';
+import { XmlPart, DadosDocumento } from '../types';
 import { concatenarXmlsParticionados, extrairIndiceParteXml } from '../utils/xmlParser';
 
 export interface ZipPackageContent {
   xmlText: string | null;
   xmlFileName: string;
-  jsonData: any | null;
+  jsonData: DadosDocumento | null;
   xmlParts?: XmlPart[];
 }
 
@@ -45,7 +45,7 @@ export const FilePackageService = {
     let xmlText: string | null = null;
     let xmlFileName: string = file.name.replace(/\.zip$/i, '.xml');
     let xmlParts: XmlPart[] | undefined = undefined;
-    let jsonData: any = null;
+    let jsonData: DadosDocumento | null = null;
 
     if (xmlEntries.length > 0) {
       // Lê todos os arquivos XML
@@ -112,7 +112,7 @@ export const FilePackageService = {
   async exportZipPackage(
     xmlName: string,
     rawXml: string,
-    dados: Record<string, any>,
+    dados: DadosDocumento,
     xmlParts?: XmlPart[] | null
   ): Promise<void> {
     const zip = new JSZip();
@@ -153,7 +153,7 @@ export const FilePackageService = {
   /**
    * Dispara o download de um arquivo JSON estruturado contendo os dados do formulário.
    */
-  exportJsonData(xmlName: string, dados: Record<string, any>): void {
+  exportJsonData(xmlName: string, dados: DadosDocumento): void {
     const payload = {
       xml: xmlName,
       data_geracao: new Date().toISOString(),
