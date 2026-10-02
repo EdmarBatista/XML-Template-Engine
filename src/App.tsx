@@ -278,11 +278,8 @@ export default function App() {
     if (!wordFileToConvert) return;
     setIsConvertingWord(true);
     try {
-      const { xml, jsonInicial, comentariosXml, nomeSugerido } = await converterDocxParaModeloXml(wordFileToConvert);
-      
-      // Armazena ou apenas logs comentariosXml por enquanto conforme solicitado
-      console.log('Comentários extraídos (para uso futuro):', comentariosXml);
-      
+      const { xml, jsonInicial, nomeSugerido } = await converterDocxParaModeloXml(wordFileToConvert);
+
       carregarXmlEJson(xml, nomeSugerido, jsonInicial, undefined);
       showToast(`Modelo importado com sucesso: ${nomeSugerido}`);
       setWordFileToConvert(null);

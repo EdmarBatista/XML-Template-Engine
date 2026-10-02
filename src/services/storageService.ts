@@ -47,6 +47,17 @@ const STORAGE_KEYS = {
   JSON_HISTORY: 'edm_json_history',
 } as const;
 
+/**
+ * Avisos de LocalStorage sao esperados em producao (modo privado, cota excedida, dado
+ * gravado por uma versao anterior do app). Em desenvolvimento eles ajudam a
+ * diagnosticar, entao ficam restritos ao modo DEV em vez de poluir o console real.
+ */
+function avisarFalhaDeArmazenamento(mensagem: string, erro: unknown): void {
+  if (import.meta.env.DEV) {
+    console.warn(`[storageService] ${mensagem}`, erro);
+  }
+}
+
 export const StorageService = {
   /**
    * Carrega as preferências de interface unificadas com fallback para os valores padrão.
@@ -63,7 +74,7 @@ export const StorageService = {
       }
       return { ...DEFAULT_USER_PREFERENCES };
     } catch (e) {
-      console.warn('Erro ao carregar preferências de interface do LocalStorage:', e);
+      avisarFalhaDeArmazenamento('Erro ao carregar preferências de interface do LocalStorage:', e);
       return { ...DEFAULT_USER_PREFERENCES };
     }
   },
@@ -77,7 +88,7 @@ export const StorageService = {
       const updated = { ...current, ...preferences };
       localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(updated));
     } catch (e) {
-      console.warn('Erro ao salvar preferências de interface no LocalStorage:', e);
+      avisarFalhaDeArmazenamento('Erro ao salvar preferências de interface no LocalStorage:', e);
     }
   },
 
@@ -92,7 +103,7 @@ export const StorageService = {
         if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
-      console.warn('Erro ao carregar templates customizados:', e);
+      avisarFalhaDeArmazenamento('Erro ao carregar templates customizados:', e);
     }
     return [];
   },
@@ -104,7 +115,7 @@ export const StorageService = {
     try {
       localStorage.setItem(STORAGE_KEYS.CUSTOM_TEMPLATES, JSON.stringify(templates));
     } catch (e) {
-      console.warn('Erro ao salvar templates customizados:', e);
+      avisarFalhaDeArmazenamento('Erro ao salvar templates customizados:', e);
     }
   },
 
@@ -140,7 +151,7 @@ export const StorageService = {
       }
       return allData;
     } catch (e) {
-      console.warn('Erro ao carregar dados de formulário salvos:', e);
+      avisarFalhaDeArmazenamento('Erro ao carregar dados de formulário salvos:', e);
       return {};
     }
   },
@@ -154,7 +165,7 @@ export const StorageService = {
       allData[templateId] = data;
       localStorage.setItem(STORAGE_KEYS.SAVED_FORM_DATA, JSON.stringify(allData));
     } catch (e) {
-      console.warn('Erro ao salvar dados do formulário:', e);
+      avisarFalhaDeArmazenamento('Erro ao salvar dados do formulário:', e);
     }
   },
 
@@ -167,7 +178,7 @@ export const StorageService = {
       delete allData[templateId];
       localStorage.setItem(STORAGE_KEYS.SAVED_FORM_DATA, JSON.stringify(allData));
     } catch (e) {
-      console.warn('Erro ao limpar dados do formulário no LocalStorage:', e);
+      avisarFalhaDeArmazenamento('Erro ao limpar dados do formulário no LocalStorage:', e);
     }
   },
 
@@ -182,7 +193,7 @@ export const StorageService = {
         return allHistory[fileName];
       }
     } catch (e) {
-      console.warn('Erro ao carregar histórico de JSON:', e);
+      avisarFalhaDeArmazenamento('Erro ao carregar histórico de JSON:', e);
     }
     return undefined;
   },
@@ -197,7 +208,7 @@ export const StorageService = {
       allHistory[fileName] = jsonStr;
       localStorage.setItem(STORAGE_KEYS.JSON_HISTORY, JSON.stringify(allHistory));
     } catch (e) {
-      console.warn('Erro ao salvar histórico de JSON:', e);
+      avisarFalhaDeArmazenamento('Erro ao salvar histórico de JSON:', e);
     }
   },
 
@@ -213,7 +224,7 @@ export const StorageService = {
         localStorage.setItem(STORAGE_KEYS.JSON_HISTORY, JSON.stringify(allHistory));
       }
     } catch (e) {
-      console.warn('Erro ao remover histórico de JSON:', e);
+      avisarFalhaDeArmazenamento('Erro ao remover histórico de JSON:', e);
     }
   },
 };
