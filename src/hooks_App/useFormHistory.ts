@@ -10,6 +10,11 @@
  * 4. Fornecer atualizações pontuais (`updateField`) e em lote (`batchUpdateFields`).
  * 5. Gerenciar limpeza e redefinição dos campos do formulário.
  * 6. Integrar a emissão de destaques e rastreamento do último campo modificado.
+ *
+ * Dados, pilha e índice vivem em UM único estado de propósito: com eles separados, cada
+ * `setDados` lia o índice do closure (desatualizado dentro do mesmo lote/tick) e a pilha
+ * podia ficar menor que o índice — o primeiro undo então entregava `undefined` e o hook
+ * estourava em `isDirty`. Com um estado só, cada atualização é função do estado anterior.
  */
 
 import type { DadosDocumento, ValorCampo } from '../types';
@@ -22,15 +27,22 @@ export interface FormHistoryOptions {
   onDataChange?: (data: DadosDocumento) => void;
 }
 
+interface EstadoFormulario {
+  dados: DadosDocumento;
+  /** Snapshots do mais antigo para o mais recente. */
+  pilha: DadosDocumento[];
+  /** Posição atual dentro da pilha (o que o undo devolve é `pilha[indice - 1]`). */
+  indice: number;
+}
+
 export function useFormHistory(options: FormHistoryOptions = {}) {
   const { initialData = {}, maxHistory = 50, onDataChange } = options;
 
-  // Estado dos dados do formulário
-  const [dados, setDadosState] = React.useState<DadosDocumento>(initialData);
-
-  // Pilha de histórico para Undo / Redo
-  const [history, setHistory] = React.useState<DadosDocumento[]>([initialData]);
-  const [currentIndex, setCurrentIndex] = React.useState<number>(0);
+  const [estado, setEstado] = React.useState<EstadoFormulario>(() => ({
+    dados: initialData,
+    pilha: [initialData],
+    indice: 0,
+  }));
 
   // Referência do estado original inicial para cálculo de isDirty
   const baselineDataRef = React.useRef<DadosDocumento>(initialData);
@@ -43,32 +55,24 @@ export function useFormHistory(options: FormHistoryOptions = {}) {
   // Sincroniza quando o baseline/initialData muda externamente (ex.: ao trocar de template)
   const resetFormState = React.useCallback((novoEstado: DadosDocumento) => {
     baselineDataRef.current = novoEstado;
-    setDadosState(novoEstado);
-    setHistory([novoEstado]);
-    setCurrentIndex(0);
+    setEstado({ dados: novoEstado, pilha: [novoEstado], indice: 0 });
     setUltimoCampoAlterado(null);
   }, []);
 
   // Setter compatível com React.Dispatch<React.SetStateAction<...>>
   const setDados = React.useCallback(
     (action: React.SetStateAction<DadosDocumento>) => {
-      setDadosState(prev => {
-        const next = typeof action === 'function' ? action(prev) : action;
-        // Empurra para o histórico
-        setHistory(prevHist => {
-          const cut = prevHist.slice(0, currentIndex + 1);
-          const nextHist = [...cut, next];
-          if (nextHist.length > maxHistory) {
-            return nextHist.slice(nextHist.length - maxHistory);
-          }
-          return nextHist;
-        });
-        setCurrentIndex(prevIdx => Math.min(prevIdx + 1, maxHistory - 1));
+      setEstado(prev => {
+        const next = typeof action === 'function' ? action(prev.dados) : action;
+        // Descarta o futuro (o que estava à frente do índice) e empurra o novo estado
+        const corte = prev.pilha.slice(0, prev.indice + 1);
+        const comNovo = [...corte, next];
+        const pilha = comNovo.length > maxHistory ? comNovo.slice(comNovo.length - maxHistory) : comNovo;
         if (onDataChange) onDataChange(next);
-        return next;
+        return { dados: next, pilha, indice: pilha.length - 1 };
       });
     },
-    [currentIndex, maxHistory, onDataChange]
+    [maxHistory, onDataChange]
   );
 
   // Atualização pontual de campo único
@@ -97,42 +101,46 @@ export function useFormHistory(options: FormHistoryOptions = {}) {
   );
 
   // Desfazer (Undo)
-  const canUndo = currentIndex > 0;
+  const canUndo = estado.indice > 0;
   const undo = React.useCallback(() => {
-    if (!canUndo) return;
-    const targetIdx = currentIndex - 1;
-    const targetData = history[targetIdx];
-    setCurrentIndex(targetIdx);
-    setDadosState(targetData);
+    if (estado.indice === 0) return;
+    const alvo = estado.pilha[estado.indice - 1];
+    setEstado(prev => {
+      if (prev.indice === 0) return prev;
+      const indice = prev.indice - 1;
+      return { dados: prev.pilha[indice], pilha: prev.pilha, indice };
+    });
     setVersaoCampoAlterado(v => v + 1);
     setOrigemCampoAlterado('undo');
-    if (onDataChange) onDataChange(targetData);
-  }, [canUndo, currentIndex, history, onDataChange]);
+    if (onDataChange) onDataChange(alvo);
+  }, [estado.indice, estado.pilha, onDataChange]);
 
   // Refazer (Redo)
-  const canRedo = currentIndex < history.length - 1;
+  const canRedo = estado.indice < estado.pilha.length - 1;
   const redo = React.useCallback(() => {
-    if (!canRedo) return;
-    const targetIdx = currentIndex + 1;
-    const targetData = history[targetIdx];
-    setCurrentIndex(targetIdx);
-    setDadosState(targetData);
+    if (estado.indice >= estado.pilha.length - 1) return;
+    const alvo = estado.pilha[estado.indice + 1];
+    setEstado(prev => {
+      if (prev.indice >= prev.pilha.length - 1) return prev;
+      const indice = prev.indice + 1;
+      return { dados: prev.pilha[indice], pilha: prev.pilha, indice };
+    });
     setVersaoCampoAlterado(v => v + 1);
     setOrigemCampoAlterado('redo');
-    if (onDataChange) onDataChange(targetData);
-  }, [canRedo, currentIndex, history, onDataChange]);
+    if (onDataChange) onDataChange(alvo);
+  }, [estado.indice, estado.pilha, onDataChange]);
 
   // Checagem de formulário modificado em relação ao baseline
   const isDirty = React.useMemo(() => {
     const base = baselineDataRef.current;
-    const keysAtual = Object.keys(dados);
+    const keysAtual = Object.keys(estado.dados);
     const keysBase = Object.keys(base);
     if (keysAtual.length !== keysBase.length) return true;
-    return keysAtual.some(k => dados[k] !== base[k]);
-  }, [dados]);
+    return keysAtual.some(k => estado.dados[k] !== base[k]);
+  }, [estado.dados]);
 
   return {
-    dados,
+    dados: estado.dados,
     setDados,
     updateField,
     batchUpdateFields,

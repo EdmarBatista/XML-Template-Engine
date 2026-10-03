@@ -86,24 +86,10 @@ describe('useFormHistory — alterações e histórico', () => {
     expect(result.current.canUndo).toBe(false);
   });
 
-  it.fails('BUG: desfazer depois de uma rajada no mesmo lote volta ao estado anterior', () => {
-    // Comportamento pretendido: cada alteração vira um passo do histórico, então desfazer
-    // uma vez devolveria o valor 4.
-    const { result } = renderHook(() => useFormHistory({ initialData: { n: 0 } }));
-
-    act(() => {
-      for (let i = 1; i <= 5; i++) result.current.updateField('n', i);
-    });
-    act(() => result.current.undo());
-
-    expect(result.current.dados.n).toBe(4);
-  });
-
-  it('hoje uma rajada no mesmo lote quebra o desfazer: o estado vira undefined e o hook estoura', () => {
-    // Vários updateField no mesmo tick não criam um passo por alteração: o currentIndex lido
-    // pelo callback fica desatualizado, o corte da pilha usa sempre o índice antigo e o índice
-    // acaba apontando para além dos estados guardados. O primeiro undo entrega undefined e o
-    // useMemo do isDirty (Object.keys(dados)) estoura.
+  it('desfaz e refaz depois de uma rajada no mesmo lote', () => {
+    // Cada alteração vira um passo do histórico mesmo quando várias acontecem no mesmo tick:
+    // dados, pilha e índice vivem no mesmo estado, então a atualização é sempre função da
+    // anterior. Antes disso o primeiro undo entregava undefined e o hook estourava.
     const { result } = renderHook(() => useFormHistory({ initialData: { n: 0 } }));
 
     act(() => {
@@ -111,7 +97,12 @@ describe('useFormHistory — alterações e histórico', () => {
     });
     expect(result.current.dados.n).toBe(5);
 
-    expect(() => act(() => result.current.undo())).toThrow();
+    act(() => result.current.undo());
+    expect(result.current.dados.n).toBe(4);
+    expect(result.current.canRedo).toBe(true);
+
+    act(() => result.current.redo());
+    expect(result.current.dados.n).toBe(5);
   });
 
   it('não faz nada ao desfazer sem histórico', () => {
