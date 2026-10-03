@@ -30,7 +30,17 @@ jobs:
           cache: 'npm'
           
       - name: Install dependencies
+        # O puppeteer so e usado pela bancada de teste (teste/gerar.js) e baixaria
+        # o Chrome (~150 MB) em todo deploy se o postinstall rodasse.
         run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        
+      - name: Type-check
+        run: npm run lint
+        
+      - name: Tests
+        run: npm test
         
       - name: Build
         run: npm run build
