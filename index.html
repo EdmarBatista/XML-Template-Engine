@@ -14,14 +14,14 @@
     <div id="root"></div>
     <!--
       =====================================================================
-      Bibliotecas Pesadas via CDN (pdfmake, docx, mammoth, jszip)
+      Bibliotecas Pesadas via CDN (pdfmake, docx, jszip)
       ---------------------------------------------------------------------
       MOTIVO DA OTIMIZAÇÃO:
-      Antes, bibliotecas como `pdfmake`, `docx`, `mammoth` e `jszip` eram
-      importadas via npm e embutidas diretamente no index.html gerado pelo
+      Antes, bibliotecas como `pdfmake`, `docx` e `jszip` eram importadas via
+      npm e embutidas diretamente no index.html gerado pelo
       vite-plugin-singlefile.
         - Antes (sem CDNs): index.html ≈ 3,26 MB
-        - Depois (com CDNs): index.html ≈ 1,36 MB -> redução massiva!
+        - Depois (com CDNs): index.html ≈ 1,13 MB -> redução massiva!
 
       Como o app é distribuído como UM único arquivo HTML autônomo,
       carregar essas libs via CDN é a saída para não inchar o arquivo final.

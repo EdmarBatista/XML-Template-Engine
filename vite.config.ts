@@ -14,7 +14,6 @@ function devCdnExternalsPlugin(): Plugin {
     apply: 'serve',
     resolveId(id) {
       if (id === 'jszip') return '\0virtual:jszip';
-      if (id === 'mammoth') return '\0virtual:mammoth';
       if (id === 'docx') return '\0virtual:docx';
       return null;
     },
@@ -24,13 +23,6 @@ function devCdnExternalsPlugin(): Plugin {
 const JSZip = (typeof window !== 'undefined' && window.JSZip) ? window.JSZip : undefined;
 export default JSZip;
 export { JSZip };
-`;
-      }
-      if (id === '\0virtual:mammoth') {
-        return `
-const mammoth = (typeof window !== 'undefined' && window.mammoth) ? window.mammoth : undefined;
-export default mammoth;
-export { mammoth };
 `;
       }
       if (id === '\0virtual:docx') {
@@ -91,7 +83,9 @@ export default defineConfig(() => {
       standaloneRootPlugin()
     ],
     optimizeDeps: {
-      exclude: ['docx', 'jszip', 'jsdom', 'puppeteer', 'undici'],
+      // `docx` e `jszip` sao trocados por modulos virtuais (globais do CDN) por
+      // devCdnExternalsPlugin; nao ha o que pre-empacotar.
+      exclude: ['docx', 'jszip'],
     },
     build: {
       // No Vite 8 o bundler e o Rolldown; `rollupOptions` virou alias deprecado de
