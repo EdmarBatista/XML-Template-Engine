@@ -26,7 +26,7 @@
     "file-saver": "^2.0.5",
     "jsdom": "^30.0.1",
     "jszip": "^3.10.1",
-    "lucide-react": "^0.546.0",
+    "lucide-react": "^1.51.0",
     "pdfmake": "^0.3.11",
     "puppeteer": "^25.9.0",
     "react": "^19.0.0",
