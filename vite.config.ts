@@ -70,8 +70,8 @@ function standaloneRootPlugin(): Plugin {
     enforce: 'post',
     async closeBundle() {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      const distFile = path.resolve(__dirname, 'dist/index.html');
-      const targetFile = path.resolve(__dirname, 'app_standalone.html');
+      const distFile = path.resolve(import.meta.dirname, 'dist/index.html');
+      const targetFile = path.resolve(import.meta.dirname, 'app_standalone.html');
       if (fs.existsSync(distFile)) {
         fs.writeFileSync(targetFile, fs.readFileSync(distFile));
       }
@@ -94,7 +94,9 @@ export default defineConfig(() => {
       exclude: ['docx', 'jszip', 'jsdom', 'puppeteer', 'undici'],
     },
     build: {
-      rollupOptions: {
+      // No Vite 8 o bundler e o Rolldown; `rollupOptions` virou alias deprecado de
+      // `rolldownOptions` (mesma forma, mesma compatibilidade de plugins).
+      rolldownOptions: {
         external: ['docx', 'jszip'],
         plugins: [
           externalGlobals({
@@ -106,7 +108,7 @@ export default defineConfig(() => {
     },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(import.meta.dirname, '.'),
       },
     },
     server: {
