@@ -14,7 +14,7 @@ const ALLOWED_TAGS = new Set([
   'secao', 'titulo', 'subtitulo', 'p', 'lista', 'lista_numerada', 'item', 'hr',
   
   // Controle de Fluxo
-  'if', 'condicao', 'foreach', 'for-each',
+  'if', 'foreach',
   
   // Estrutura de Tabela no Conteúdo
   'cabecalho', 'celula', 'linhas', 'linha',

@@ -149,8 +149,8 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
     variaveisUsadas.add(limpo);
   }
 
-  // 2. Extrai referências em tags de condição (<if expr="...">, <condicao expr="...">)
-  const regexCondicao = /<(?:if|condicao)\b[^>]*?\bexpr\s*=\s*["']([^"']+)["']/gi;
+  // 2. Extrai referências em tags de condição (<if expr="...">)
+  const regexCondicao = /<if\b[^>]*?\bexpr\s*=\s*["']([^"']+)["']/gi;
   let condMatch: RegExpExecArray | null;
   while ((condMatch = regexCondicao.exec(xmlString)) !== null) {
     const expr = condMatch[1];
@@ -397,13 +397,6 @@ const TAGS_XML_COMPLETION: Completion[] = [
     detail: 'Condição Lógica',
     info: 'Exibe conteúdo condicionalmente conforme expressão',
     apply: snippet('<if expr="${1:condicao}">\n\t${2}\n</if>'),
-  },
-  {
-    label: 'condicao',
-    type: 'keyword',
-    detail: 'Condição Lógica (Alias)',
-    info: 'Tag alternativa para condição lógica',
-    apply: snippet('<condicao expr="${1:condicao}">\n\t${2}\n</condicao>'),
   },
   {
     label: 'foreach',
