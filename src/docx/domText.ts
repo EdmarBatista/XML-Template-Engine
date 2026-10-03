@@ -1,26 +1,11 @@
 /* Helpers de DOM/parser e texto usados na pipeline. */
 
-const TEXT_NODE = 3;
-const ELEMENT_NODE = 1;
-
 export function getXmlParser(): DOMParser {
   if (typeof DOMParser !== 'undefined') {
     return new DOMParser();
   }
   if (typeof window !== 'undefined' && window.DOMParser) {
     return new window.DOMParser();
-  }
-  throw new Error('DOMParser is not available');
-}
-
-export function parseHtmlDoc(html: string): Document {
-  if (typeof DOMParser !== 'undefined') {
-    const parser = new DOMParser();
-    return parser.parseFromString(html, 'text/html');
-  }
-  if (typeof window !== 'undefined' && window.DOMParser) {
-    const parser = new window.DOMParser();
-    return parser.parseFromString(html, 'text/html');
   }
   throw new Error('DOMParser is not available');
 }
@@ -36,30 +21,6 @@ export function escapeXml(unsafe: string): string {
       default: return c;
     }
   });
-}
-
-export function extrairTextoComEspacos(node: Node | null): string {
-  if (!node) return '';
-  if (node.nodeType === TEXT_NODE) {
-    return node.textContent || '';
-  }
-  if (node.nodeType === ELEMENT_NODE) {
-    const el = node as HTMLElement;
-    const tag = el.nodeName.toLowerCase();
-    if (tag === 'br') return ' ';
-    const isBlock = ['p', 'div', 'tr', 'td', 'th', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag);
-    const childTexts: string[] = [];
-    for (let i = 0; i < el.childNodes.length; i++) {
-      childTexts.push(extrairTextoComEspacos(el.childNodes[i]));
-    }
-    const joined = childTexts.join('');
-    return isBlock ? ` ${joined} ` : joined;
-  }
-  return '';
-}
-
-export function limparEspacos(texto: string): string {
-  return (texto || '').replace(/\s+/g, ' ').trim();
 }
 
 export function decodificarEntidadesXml(texto: string): string {
