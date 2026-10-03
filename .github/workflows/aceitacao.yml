@@ -1,0 +1,101 @@
+name: Aceitação (manual)
+
+# Bancada de aceitação ponta a ponta: converte o .docx real da AGU, sobe o app,
+# renderiza no Chrome e confere o resultado contra os limiares e o contrato do XML
+# (AGENTS.md: <p> sem atributos e <secao> sem numero=).
+#
+# Fica em workflow_dispatch de propósito: precisa do Chrome do puppeteer (~150 MB)
+# e de um servidor de desenvolvimento, custo que não se paga em todo push — o
+# deploy.yml já roda type-check e os testes unitários a cada commit.
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: 'URL da aplicação que vai ser aberta pelo puppeteer'
+        required: false
+        default: 'http://127.0.0.1:3000'
+
+permissions:
+  contents: read
+
+jobs:
+  aceitacao:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install dependencies
+        # Sem PUPPETEER_SKIP_DOWNLOAD aqui: a bancada precisa do Chrome de verdade.
+        run: npm ci
+
+      - name: Conversão + render (servidor dev + bancada)
+        env:
+          APP_URL: ${{ inputs.app_url }}
+        run: |
+          set -euo pipefail
+          npm run dev > /tmp/vite.log 2>&1 &
+          VITE_PID=$!
+          trap 'kill "$VITE_PID" 2>/dev/null || true' EXIT
+
+          for _ in $(seq 1 60); do
+            if curl -sf "$APP_URL" > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf "$APP_URL" > /dev/null || {
+            echo "::error::o servidor de desenvolvimento não respondeu em 60s"
+            cat /tmp/vite.log
+            exit 1
+          }
+
+          npx --yes tsx teste/gerar.js
+
+      - name: Conferir amostragem contra o PDF oficial
+        # Informativo: imprime 15 amostras numeradas comparadas com teste/pdf_texto.txt.
+        continue-on-error: true
+        run: node teste/conferir_amostragem.js
+
+      - name: Validar artefatos e contrato do XML
+        run: |
+          set -euo pipefail
+
+          test -s teste/output.xml || { echo "::error::teste/output.xml não foi gerado"; exit 1; }
+          test -s teste/output_puppeteer.txt || { echo "::error::render vazio (output_puppeteer.txt)"; exit 1; }
+
+          linhas=$(wc -l < teste/output_puppeteer.txt | tr -d ' ')
+          secoes=$(grep -o '<secao' teste/output.xml | wc -l | tr -d ' ')
+          p_com_atributo=$(grep -c -E '<p[[:space:]][^>]*>' teste/output.xml || true)
+          secao_com_numero=$(grep -c -E '<secao[^>]*numero=' teste/output.xml || true)
+
+          echo "render: $linhas linhas | XML: $secoes secoes"
+          echo "<p> com atributo: $p_com_atributo | <secao> com numero=: $secao_com_numero"
+
+          test "$linhas" -gt 800 || { echo "::error::render com $linhas linhas (esperado > 800)"; exit 1; }
+          test "$secoes" -gt 100 || { echo "::error::XML com $secoes secoes (esperado > 100)"; exit 1; }
+          test "$p_com_atributo" -eq 0 || { echo "::error::AGENTS.md proibe atributo em <p> (nivel=, numerado=)"; exit 1; }
+          test "$secao_com_numero" -eq 0 || { echo "::error::AGENTS.md proibe numero= em <secao>"; exit 1; }
+
+          grep -q 'CONDIÇÕES GERAIS DA CONTRATAÇÃO' teste/output_puppeteer.txt || {
+            echo "::error::o render não chegou ao título esperado do TR da AGU"
+            exit 1
+          }
+
+      - name: Publicar artefatos
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: aceitacao
+          path: |
+            teste/output.xml
+            teste/output_puppeteer.txt
+            teste/output_puppeteer.html
+            teste/output_json.json
+          if-no-files-found: warn
+          retention-days: 14
