@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   concatenarXmlsParticionados,
   construirEstadoInicial,
+  extrairCampos,
   extrairIndiceParteXml,
   parseXmlDocument,
   sanitizarXmlParaParser,
@@ -198,5 +199,101 @@ describe('concatenarXmlsParticionados — junção das partes em um documento', 
     expect(saida).toContain('segunda');
     expect(saida.indexOf('primeira')).toBeLessThan(saida.indexOf('segunda'));
     expect(() => parseXmlDocument(saida)).not.toThrow();
+  });
+});
+
+describe('extrairCampos — o <formulario> vira estrutura de campos e grupos', () => {
+  const modeloDe = (formulario: string) => {
+    const doc = parseXmlDocument(
+      `<documento><formulario>${formulario}</formulario><conteudo><p>x</p></conteudo></documento>`
+    );
+    return extrairCampos(doc.querySelector('formulario')!);
+  };
+
+  it('lê rótulo, descrição, placeholder e tipo do campo', () => {
+    const { campos } = modeloDe(
+      '<input id="nome" label="Nome" descricao="Como no RG" placeholder="Digite" tipo="texto" />'
+    );
+    expect(campos.nome).toMatchObject({
+      id: 'nome',
+      label: 'Nome',
+      tipo: 'input',
+      tipoInput: 'texto',
+      descricao: 'Como no RG',
+      placeholder: 'Digite',
+    });
+  });
+
+  it('usa o id como rótulo e o padrão do tipo quando faltam atributos', () => {
+    const { campos } = modeloDe('<number id="valor" />');
+    expect(campos.valor.label).toBe('valor');
+    expect(campos.valor.tipo).toBe('number');
+    expect(campos.valor.tipoInput).toBe('number');
+  });
+
+  it('lê min/max/step do number e aplica 4 linhas ao textarea', () => {
+    const { campos } = modeloDe('<number id="v" min="1" max="10" step="0.5" /><textarea id="t" />');
+    expect(campos.v).toMatchObject({ min: '1', max: '10', step: '0.5' });
+    expect(campos.t.rows).toBe(4);
+  });
+
+  it('lê as opções do select com texto e valor', () => {
+    const { campos } = modeloDe(
+      '<select id="uf"><option>SP</option><option valor="rj">Rio</option></select>'
+    );
+    expect(campos.uf.opcoes).toEqual(['SP', 'Rio']);
+    expect(campos.uf.opcoesDetalhadas).toEqual([
+      { label: 'SP', valor: 'SP', expr: '' },
+      { label: 'Rio', valor: 'rj', expr: '' },
+    ]);
+  });
+
+  it('marca a opção condicional com a expressão do <if> e registra o controle', () => {
+    const { campos } = modeloDe(
+      '<select id="tipo"><option>Sempre</option><if expr="urgente == true"><option>Urgente</option><input id="prazo" /></if></select>'
+    );
+    expect(campos.tipo.opcoes).toEqual(['Sempre', 'Urgente']);
+    expect(campos.tipo.opcoesDetalhadas?.find(o => o.label === 'Urgente')?.expr).toBe('urgente == true');
+    expect(campos.tipo.controlesCondicionais).toEqual([
+      { tipo: 'if', expr: 'urgente == true', itens: [{ tipo: 'campo', id: 'prazo' }] },
+    ]);
+    // o campo que só aparece na condição guarda a expressão
+    expect(campos.prazo.condicao).toBe('urgente == true');
+  });
+
+  it('lê as colunas da tabela por id, por rótulo e por conteúdo', () => {
+    const { campos } = modeloDe(
+      '<tabela id="itens">' +
+        '<coluna id="desc" label="Descrição" />' +
+        '<coluna label="Valor Unitário" tipo="moeda" />' +
+        '<coluna>Valor Total</coluna>' +
+        '<coluna tipo="select" opcoes="a, b"><option>c</option></coluna>' +
+        '</tabela>'
+    );
+    const colunas = campos.itens.colunas || [];
+    // A 4ª coluna não tem id nem label: o rótulo cai no textContent, que aqui é o
+    // texto da <option> — e o id é derivado dele. Por isso 'c' e não 'col_4'.
+    expect(colunas.map(c => c.id)).toEqual(['desc', 'valor_unitario', 'valor_total', 'c']);
+    expect(colunas[0]).toMatchObject({ id: 'desc', label: 'Descrição', tipo: 'input' });
+    expect(colunas[1].tipo).toBe('moeda');
+    expect(colunas[3]).toMatchObject({ tipo: 'select', opcoes: ['a', 'b', 'c'] });
+  });
+
+  it('agrupa por <grupo> e joga os campos soltos no grupo Geral', () => {
+    const { grupos } = modeloDe('<input id="solto" /><grupo titulo="Dados"><input id="a" /><input id="b" /></grupo>');
+    expect(grupos.map(g => g.titulo)).toEqual(['Geral', 'Dados']);
+    expect(grupos[0].campos).toEqual(['solto']);
+    expect(grupos[1].campos).toEqual(['a', 'b']);
+  });
+
+  it('achata na lista do grupo os campos que estão dentro de <if>', () => {
+    const { grupos } = modeloDe('<grupo titulo="G"><if expr="x == 1"><input id="a" /></if></grupo>');
+    expect(grupos[0].campos).toEqual(['a']);
+    expect(grupos[0].itens).toEqual([{ tipo: 'if', expr: 'x == 1', itens: [{ tipo: 'campo', id: 'a' }] }]);
+  });
+
+  it('ignora tag que não é campo e campo sem id', () => {
+    const { campos } = modeloDe('<p>texto</p><input label="sem id" />');
+    expect(Object.keys(campos)).toEqual([]);
   });
 });
