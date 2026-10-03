@@ -1,5 +1,4 @@
 import React from 'react';
-import type { DadosDocumento, ValorCampo } from '../types';
 
 export interface CampoFocoDoc {
   id: string;
@@ -11,19 +10,18 @@ export interface CamposFocoArgs {
   sidebarCollapsed: boolean;
   irParaCampoAtivo: boolean;
   setSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
-  setDados: React.Dispatch<React.SetStateAction<DadosDocumento>>;
 }
 
 /**
  * Hook de foco/destaque bidirecional entre documento e sidebar.
- .
+ *
+ * O rastreamento de "último campo alterado" (ultimoCampoAlterado/versaoCampoAlterado/
+ * origemCampoAlterado) e o handleUpdateField foram removidos: useFormHistory já mantém
+ * esses mesmos dados para os consumidores, e nada lia os valores daqui.
  */
-export function useCamposFoco({ sidebarCollapsed, irParaCampoAtivo, setSidebarCollapsed, setDados }: CamposFocoArgs) {
+export function useCamposFoco({ sidebarCollapsed, irParaCampoAtivo, setSidebarCollapsed }: CamposFocoArgs) {
   const bloquearScrollDocAte = React.useRef(0);
 
-  const [ultimoCampoAlterado, setUltimoCampoAlterado] = React.useState<string | null>(null);
-  const [versaoCampoAlterado, setVersaoCampoAlterado] = React.useState(0);
-  const [origemCampoAlterado, setOrigemCampoAlterado] = React.useState<string | null>(null);
   const [campoFocadoDoc, setCampoFocadoDoc] = React.useState<CampoFocoDoc | null>(null);
   const [campoFocadoSidebar, setCampoFocadoSidebar] = React.useState<{ id: string; timestamp: number } | null>(null);
 
@@ -45,17 +43,6 @@ export function useCamposFoco({ sidebarCollapsed, irParaCampoAtivo, setSidebarCo
     };
   }, []);
 
-  // Atualização de campos com emissão de destaque e posicionamento
-  const handleUpdateField = React.useCallback((id: string, value: ValorCampo, origem = 'painel') => {
-    setDados(prev => ({ ...prev, [id]: value }));
-    setUltimoCampoAlterado(id);
-    setOrigemCampoAlterado(origem);
-    setVersaoCampoAlterado(v => v + 1);
-    if (origem === 'painel') {
-      setCampoFocadoDoc({ id, timestamp: Date.now(), origem: 'painel' });
-    }
-  }, [setDados]);
-
   // Foco acionado ao clicar no campo do Sidebar -> rola para o documento se ativo
   const handleFocusFieldFromSidebar = React.useCallback((fieldId: string) => {
     if (Date.now() < bloquearScrollDocAte.current) return;
@@ -72,16 +59,8 @@ export function useCamposFoco({ sidebarCollapsed, irParaCampoAtivo, setSidebarCo
   }, [sidebarCollapsed, irParaCampoAtivo, setSidebarCollapsed]);
 
   return {
-    bloquearScrollDocAte,
-    ultimoCampoAlterado,
-    setUltimoCampoAlterado,
-    versaoCampoAlterado,
-    setVersaoCampoAlterado,
-    origemCampoAlterado,
-    setOrigemCampoAlterado,
     campoFocadoDoc,
     campoFocadoSidebar,
-    handleUpdateField,
     handleFocusFieldFromSidebar,
     handleFocusFieldInSidebar,
   };

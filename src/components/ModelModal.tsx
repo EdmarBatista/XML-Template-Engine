@@ -28,7 +28,6 @@ import { formatarXmlString } from '../utils/xmlFormatter';
 import { verificarVariaveisXml } from '../utils/xmlEditorCompletions';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { VarsTabEditor, VarsTableResumo } from './ModelModal/VarsTabs';
-import { usePreferencias } from '../hooks/usePreferencias';
 
 import { motivoDoErro } from '../utils/erros';
 export interface ModelModalProps {
@@ -43,7 +42,10 @@ export interface ModelModalProps {
   onApplyXml?: (novoXml: string, novoNome?: string) => void;
   onApplyAll?: (novoXml: string, novosDados: DadosDocumento, novoNome?: string, novasPartes?: XmlPart[]) => void;
   onStartSideBySide?: (xmlContent: string) => void;
-  initialTab?: TabType;
+  /** Aba ativa controlada pelo App (dono da preferência); sem ela o modal usa estado local. */
+  activeTab?: string;
+  /** Notifica a troca de aba para o App persistir a preferência. */
+  onTabChange?: (tab: TabType) => void;
 }
 
 export type TabType = 'vars-edit' | 'vars-readonly' | 'json-dados' | 'xml-edit' | 'json-modelo' | 'comentarios';
@@ -60,11 +62,16 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   onApplyXml,
   onApplyAll,
   onStartSideBySide,
-  initialTab = 'vars-edit',
+  activeTab,
+  onTabChange,
 }) => {
-  const { activeModelModalTab, setActiveModelModalTab } = usePreferencias();
-  const tab = (activeModelModalTab as TabType) || 'vars-edit';
-  const setTab = (t: TabType) => setActiveModelModalTab(t);
+  // A aba vem do App (usePreferencias) como fonte única; sem esse controle, cai em estado local.
+  const [abaLocal, setAbaLocal] = React.useState<TabType>(() => (activeTab as TabType) || 'vars-edit');
+  const tab = (activeTab as TabType) || abaLocal;
+  const setTab = (t: TabType) => {
+    setAbaLocal(t);
+    onTabChange?.(t);
+  };
 
   const [busca, setBusca] = React.useState('');
   const [filtroStatus, setFiltroStatus] = React.useState<'todos' | 'preenchidos' | 'vazios'>('todos');

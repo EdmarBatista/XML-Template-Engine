@@ -179,6 +179,8 @@ export default function App() {
     setEdicaoInline,
     isResizing,
     setIsResizing,
+    activeModelModalTab,
+    setActiveModelModalTab,
   } = usePreferencias();
 
   // Hook de Foco e Sincronização Bidirecional Formulário <-> Documento
@@ -191,7 +193,6 @@ export default function App() {
     sidebarCollapsed,
     irParaCampoAtivo,
     setSidebarCollapsed,
-    setDados,
   });
 
   // C. Hook de Camada Unificada de Exportações e Downloads
@@ -214,10 +215,7 @@ export default function App() {
 
   // D. Hook de Gerenciamento de Modais
   const {
-    setIsXmlEditorOpen,
-    toggleXmlEditor,
     isModelModalOpen,
-    setIsModelModalOpen,
     openModelModal,
     closeModelModal,
     toggleModelModal,
@@ -302,10 +300,6 @@ export default function App() {
     handleDragLeave,
     handleDrop,
   } = useFilePackageActions({
-    xmlName,
-    rawXml,
-    xmlParts,
-    dados,
     setDados,
     carregarXmlEJson,
     adicionarTemplateSilencioso,
@@ -701,6 +695,8 @@ export default function App() {
               setIsSideBySideEditing(true);
               showToast('Modo de Edição lado a lado ativado.');
             }}
+            activeTab={activeModelModalTab}
+            onTabChange={aba => setActiveModelModalTab(aba)}
           />
       )}
 

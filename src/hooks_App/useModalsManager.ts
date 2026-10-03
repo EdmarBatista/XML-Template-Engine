@@ -4,45 +4,34 @@
  * ============================================================================
  *
  * Atribuições & Responsabilidades:
- * 1. Controlar os estados booleanos de visibilidade dos modais do App.
- *    - `isXmlEditorOpen`: Editor de código-fonte XML e dados JSON.
- *    - `isModelModalOpen`: Inspetor de modelo, variáveis e AST intermediário.
- * 2. Disponibilizar métodos utilitários declarativos (`openXmlEditor`, `closeXmlEditor`,
- *    `openModelModal`, `closeModelModal`, `closeAllModals`).
+ * 1. Controlar o estado booleano de visibilidade do modal de modelo/variáveis.
+ * 2. Disponibilizar métodos utilitários declarativos (`openModelModal`, `closeModelModal`,
+ *    `toggleModelModal`, `closeAllModals`).
+ *
+ * O estado antigo do "editor de XML" (isXmlEditorOpen, setIsXmlEditorOpen, openXmlEditor,
+ * closeXmlEditor, toggleXmlEditor) foi removido: nenhum componente o consumia — a edição
+ * lado a lado vive no App (`isSideBySideEditing`) e não existe modal de XML na interface.
  */
 
 import React from 'react';
 
 export function useModalsManager() {
-  const [isXmlEditorOpen, setIsXmlEditorOpen] = React.useState(false);
   const [isModelModalOpen, setIsModelModalOpen] = React.useState(false);
-
-  const openXmlEditor = React.useCallback(() => setIsXmlEditorOpen(true), []);
-  const closeXmlEditor = React.useCallback(() => setIsXmlEditorOpen(false), []);
-  const toggleXmlEditor = React.useCallback(() => setIsXmlEditorOpen(prev => !prev), []);
 
   const openModelModal = React.useCallback(() => setIsModelModalOpen(true), []);
   const closeModelModal = React.useCallback(() => setIsModelModalOpen(false), []);
   const toggleModelModal = React.useCallback(() => setIsModelModalOpen(prev => !prev), []);
 
+  /** Fecha tudo que estiver aberto (hoje só o modal de modelo; mantido para o atalho Esc). */
   const closeAllModals = React.useCallback(() => {
-    setIsXmlEditorOpen(false);
     setIsModelModalOpen(false);
   }, []);
 
   return {
-    isXmlEditorOpen,
-    setIsXmlEditorOpen,
-    openXmlEditor,
-    closeXmlEditor,
-    toggleXmlEditor,
-
     isModelModalOpen,
-    setIsModelModalOpen,
     openModelModal,
     closeModelModal,
     toggleModelModal,
-
     closeAllModals,
   };
 }

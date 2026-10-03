@@ -6,8 +6,9 @@
  * Atribuições & Responsabilidades:
  * 1. Gerenciar interações de Drag & Drop de arquivos (XML, JSON, ZIP).
  * 2. Processar uploads de arquivos XML individuais, preenchimentos JSON e pacotes ZIP.
- * 3. Exportar preenchimento estruturado em formato JSON.
- * 4. Empacotar e baixar modelos e formulários completos em arquivo compactado .ZIP.
+ *
+ * A exportação (JSON/ZIP) é responsabilidade de useDocumentExporters; as cópias que
+ * existiam aqui duplicavam aquele hook e foram removidas.
  */
 
 import React from 'react';
@@ -17,10 +18,6 @@ import { concatenarXmlsParticionados, extrairIndiceParteXml } from '../utils/xml
 
 import { motivoDoErro } from '../utils/erros';
 interface UseFilePackageActionsProps {
-  xmlName: string;
-  rawXml: string;
-  xmlParts?: XmlPart[] | null;
-  dados: DadosDocumento;
   setDados: React.Dispatch<React.SetStateAction<DadosDocumento>>;
   carregarXmlEJson: (
     novoXml: string,
@@ -34,10 +31,6 @@ interface UseFilePackageActionsProps {
 }
 
 export function useFilePackageActions({
-  xmlName,
-  rawXml,
-  xmlParts,
-  dados,
   setDados,
   carregarXmlEJson,
   adicionarTemplateSilencioso,
@@ -233,24 +226,6 @@ export function useFilePackageActions({
     [setDados, showToast]
   );
 
-  // Salvar JSON de preenchimento
-  const handleSaveJson = React.useCallback(() => {
-    FilePackageService.exportJsonData(xmlName, dados);
-    showToast('Arquivo JSON baixado!');
-  }, [xmlName, dados, showToast]);
-
-  // Salvar Pacote ZIP contendo XML (separado se houver partes) + JSON juntos
-  const handleSaveZip = React.useCallback(async () => {
-    try {
-      showToast('Empacotando modelo XML e preenchimento JSON...');
-      await FilePackageService.exportZipPackage(xmlName, rawXml, dados, xmlParts);
-      showToast('Pacote ZIP baixado com sucesso!');
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao gerar pacote ZIP: ' + motivoDoErro(err));
-    }
-  }, [xmlName, rawXml, dados, xmlParts, showToast]);
-
   // Drag and Drop de múltiplos arquivos (.xml, .json ou pacote .zip)
   const handleDragOver = React.useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -275,12 +250,9 @@ export function useFilePackageActions({
 
   return {
     isDraggingFile,
-    processarArquivoZip,
     handleUploadXml,
     handleUploadZip,
     handleUploadJson,
-    handleSaveJson,
-    handleSaveZip,
     handleDragOver,
     handleDragLeave,
     handleDrop,
