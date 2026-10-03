@@ -43,8 +43,7 @@ export function useDocumentExporters({
 
   // Exportar Word (.docx)
   const handleExportWord = React.useCallback(async () => {
-    const docElement = (document.getElementById('documento-visualizado') ||
-      document.querySelector('.document-content-a4, .print\\:p-0 > div')) as HTMLElement;
+    const docElement = document.getElementById('documento-visualizado') as HTMLElement | null;
     if (!docElement) {
       showToast('Elemento visual do documento não encontrado no DOM.', 'erro');
       return;
@@ -64,8 +63,7 @@ export function useDocumentExporters({
 
   // Exportar PDF (.pdf)
   const handleExportPdf = React.useCallback(async () => {
-    const docElement = (document.getElementById('documento-visualizado') ||
-      document.querySelector('.document-content-a4, .print\\:p-0 > div')) as HTMLElement;
+    const docElement = document.getElementById('documento-visualizado') as HTMLElement | null;
     if (!docElement) {
       showToast('Elemento visual do documento não encontrado no DOM.', 'erro');
       return;
