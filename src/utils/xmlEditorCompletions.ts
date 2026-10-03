@@ -26,18 +26,37 @@ export interface ResultadoValidacaoVariaveis {
 /**
  * Extrai todos os campos e colunas declarados no <formulario> de um XML.
  */
+/**
+ * Corpo interno de uma tag: o que fica entre a abertura e o fechamento correspondente.
+ *
+ * Não dá para resolver isso numa única alternância de regex: com a forma <tag .../> como
+ * primeira alternativa, o `>` era consumido sem olhar o fechamento e o corpo saía sempre
+ * vazio. Era o que impedia ler as colunas da <tabela>.
+ */
+function lerCorpoDaTag(xmlString: string, tag: string, inicioDoCorpo: number, autoFechada: boolean): string {
+  if (autoFechada) return '';
+  const resto = xmlString.slice(inicioDoCorpo);
+  const fechamento = new RegExp(`</${tag}\\s*>`, 'i').exec(resto);
+  return fechamento ? resto.slice(0, fechamento.index) : '';
+}
+
+/**
+ * Extrai todos os campos e colunas declarados no <formulario> de um XML.
+ */
 export function extrairCamposDeclarados(xmlString: string): CampoExtraido[] {
   const campos: CampoExtraido[] = [];
   if (!xmlString) return campos;
 
-  // Busca tags de campo no formulário: <input, <number, <textarea, <select, <radio, <checkbox, <date, <tabela
-  const regexCampos = /<(input|number|textarea|select|radio|checkbox|date|tabela)\b([^>]*?)(?:\/?>|>([\s\S]*?)<\/\1>)/gi;
+  // Busca a tag de abertura de cada campo; o corpo sai do fechamento correspondente.
+  const regexCampos = /<(input|number|textarea|select|radio|checkbox|date|tabela)\b([^>]*)>/gi;
   let match: RegExpExecArray | null;
 
   while ((match = regexCampos.exec(xmlString)) !== null) {
     const tag = match[1].toLowerCase();
-    const attrsStr = match[2];
-    const corpoTag = match[3] || '';
+    const autoFechada = /\/\s*$/.test(match[2]);
+    // a barra do self-closing não é atributo
+    const attrsStr = match[2].replace(/\/\s*$/, '');
+    const corpoTag = lerCorpoDaTag(xmlString, tag, regexCampos.lastIndex, autoFechada);
 
     const idMatch = attrsStr.match(/\bid\s*=\s*["']([^"']+)["']/i);
     if (!idMatch) continue;
@@ -51,13 +70,15 @@ export function extrairCamposDeclarados(xmlString: string): CampoExtraido[] {
 
     const colunas: string[] = [];
     if (tag === 'tabela' && corpoTag) {
-      const regexColunas = /<(?:coluna|col)\b([^>]*?)(?:\/?>|>([\s\S]*?)<\/(?:coluna|col)>)/gi;
+      const regexColunas = /<(coluna|col)\b([^>]*)>/gi;
       let colMatch: RegExpExecArray | null;
       let cIdx = 0;
       while ((colMatch = regexColunas.exec(corpoTag)) !== null) {
         cIdx++;
-        const colAttrs = colMatch[1] || '';
-        const colContent = (colMatch[2] || '').trim();
+        const colTag = colMatch[1].toLowerCase();
+        const colAutoFechada = /\/\s*$/.test(colMatch[2]);
+        const colAttrs = colMatch[2].replace(/\/\s*$/, '');
+        const colContent = lerCorpoDaTag(corpoTag, colTag, regexColunas.lastIndex, colAutoFechada).trim();
         const idColMatch = colAttrs.match(/\b(?:id|name)\s*=\s*["']([^"']+)["']/i);
         const labelColMatch = colAttrs.match(/\b(?:label|rotulo|titulo)\s*=\s*["']([^"']+)["']/i);
         const colLabel = labelColMatch ? labelColMatch[1].trim() : (colContent || `Coluna ${cIdx}`);

@@ -31,11 +31,7 @@ describe('extrairCamposDeclarados — leitura do <formulario>', () => {
     expect(campos.map(c => c.id)).toEqual(['ok']);
   });
 
-  // BUG CONHECIDO: a regex de campos põe a forma <tag .../> como primeira alternativa, então
-  // o corpo entre <tabela> e </tabela> nunca é capturado (a variável corpoTag fica sempre
-  // vazia) e nenhuma coluna é lida. O it.fails guarda o comportamento pretendido: quando o
-  // bug for corrigido ele fica vermelho e deve virar teste normal.
-  it.fails('lê as colunas da tabela por id, por rótulo normalizado e por conteúdo', () => {
+  it('lê as colunas da tabela por id, por rótulo normalizado e por conteúdo', () => {
     const xml = `
       <formulario>
         <tabela id="itens" label="Itens">
@@ -47,20 +43,43 @@ describe('extrairCamposDeclarados — leitura do <formulario>', () => {
     expect(extrairCamposDeclarados(xml)[0].colunas).toEqual(['desc', 'valor_unitario', 'valor_total']);
   });
 
-  it('hoje devolve colunas vazias, porque o corpo da <tabela> não é capturado', () => {
-    const umaColuna = extrairCamposDeclarados('<tabela id="itens"><coluna id="desc" /></tabela>');
-    expect(umaColuna[0]).toEqual({
-      id: 'itens',
+  it('lê as colunas nos dois formatos de tag e não repete id', () => {
+    const autoFechadas = extrairCamposDeclarados(
+      '<tabela id="itens"><coluna id="desc" /><coluna label="Valor Unitário" /></tabela>'
+    );
+    expect(autoFechadas[0].colunas).toEqual(['desc', 'valor_unitario']);
+
+    const pareadas = extrairCamposDeclarados(
+      '<tabela id="itens"><coluna>Valor Total</coluna><coluna id="desc" /></tabela>'
+    );
+    expect(pareadas[0].colunas).toEqual(['valor_total', 'desc']);
+
+    const repetidas = extrairCamposDeclarados(
+      '<tabela id="itens"><coluna id="desc" /><coluna id="desc" label="Repetida" /></tabela>'
+    );
+    expect(repetidas[0].colunas).toEqual(['desc']);
+  });
+
+  it('não atribui a uma tabela o corpo da tabela seguinte', () => {
+    const xml = `<formulario>
+      <tabela id="primeira"><coluna id="a" /></tabela>
+      <tabela id="segunda"><coluna id="b" /></tabela>
+    </formulario>`;
+
+    expect(extrairCamposDeclarados(xml).map(c => [c.id, c.colunas])).toEqual([
+      ['primeira', ['a']],
+      ['segunda', ['b']],
+    ]);
+  });
+
+  it('não lê colunas de tabela que veio self-closing', () => {
+    expect(extrairCamposDeclarados('<tabela id="vazia" />')[0]).toEqual({
+      id: 'vazia',
       tag: 'tabela',
-      label: 'itens',
+      label: 'vazia',
       tipo: undefined,
       colunas: [],
     });
-
-    const repetida = extrairCamposDeclarados(
-      '<tabela id="itens"><coluna id="desc" /><coluna id="desc" label="Repetida" /></tabela>'
-    );
-    expect(repetida[0].colunas).toEqual([]);
   });
 });
 
@@ -112,9 +131,7 @@ describe('verificarVariaveisXml — variável usada e não declarada', () => {
     expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['faltante']);
   });
 
-  // Mesma causa do BUG das colunas: sem colunas lidas, a checagem de coluna inexistente
-  // nunca dispara. O it.fails documenta o comportamento pretendido.
-  it.fails('avisa quando a coluna não existe na tabela declarada', () => {
+  it('avisa quando a coluna não existe na tabela declarada', () => {
     const xml = `<documento>
       <formulario><tabela id="itens"><coluna id="desc" /></tabela></formulario>
       <conteudo><p>{{itens.qtd}}</p></conteudo>
@@ -122,10 +139,10 @@ describe('verificarVariaveisXml — variável usada e não declarada', () => {
     expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['itens.qtd']);
   });
 
-  it('hoje não emite aviso nenhum para coluna de tabela', () => {
+  it('não avisa quando a coluna existe na tabela declarada', () => {
     const xml = `<documento>
-      <formulario><tabela id="itens"><coluna id="desc" /></tabela></formulario>
-      <conteudo><p>{{itens.qtd}}</p></conteudo>
+      <formulario><tabela id="itens"><coluna id="desc" label="Descrição" /></tabela></formulario>
+      <conteudo><p>{{itens.desc}}</p></conteudo>
     </documento>`;
     expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual([]);
   });
