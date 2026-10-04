@@ -1,6 +1,6 @@
 
 
-import { converterFormatoData, dataPorExtenso, formatarMoeda, numeroPorExtenso, moedaPorExtenso, converterParaRomano } from './formatacao';
+import { converterFormatoData, dataPorExtenso, formatarMoeda, limparSimboloMoeda, numeroPorExtenso, moedaPorExtenso, converterParaRomano } from './formatacao';
 
 export function formatarCPF(valor: ValorCampo): string {
   if (valor === null || valor === undefined) return '';
@@ -117,7 +117,9 @@ export function normalizarValorCampo(valor: ValorCampo, tipo: DocumentFilterType
     if (typeof valor === 'number') {
       return Number.isFinite(valor) ? valor : '';
     }
-    const texto = String(valor).trim();
+    // Tolerante a "R$ 1.234,56" (valor copiado do texto do documento): o símbolo sai antes de
+    // interpretar, senão o campo e o documento discordariam do mesmo valor.
+    const texto = limparSimboloMoeda(valor);
     if (!texto) return '';
 
     if (texto.includes(',')) {

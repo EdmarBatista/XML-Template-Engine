@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { aplicarMascaraCampo, normalizarValorCampo } from './mascaras';
+import { aplicarFiltroDocumento, aplicarMascaraCampo, normalizarValorCampo } from './mascaras';
+import type { ValorCampo } from '../types';
 
 describe('aplicarMascaraCampo — valor exibido no campo', () => {
   it('formata CPF, CNPJ, CEP e telefone', () => {
@@ -34,6 +35,38 @@ describe('normalizarValorCampo — valor guardado no estado', () => {
     expect(normalizarValorCampo('1.234,56', 'moeda')).toBe(1234.56);
     expect(normalizarValorCampo('1234.56', 'moeda')).toBe(1234.56);
     expect(normalizarValorCampo(987.65, 'moeda')).toBe(987.65);
+  });
+
+  it('aceita o valor com o prefixo R$ (copiado do texto do documento)', () => {
+    expect(normalizarValorCampo('R$ 1.234,56', 'moeda')).toBe(1234.56);
+    expect(normalizarValorCampo('R$ 10', 'moeda')).toBe(10);
+  });
+
+  it('faz o campo da barra lateral e o documento mostrarem o mesmo número', () => {
+    // O NumberFieldInput exibe `aplicarMascaraCampo(normalizarValorCampo(valor, 'moeda'), 'moeda')`
+    // e o documento exibe `aplicarFiltroDocumento(valor, 'moeda')`. Os dois (e o extenso, que lê
+    // o valor como reais) precisam concordar — antes, um valor em texto vindo de JSON divergia.
+    const casos: ValorCampo[] = ['100', '123456', '1.234,56', 'R$ 1.234,56', 1234.56, '10,50', 0];
+
+    for (const valor of casos) {
+      const noCampo = aplicarMascaraCampo(normalizarValorCampo(valor, 'moeda'), 'moeda');
+      const noDocumento = aplicarFiltroDocumento(valor, 'moeda');
+
+      expect(noCampo, `campo × documento para ${JSON.stringify(valor)}`).toBe(noDocumento);
+      expect(noCampo, `campo vazio para ${JSON.stringify(valor)}`).not.toBe('');
+      expect(
+        aplicarFiltroDocumento(valor, 'moedaPorExtenso'),
+        `extenso vazio para ${JSON.stringify(valor)}`
+      ).not.toBe('');
+    }
+
+    // Os casos que antes divergiam: o campo lia o texto "100" como centavos (1,00) enquanto o
+    // documento lia como reais (100,00).
+    expect(aplicarMascaraCampo(normalizarValorCampo('100', 'moeda'), 'moeda')).toBe('100,00');
+    expect(aplicarMascaraCampo(normalizarValorCampo('123456', 'moeda'), 'moeda')).toBe('123.456,00');
+    expect(aplicarFiltroDocumento('123456', 'moedaPorExtenso')).toBe(
+      'cento e vinte e três mil quatrocentos e cinquenta e seis reais'
+    );
   });
 
   it('trata vazio como vazio, não como zero', () => {

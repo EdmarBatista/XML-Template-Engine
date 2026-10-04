@@ -21,7 +21,12 @@ export const NumberFieldInput: React.FC<NumberFieldInputProps> = ({
 }) => {
   const mascara = (campo.tipoInput || '').toLowerCase();
   const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(mascara);
-  const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara) : valor == null ? '' : String(valor);
+  // O que aparece no campo precisa ser o mesmo número que o documento mostra: normaliza
+  // primeiro (mesma regra do filtro) e só depois aplica a máscara. Sem isso, um valor em
+  // texto vindo de JSON ("100") aparecia como 1,00 no campo e 100,00 no documento.
+  const valorExibido = isMasked
+    ? aplicarMascaraCampo(normalizarValorCampo(valor, mascara), mascara)
+    : valor == null ? '' : String(valor);
 
   return (
     <div>
