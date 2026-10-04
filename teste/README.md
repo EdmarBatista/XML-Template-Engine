@@ -8,7 +8,8 @@ Este arquivo contém as observações e regras para os testes de conversão, con
    - O XML gerado é salvo na pasta `teste/output.xml` (e eventuais dados de formulário em `teste/output_json.json`).
 
 2. **Fluxo de Execução com Puppeteer (`teste/gerar.js`)**:
-   - Certifique-se de que o frontend da aplicação está em execução local (porta 3000, `http://localhost:3000`).
+   - Certifique-se de que o frontend da aplicação está em execução local (porta 3000, `http://127.0.0.1:3000`).
+     - O host é o IPv4 literal `127.0.0.1`, e não `localhost`: `localhost` resolve para `::1` antes de `127.0.0.1` e o Vite escuta apenas em IPv4, de modo que outra aplicação na mesma porta em IPv6 atenderia no lugar da nossa. Os scripts aceitam `APP_URL` para apontar para outro endereço.
    - Execute o script de teste com:
      ```bash
      npx tsx teste/gerar.js
@@ -16,7 +17,7 @@ Este arquivo contém as observações e regras para os testes de conversão, con
    - O script executa as seguintes etapas:
      1. Converte o arquivo DOCX modelo (`modelo-de-termo-de-referencia-...docx`) diretamente para `teste/output.xml`.
      2. Inicia o navegador headless via Puppeteer.
-     3. Acessa a aplicação local (`http://localhost:3000`).
+     3. Acessa a aplicação local (`http://127.0.0.1:3000`).
      4. Envia o arquivo XML gerado (`teste/output.xml`) para o campo de upload da aplicação (simulando a ação do usuário no frontend).
      5. Aguarda a renderização completa do documento e o cálculo de todas as numerações dinâmicas.
      6. Extrai o conteúdo em HTML renderizado para `teste/output_puppeteer.html`.
@@ -25,6 +26,11 @@ Este arquivo contém as observações e regras para os testes de conversão, con
 3. **Comparação de Numeração e Validação**:
    - Comparar a numeração e a sequência textual de `teste/output_puppeteer.txt` com o arquivo de referência `teste/pdf_texto.txt`.
    - Verificar se os níveis hierárquicos principais (1, 2, 3, 4, 5, 6, 7, etc.) e subníveis (1.1, 1.2, 4.1, 7.1, 7.2, 7.3.1, etc.) estão devidamente sincronizados e sem saltos indevidos.
+
+4. **Conferências Automatizadas** (scripts complementares ao `gerar.js`):
+   - `node teste/conferir_amostragem.js`: executado a partir da raiz do projeto, lê `teste/output_puppeteer.txt` e `teste/pdf_texto.txt` e imprime 15 amostras numeradas do render lado a lado com o PDF oficial. É informativo — não falha o processo.
+   - `npx tsx teste/conferir_exportacoes.js`: com a aplicação em execução (item 2), exporta o documento pelo botão da barra de ferramentas (PDF e Word), arrasta o `.docx` de volta para a aplicação e confere, contra a coluna direita, a numeração e o texto dos três caminhos: Word arrastado, Word gerado e PDF gerado. Sai com código 1 quando alguma numeração diverge.
+   - Somente os scripts que abrem a aplicação (`gerar.js` e `conferir_exportacoes.js`) aceitam `APP_URL`; o `conferir_amostragem.js` só lê os arquivos já gerados.
 
 **IMPORTANTE:** Este arquivo (README.md) NÃO DEVE SER MODIFICADO futuramente, a não ser que haja uma solicitação explícita para isso.
 

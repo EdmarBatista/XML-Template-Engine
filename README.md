@@ -450,16 +450,16 @@ Aqui está o paralelo exato do que você digita no Word e como o sistema compila
 
 | O que você digita no Word (DOCX) | O que o motor gera no Formulario XML | O que o motor gera no Conteúdo XML |
 |:---|:---|:---|
-| `{{ Nome da Mãe }}`                | `<input id="nome_da_mae" tipo="texto" rotulo="Nome da Mãe" />` | `<p>{{nome_da_mae}}</p>` |
-| <code>{{ Valor &#124; moeda }}</code>              | <code>&lt;number id="valor" tipo="moeda" rotulo="Valor" /&gt;</code>            | <code>&lt;p&gt;{{valor &#124; moeda}}&lt;/p&gt;</code> |
-| <code>{{ Nasc. &#124; data }}</code>               | <code>&lt;date id="nasc" rotulo="Nasc." /&gt;</code>                            | <code>&lt;p&gt;{{nasc &#124; data}}&lt;/p&gt;</code> |
-| <code>{{ Resumo &#124; longo }}</code>              | <code>&lt;textarea id="resumo" rotulo="Resumo" /&gt;</code>                     | `<p>{{resumo}}</p>` |
-| <code>{{ UF &#124; select(AC, AL) }}</code>        | <code>&lt;select id="uf" rotulo="UF"&gt;&lt;option&gt;AC&lt;/option&gt;...&lt;/select&gt;</code> | `<p>{{uf}}</p>` |
-| <code>{{ CNH &#124; radio(Sim, Não) }}</code>      | <code>&lt;radio id="cnh" rotulo="CNH"&gt;&lt;option&gt;Sim&lt;/option&gt;...&lt;/radio&gt;</code> | `<p>{{cnh}}</p>` |
+| `{{ Nome da Mãe }}`                | `<input id="nome_da_mae" tipo="texto" label="Nome da Mãe" />` | `<p>{{nome_da_mae}}</p>` |
+| <code>{{ Valor &#124; moeda }}</code>              | <code>&lt;number id="valor" tipo="moeda" label="Valor" /&gt;</code>            | <code>&lt;p&gt;{{valor &#124; moeda}}&lt;/p&gt;</code> |
+| <code>{{ Nasc. &#124; data }}</code>               | <code>&lt;date id="nasc" label="Nasc." /&gt;</code>                            | <code>&lt;p&gt;{{nasc &#124; data}}&lt;/p&gt;</code> |
+| <code>{{ Resumo &#124; longo }}</code>              | <code>&lt;textarea id="resumo" label="Resumo" /&gt;</code>                     | `<p>{{resumo}}</p>` |
+| <code>{{ UF &#124; select(AC, AL) }}</code>        | <code>&lt;select id="uf" label="UF"&gt;&lt;option&gt;AC&lt;/option&gt;...&lt;/select&gt;</code> | `<p>{{uf}}</p>` |
+| <code>{{ CNH &#124; radio(Sim, Não) }}</code>      | <code>&lt;radio id="cnh" label="CNH"&gt;&lt;option&gt;Sim&lt;/option&gt;...&lt;/radio&gt;</code> | `<p>{{cnh}}</p>` |
 | `{{ if UF == 'SP' }}`              | *(Nenhum campo criado, apenas lógica)*                       | `<if expr="uf == 'SP'">` |
 | `{{ /if }}`                        | *(Fechamento de condicional)*                                | `</if>` |
 | `{{ foreach dependentes }}`        | *(Inicia lista dinâmica na tabela)*                          | `<foreach lista="dependentes" var="item">` |
-| `{{ item.nome }}`                  | `<coluna id="nome" rotulo="Nome" />` (na tabela)           | `{{item.nome}}` |
+| `{{ item.nome }}`                  | `<coluna id="nome" label="Nome" />` (na tabela)           | `{{item.nome}}` |
 | `{{ /foreach }}`                   | *(Fechamento da lista dinâmica)*                             | `</foreach>` |
 
 #### Tabelas Nativas do Word
@@ -606,8 +606,8 @@ O motor conta com um algoritmo avançado de numeração hierárquica contínua q
 |---|---|
 | `<titulo>` / `<subtitulo>` | Títulos e subtítulos principais centralizados ou alinhados |
 | `<secao titulo="..." numerar="true">` | Seção com suporte a aninhamento e recuo automático de 0,5 cm por nível |
-| `<p>` / `<p>` | Parágrafo com alinhamento justificado e espaçamento ajustado |
-| `<b>`, `<i>`, `<u>`, `<s>`, `<mark>` | Formatações inline de texto (negrito, itálico e sublinhado) |
+| `<p>` / `<br>` | Parágrafo com alinhamento justificado e espaçamento ajustado (`<br>` é a quebra de linha manual) |
+| `<b>`, `<i>`, `<u>`, `<s>`, `<mark>` | Formatações inline de texto (negrito, itálico, sublinhado, tachado e marca-texto) |
 | `<lista> ou <lista_numerada>` | Listas ordenadas ou com marcadores |
 | `<tabela>` | Tabelas com suporte a `<cabecalho>`, `<linha>` e `<celula>` |
 | `<if expr="...">` | Exibição condicional de parágrafos ou blocos inteiros |
