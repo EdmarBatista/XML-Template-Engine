@@ -3,6 +3,7 @@ import { Trash2, Plus } from 'lucide-react';
 import { FieldMetadata, FormStructure, DadosDocumento, ValorCampo } from '../../types';
 import {
   aplicarMascaraCampo,
+  exibirValorComMascara,
   normalizarValorCampo,
   obterTipoEfetivoColuna,
 } from '../../utils/documentUtils';
@@ -37,7 +38,7 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
           const valor = dados[id];
           const mascara = (campo?.tipoInput || '').toLowerCase();
           const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(mascara);
-          const valorExibido = isMasked ? aplicarMascaraCampo(valor, mascara) : valor ?? '';
+          const valorExibido = isMasked ? exibirValorComMascara(valor, mascara) : valor ?? '';
 
           return (
             <div
@@ -145,7 +146,7 @@ export const VarsTabEditor: React.FC<VarsTabEditorProps> = ({
                                     const colTipo = obterTipoEfetivoColuna(col.tipo);
                                     const isNumber = colTipo === 'number';
                                     const isMaskedCol = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipo);
-                                    const valorColuna = isMaskedCol ? aplicarMascaraCampo(val, colTipo) : val;
+                                    const valorColuna = isMaskedCol ? exibirValorComMascara(val, colTipo) : val;
                                     return (
                                       <td key={col.id} className="px-2 py-1">
                                         <input

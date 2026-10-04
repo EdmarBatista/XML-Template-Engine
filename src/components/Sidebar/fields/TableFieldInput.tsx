@@ -2,7 +2,7 @@ import React from 'react';
 import type { ValorCampo } from '../../../types';
 import { FieldMetadata, DadosDocumento } from '../../../types';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { aplicarMascaraCampo, normalizarValorCampo, obterTipoEfetivoColuna } from '../../../utils/documentUtils';
+import { aplicarMascaraCampo, exibirValorComMascara, normalizarValorCampo, obterTipoEfetivoColuna } from '../../../utils/documentUtils';
 
 interface TableFieldInputProps {
   campo: FieldMetadata;
@@ -123,7 +123,7 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
                   const valorCelula = linha[col.id] ?? '';
                   const colTipo = obterTipoEfetivoColuna(col.tipo);
                   const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipo);
-                  const valorExibido = isMasked ? aplicarMascaraCampo(valorCelula, colTipo) : valorCelula;
+                  const valorExibido = isMasked ? exibirValorComMascara(valorCelula, colTipo) : valorCelula;
 
                   return (
                     <div key={col.id} className="space-y-0.5">

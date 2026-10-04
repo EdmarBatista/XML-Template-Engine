@@ -1,6 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { aplicarFiltroDocumento, aplicarMascaraCampo, normalizarValorCampo } from './mascaras';
+import {
+  aplicarFiltroDocumento,
+  aplicarMascaraCampo,
+  exibirValorComMascara,
+  normalizarValorCampo,
+} from './mascaras';
 import type { ValorCampo } from '../types';
+
+describe('exibirValorComMascara — valor mostrado na tela', () => {
+  it('mostra o mesmo número que o documento quando o valor está guardado como texto', () => {
+    expect(exibirValorComMascara('100', 'moeda')).toBe('100,00');
+    expect(exibirValorComMascara('123456', 'moeda')).toBe('123.456,00');
+    expect(exibirValorComMascara('R$ 1.234,56', 'moeda')).toBe('1.234,56');
+    expect(exibirValorComMascara(1234.56, 'moeda')).toBe('1.234,56');
+    expect(exibirValorComMascara('1.234,56', 'moeda')).toBe('1.234,56');
+  });
+
+  it('não muda nada nas máscaras que apenas reformatam os dígitos', () => {
+    expect(exibirValorComMascara('12345678901', 'cpf')).toBe('123.456.789-01');
+    expect(exibirValorComMascara('12345678000199', 'cnpj')).toBe('12.345.678/0001-99');
+    expect(exibirValorComMascara('70000000', 'cep')).toBe('70000-000');
+    expect(exibirValorComMascara('61999998888', 'telefone')).toBe('(61) 99999-8888');
+  });
+
+  it('devolve vazio para valor vazio e o texto intacto para tipo sem máscara', () => {
+    expect(exibirValorComMascara('', 'moeda')).toBe('');
+    expect(exibirValorComMascara(null, 'moeda')).toBe('');
+    expect(exibirValorComMascara('texto livre', 'texto')).toBe('texto livre');
+  });
+});
 
 describe('aplicarMascaraCampo — valor exibido no campo', () => {
   it('formata CPF, CNPJ, CEP e telefone', () => {
@@ -43,13 +71,13 @@ describe('normalizarValorCampo — valor guardado no estado', () => {
   });
 
   it('faz o campo da barra lateral e o documento mostrarem o mesmo número', () => {
-    // O NumberFieldInput exibe `aplicarMascaraCampo(normalizarValorCampo(valor, 'moeda'), 'moeda')`
-    // e o documento exibe `aplicarFiltroDocumento(valor, 'moeda')`. Os dois (e o extenso, que lê
-    // o valor como reais) precisam concordar — antes, um valor em texto vindo de JSON divergia.
+    // Quem exibe valor com máscara usa `exibirValorComMascara` e o documento usa
+    // `aplicarFiltroDocumento`. Os dois (e o extenso, que lê o valor como reais) precisam
+    // concordar — antes, um valor em texto vindo de JSON divergia.
     const casos: ValorCampo[] = ['100', '123456', '1.234,56', 'R$ 1.234,56', 1234.56, '10,50', 0];
 
     for (const valor of casos) {
-      const noCampo = aplicarMascaraCampo(normalizarValorCampo(valor, 'moeda'), 'moeda');
+      const noCampo = exibirValorComMascara(valor, 'moeda');
       const noDocumento = aplicarFiltroDocumento(valor, 'moeda');
 
       expect(noCampo, `campo × documento para ${JSON.stringify(valor)}`).toBe(noDocumento);
@@ -62,8 +90,8 @@ describe('normalizarValorCampo — valor guardado no estado', () => {
 
     // Os casos que antes divergiam: o campo lia o texto "100" como centavos (1,00) enquanto o
     // documento lia como reais (100,00).
-    expect(aplicarMascaraCampo(normalizarValorCampo('100', 'moeda'), 'moeda')).toBe('100,00');
-    expect(aplicarMascaraCampo(normalizarValorCampo('123456', 'moeda'), 'moeda')).toBe('123.456,00');
+    expect(exibirValorComMascara('100', 'moeda')).toBe('100,00');
+    expect(exibirValorComMascara('123456', 'moeda')).toBe('123.456,00');
     expect(aplicarFiltroDocumento('123456', 'moedaPorExtenso')).toBe(
       'cento e vinte e três mil quatrocentos e cinquenta e seis reais'
     );

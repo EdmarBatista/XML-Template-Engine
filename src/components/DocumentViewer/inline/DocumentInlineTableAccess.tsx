@@ -2,6 +2,7 @@ import React from 'react';
 import { TableColumnMetadata, ValorCampo, DadosDocumento } from '../../../types';
 import {
   aplicarMascaraCampo,
+  exibirValorComMascara,
   normalizarValorCampo,
   obterTipoEfetivoColuna,
   converterFormatoData,
@@ -286,7 +287,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
         initialVal = Boolean(valorBruto);
       } else {
         initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
-        if (isMasked) initialVal = aplicarMascaraCampo(initialVal, maskName);
+        if (isMasked) initialVal = exibirValorComMascara(initialVal, maskName);
       }
     }
     setValorTemp(initialVal);

@@ -91,6 +91,18 @@ export function aplicarMascaraCampo(valor: ValorCampo, tipo: DocumentFilterType 
 }
 
 
+/**
+ * Valor de um campo com máscara como ele deve APARECER na tela (barra lateral, tabela,
+ * documento): normaliza com a mesma regra que o documento usa e só então aplica a máscara.
+ * Sem isso, um valor guardado como texto (JSON importado ou edição direta) era lido como
+ * centavos num lugar ("100" virava 1,00) e como reais no documento (100,00).
+ *
+ * A digitação continua chamando `aplicarMascaraCampo` direto, onde os dígitos são centavos.
+ */
+export function exibirValorComMascara(valor: ValorCampo, tipo: DocumentFilterType | string): string {
+  return aplicarMascaraCampo(normalizarValorCampo(valor, tipo), tipo);
+}
+
 export function normalizarValorCampo(valor: ValorCampo, tipo: DocumentFilterType | string): ValorCampo {
   const nome = String(tipo || '').toLowerCase().trim();
   if (valor === null || valor === undefined || valor === '') {

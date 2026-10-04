@@ -3,6 +3,7 @@ import { TableColumnMetadata, ValorCampo, DadosDocumento } from '../../../types'
 import {
   aplicarMascaraCampo,
   converterFormatoData,
+  exibirValorComMascara,
   normalizarValorCampo,
   obterTipoEfetivoColuna,
 } from '../../../utils/documentUtils';
@@ -205,7 +206,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
       } else {
         initialVal = valorBruto !== undefined && valorBruto !== null ? String(valorBruto) : '';
         if (isMasked) {
-          initialVal = aplicarMascaraCampo(initialVal, maskName);
+          initialVal = exibirValorComMascara(initialVal, maskName);
         }
       }
       setValorTemp(initialVal);

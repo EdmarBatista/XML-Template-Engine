@@ -3,6 +3,7 @@ import type { NumberingContext } from '../../../types';
 import { FieldMetadata, ValorCampo } from '../../../types';
 import {
   aplicarMascaraCampo,
+  exibirValorComMascara,
   normalizarValorCampo,
 } from '../../../utils/documentUtils';
 
@@ -129,7 +130,7 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
     }
     if (edicaoInline) {
       const valInicial = isMasked
-        ? aplicarMascaraCampo(valorBruto ?? '', tipoMascara)
+        ? exibirValorComMascara(valorBruto ?? '', tipoMascara)
         : valorBruto ?? '';
       setValorTemp(valInicial);
       setEditando(true);
