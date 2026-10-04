@@ -81,6 +81,13 @@ describe('extrairCamposDeclarados — leitura do <formulario>', () => {
       colunas: [],
     });
   });
+
+  it('tira as tags do conteúdo ao derivar o rótulo e o id da coluna', () => {
+    const xml =
+      '<tabela id="itens"><coluna tipo="select"><option>Baixo</option><option>Alto</option></coluna></tabela>';
+
+    expect(extrairCamposDeclarados(xml)[0].colunas).toEqual(['baixo_alto']);
+  });
 });
 
 describe('verificarVariaveisXml — variável usada e não declarada', () => {

@@ -78,7 +78,11 @@ export function extrairCamposDeclarados(xmlString: string): CampoExtraido[] {
         const colTag = colMatch[1].toLowerCase();
         const colAutoFechada = /\/\s*$/.test(colMatch[2]);
         const colAttrs = colMatch[2].replace(/\/\s*$/, '');
-        const colContent = lerCorpoDaTag(corpoTag, colTag, regexColunas.lastIndex, colAutoFechada).trim();
+        const colContent = lerCorpoDaTag(corpoTag, colTag, regexColunas.lastIndex, colAutoFechada)
+          // O conteúdo pode ser markup (ex.: <option>): o rótulo e o id saem do texto, não das tags.
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
         const idColMatch = colAttrs.match(/\b(?:id|name)\s*=\s*["']([^"']+)["']/i);
         const labelColMatch = colAttrs.match(/\b(?:label|rotulo|titulo)\s*=\s*["']([^"']+)["']/i);
         const colLabel = labelColMatch ? labelColMatch[1].trim() : (colContent || `Coluna ${cIdx}`);
