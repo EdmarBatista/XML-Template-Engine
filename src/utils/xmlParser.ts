@@ -1,4 +1,5 @@
 import { AstNode, ColumnType, FieldMetadata, FieldOption, FormGroup, FormItem, FormStructure, IntermediateModel, TableColumnMetadata, XmlPart, DadosDocumento } from '../types';
+import { derivarIdDeColuna, rotuloGenericoDeColuna } from './colunasTabela';
 
 export function sanitizarXmlParaParser(xmlString: string): string {
   let res = String(xmlString || '');
@@ -227,23 +228,10 @@ export function extrairCampos(formularioNode: Element): FormStructure {
       Array.from(campoEl.children)
         .filter(c => ['coluna', 'col', 'item'].includes(c.tagName.toLowerCase()))
         .forEach((colEl, idx) => {
-          let colId = colEl.getAttribute('id') || colEl.getAttribute('name');
-          const colLabel = colEl.getAttribute('label') || colEl.getAttribute('rotulo') || colEl.getAttribute('titulo') || colEl.textContent?.trim() || `Coluna ${idx + 1}`;
-          
-          if (!colId) {
-            if (colLabel && colLabel !== `Coluna ${idx + 1}`) {
-              colId = colLabel
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9_]/g, '_')
-                .replace(/_+/g, '_')
-                .replace(/^_|_$/g, '');
-            }
-            if (!colId) {
-              colId = `col_${idx + 1}`;
-            }
-          }
+          const colIdAtributo = colEl.getAttribute('id') || colEl.getAttribute('name');
+          const colLabel = colEl.getAttribute('label') || colEl.getAttribute('rotulo') || colEl.getAttribute('titulo') || colEl.textContent?.trim() || rotuloGenericoDeColuna(idx + 1);
+          // Mesma regra do leitor do editor (colunasTabela), para os dois concordarem.
+          const colId = colIdAtributo || derivarIdDeColuna(colLabel, idx + 1);
           const rawTipo = (colEl.getAttribute('tipo') || 'input').toLowerCase().trim();
           
           // Mapeamento unificado (um nome canônico por conceito)

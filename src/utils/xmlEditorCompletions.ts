@@ -1,5 +1,6 @@
 import { Completion, CompletionContext, CompletionResult, snippet } from '@codemirror/autocomplete';
 import { extrairVariaveisDaExpressao } from './expressionEvaluator';
+import { derivarIdDeColuna, rotuloGenericoDeColuna } from './colunasTabela';
 
 export const TEMPLATE_NOVO_DOCUMENTO = `<documento>
     <formulario>
@@ -79,23 +80,15 @@ export function extrairCamposDeclarados(xmlString: string): CampoExtraido[] {
         const colAutoFechada = /\/\s*$/.test(colMatch[2]);
         const colAttrs = colMatch[2].replace(/\/\s*$/, '');
         const colContent = lerCorpoDaTag(corpoTag, colTag, regexColunas.lastIndex, colAutoFechada)
-          // O conteúdo pode ser markup (ex.: <option>): o rótulo e o id saem do texto, não das tags.
-          .replace(/<[^>]*>/g, ' ')
-          .replace(/\s+/g, ' ')
+          // As tags saem sem inserir espaço para o texto ficar igual ao textContent do DOM
+          // (é o que o leitor do formulário usa), senão os dois derivariam ids diferentes.
+          .replace(/<[^>]*>/g, '')
           .trim();
         const idColMatch = colAttrs.match(/\b(?:id|name)\s*=\s*["']([^"']+)["']/i);
         const labelColMatch = colAttrs.match(/\b(?:label|rotulo|titulo)\s*=\s*["']([^"']+)["']/i);
-        const colLabel = labelColMatch ? labelColMatch[1].trim() : (colContent || `Coluna ${cIdx}`);
-        let colId = idColMatch ? idColMatch[1].trim() : '';
-        if (!colId) {
-          colId = colLabel
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9_]/g, '_')
-            .replace(/_+/g, '_')
-            .replace(/^_|_$/g, '') || `col_${cIdx}`;
-        }
+        const colLabel = labelColMatch ? labelColMatch[1].trim() : (colContent || rotuloGenericoDeColuna(cIdx));
+        // Mesma regra do leitor do formulário (colunasTabela), para os dois concordarem.
+        const colId = idColMatch ? idColMatch[1].trim() : derivarIdDeColuna(colLabel, cIdx);
         if (colId && !colunas.includes(colId)) {
           colunas.push(colId);
         }

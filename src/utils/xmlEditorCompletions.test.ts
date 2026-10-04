@@ -86,7 +86,9 @@ describe('extrairCamposDeclarados — leitura do <formulario>', () => {
     const xml =
       '<tabela id="itens"><coluna tipo="select"><option>Baixo</option><option>Alto</option></coluna></tabela>';
 
-    expect(extrairCamposDeclarados(xml)[0].colunas).toEqual(['baixo_alto']);
+    // As tags saem SEM inserir espaço, para o texto ficar igual ao textContent do DOM que o
+    // leitor do formulário usa (xmlParser) — assim os dois derivam o mesmo id: 'baixoalto'.
+    expect(extrairCamposDeclarados(xml)[0].colunas).toEqual(['baixoalto']);
   });
 });
 

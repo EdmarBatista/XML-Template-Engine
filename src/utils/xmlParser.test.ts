@@ -11,6 +11,7 @@ import {
   parseXmlDocument,
   sanitizarXmlParaParser,
 } from './xmlParser';
+import { extrairCamposDeclarados } from './xmlEditorCompletions';
 import type { FieldMetadata } from '../types';
 
 describe('sanitizarXmlParaParser — regras de limpeza antes de parsear', () => {
@@ -295,5 +296,24 @@ describe('extrairCampos — o <formulario> vira estrutura de campos e grupos', (
   it('ignora tag que não é campo e campo sem id', () => {
     const { campos } = modeloDe('<p>texto</p><input label="sem id" />');
     expect(Object.keys(campos)).toEqual([]);
+  });
+
+  it('deriva o mesmo id de coluna que o leitor do editor (mesma regra de colunasTabela)', () => {
+    // Os dois leitores de declaração do app precisam concordar: o formulário/render usa
+    // extrairCampos (DOM) e o editor usa extrairCamposDeclarados (regex). Antes, o MESMO XML
+    // produzia ids diferentes: 'baixoalto' × 'baixo_alto' e 'col_4' × 'coluna_4'.
+    const tabelaXml =
+      '<tabela id="itens">' +
+      '<coluna id="desc" label="Descrição" />' +
+      '<coluna tipo="select"><option>Baixo</option><option>Alto</option></coluna>' +
+      '<coluna label="Valor Total" />' +
+      '<coluna />' +
+      '</tabela>';
+
+    const peloFormulario = (modeloDe(tabelaXml).campos.itens.colunas || []).map(c => c.id);
+    const peloEditor = extrairCamposDeclarados(tabelaXml)[0].colunas || [];
+
+    expect(peloFormulario).toEqual(['desc', 'baixoalto', 'valor_total', 'col_4']);
+    expect(peloEditor).toEqual(peloFormulario);
   });
 });
