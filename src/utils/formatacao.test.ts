@@ -71,37 +71,85 @@ describe('dataPorExtenso', () => {
   });
 });
 
+// Tabelas transcritas do arquivo de referência do projeto para escrita de numerais e valores
+// monetários por extenso (.reasonix/attachments/clipboard-20261004-062937.201357-000002.md):
+// sem vírgula entre as classes numéricas, com " e " onde a estrutura do número exigir.
+const NUMEROS_UNIDADES_A_CENTENAS: Array<[number, string]> = [
+  [0, 'zero'], [1, 'um'], [2, 'dois'], [9, 'nove'], [10, 'dez'], [11, 'onze'], [20, 'vinte'],
+  [21, 'vinte e um'], [99, 'noventa e nove'], [100, 'cem'], [101, 'cento e um'], [110, 'cento e dez'],
+  [121, 'cento e vinte e um'], [200, 'duzentos'], [201, 'duzentos e um'],
+  [234, 'duzentos e trinta e quatro'], [500, 'quinhentos'], [999, 'novecentos e noventa e nove'],
+];
+
+const NUMEROS_MILHAR: Array<[number, string]> = [
+  [1000, 'mil'], [1001, 'mil e um'], [1010, 'mil e dez'], [1021, 'mil e vinte e um'], [1100, 'mil e cem'],
+  [1101, 'mil cento e um'], [1110, 'mil cento e dez'], [1200, 'mil e duzentos'], [1201, 'mil duzentos e um'],
+  [1234, 'mil duzentos e trinta e quatro'], [1500, 'mil e quinhentos'], [2000, 'dois mil'],
+  [2001, 'dois mil e um'], [2010, 'dois mil e dez'], [2100, 'dois mil e cem'], [2101, 'dois mil cento e um'],
+  [2200, 'dois mil e duzentos'], [2345, 'dois mil trezentos e quarenta e cinco'],
+  [2500, 'dois mil e quinhentos'], [2501, 'dois mil quinhentos e um'],
+  [9999, 'nove mil novecentos e noventa e nove'], [10000, 'dez mil'], [10001, 'dez mil e um'],
+  [10100, 'dez mil e cem'], [10500, 'dez mil e quinhentos'],
+  [12345, 'doze mil trezentos e quarenta e cinco'],
+  [99999, 'noventa e nove mil novecentos e noventa e nove'], [100000, 'cem mil'], [100001, 'cem mil e um'],
+  [100100, 'cem mil e cem'], [101000, 'cento e um mil'],
+  [123456, 'cento e vinte e três mil quatrocentos e cinquenta e seis'],
+  [999999, 'novecentos e noventa e nove mil novecentos e noventa e nove'],
+];
+
+const NUMEROS_MILHAO_E_ACIMA: Array<[number, string]> = [
+  [1000000, 'um milhão'], [1000001, 'um milhão e um'], [1000100, 'um milhão e cem'],
+  [1001000, 'um milhão e mil'], [1001001, 'um milhão e mil e um'],
+  [1234000, 'um milhão duzentos e trinta e quatro mil'],
+  [1234567, 'um milhão duzentos e trinta e quatro mil quinhentos e sessenta e sete'],
+  [2000000, 'dois milhões'], [2000100, 'dois milhões e cem'], [2500000, 'dois milhões e quinhentos mil'],
+  [9999999, 'nove milhões novecentos e noventa e nove mil novecentos e noventa e nove'],
+  [100000000, 'cem milhões'], [1000000000, 'um bilhão'], [2000000000, 'dois bilhões'],
+  [1234567890, 'um bilhão duzentos e trinta e quatro milhões quinhentos e sessenta e sete mil oitocentos e noventa'],
+];
+
+const TODOS_OS_NUMEROS = [...NUMEROS_UNIDADES_A_CENTENAS, ...NUMEROS_MILHAR, ...NUMEROS_MILHAO_E_ACIMA];
+
 describe('numeroPorExtenso', () => {
   it('escreve unidades, dezenas e centenas', () => {
-    expect(numeroPorExtenso(0)).toBe('zero');
-    expect(numeroPorExtenso(1)).toBe('um');
-    expect(numeroPorExtenso(15)).toBe('quinze');
-    expect(numeroPorExtenso(21)).toBe('vinte e um');
-    expect(numeroPorExtenso(100)).toBe('cem');
-    expect(numeroPorExtenso(101)).toBe('cento e um');
-    expect(numeroPorExtenso(123)).toBe('cento e vinte e três');
+    for (const [entrada, esperado] of NUMEROS_UNIDADES_A_CENTENAS) {
+      expect(numeroPorExtenso(entrada), `numeroPorExtenso(${entrada})`).toBe(esperado);
+    }
   });
 
-  it('escreve milhares, milhões, bilhões e trilhões', () => {
-    expect(numeroPorExtenso(1000)).toBe('mil');
-    expect(numeroPorExtenso(1001)).toBe('mil e um');
-    expect(numeroPorExtenso(1500)).toBe('mil e quinhentos');
-    expect(numeroPorExtenso(100000)).toBe('cem mil');
-    expect(numeroPorExtenso(1000000)).toBe('um milhão');
-    expect(numeroPorExtenso(2000000)).toBe('dois milhões');
-    expect(numeroPorExtenso(1000100)).toBe('um milhão e cem');
-    expect(numeroPorExtenso(1000000000)).toBe('um bilhão');
-    expect(numeroPorExtenso(1000000000000)).toBe('um trilhão');
+  it('escreve o milhar', () => {
+    for (const [entrada, esperado] of NUMEROS_MILHAR) {
+      expect(numeroPorExtenso(entrada), `numeroPorExtenso(${entrada})`).toBe(esperado);
+    }
   });
 
-  it('usa vírgula quando o último grupo não é centena exata nem menor que 100', () => {
-    expect(numeroPorExtenso(1234)).toBe('mil, duzentos e trinta e quatro');
-    expect(numeroPorExtenso(2234)).toBe('dois mil, duzentos e trinta e quatro');
+  it('escreve milhão, milhões e bilhão', () => {
+    for (const [entrada, esperado] of NUMEROS_MILHAO_E_ACIMA) {
+      expect(numeroPorExtenso(entrada), `numeroPorExtenso(${entrada})`).toBe(esperado);
+    }
+  });
+
+  it('não usa vírgula para separar classes numéricas (regressão principal do .md)', () => {
+    for (const [entrada] of TODOS_OS_NUMEROS) {
+      expect(numeroPorExtenso(entrada), `numeroPorExtenso(${entrada})`).not.toContain(',');
+    }
+    // os casos que antes saíam com vírgula
+    expect(numeroPorExtenso(1234)).toBe('mil duzentos e trinta e quatro');
+    expect(numeroPorExtenso(2234)).toBe('dois mil duzentos e trinta e quatro');
+    expect(numeroPorExtenso(1234567)).toBe(
+      'um milhão duzentos e trinta e quatro mil quinhentos e sessenta e sete'
+    );
   });
 
   it('trunca decimais e trata negativos', () => {
     expect(numeroPorExtenso(1.9)).toBe('um');
     expect(numeroPorExtenso(-5)).toBe('menos cinco');
+  });
+
+  it('escreve trilhão e mantém números fora das tabelas', () => {
+    expect(numeroPorExtenso(1000000000000)).toBe('um trilhão');
+    expect(numeroPorExtenso(15)).toBe('quinze');
+    expect(numeroPorExtenso(123)).toBe('cento e vinte e três');
   });
 
   it('usa a forma feminina quando numDois é falso', () => {
@@ -131,6 +179,12 @@ describe('parseNumeroMoeda', () => {
     expect(parseNumeroMoeda('1.234')).toBe(1.234);
   });
 
+  it('ignora o símbolo da moeda (valor copiado do texto do documento)', () => {
+    expect(parseNumeroMoeda('R$ 1.234,56')).toBe(1234.56);
+    expect(parseNumeroMoeda('R$ 10,00')).toBe(10);
+    expect(parseNumeroMoeda('R$ 10')).toBe(10);
+  });
+
   it('devolve NaN para vazio ou não numérico', () => {
     expect(Number.isNaN(parseNumeroMoeda(''))).toBe(true);
     expect(Number.isNaN(parseNumeroMoeda(null))).toBe(true);
@@ -140,33 +194,103 @@ describe('parseNumeroMoeda', () => {
   });
 });
 
+const MOEDA_REAIS_E_CENTAVOS: Array<[number, string]> = [
+  [0, 'zero reais'], [1, 'um real'], [2, 'dois reais'], [0.01, 'zero reais e um centavo'],
+  [1.01, 'um real e um centavo'], [1.5, 'um real e cinquenta centavos'], [10, 'dez reais'],
+  [10.1, 'dez reais e dez centavos'], [21.3, 'vinte e um reais e trinta centavos'], [100, 'cem reais'],
+  [101.05, 'cento e um reais e cinco centavos'],
+  [234.56, 'duzentos e trinta e quatro reais e cinquenta e seis centavos'],
+  [999.99, 'novecentos e noventa e nove reais e noventa e nove centavos'],
+];
+
+const MOEDA_MILHARES: Array<[number, string]> = [
+  [1000, 'mil reais'], [1001, 'mil e um reais'], [1010, 'mil e dez reais'], [1100, 'mil e cem reais'],
+  [1234, 'mil duzentos e trinta e quatro reais'],
+  [1234.56, 'mil duzentos e trinta e quatro reais e cinquenta e seis centavos'],
+  [1500, 'mil e quinhentos reais'], [2500, 'dois mil e quinhentos reais'],
+  [2501, 'dois mil quinhentos e um reais'],
+  [9999.99, 'nove mil novecentos e noventa e nove reais e noventa e nove centavos'],
+  [10000, 'dez mil reais'], [10001.01, 'dez mil e um reais e um centavo'],
+  [10500, 'dez mil e quinhentos reais'],
+  [12345.67, 'doze mil trezentos e quarenta e cinco reais e sessenta e sete centavos'],
+  [100000, 'cem mil reais'], [100100.1, 'cem mil e cem reais e dez centavos'],
+  [123456.78, 'cento e vinte e três mil quatrocentos e cinquenta e seis reais e setenta e oito centavos'],
+];
+
+const MOEDA_MILHOES: Array<[number, string]> = [
+  [1000000, 'um milhão de reais'], [1000000.01, 'um milhão de reais e um centavo'],
+  [1000001, 'um milhão e um reais'], [1200000, 'um milhão e duzentos mil reais'],
+  [1234567.89, 'um milhão duzentos e trinta e quatro mil quinhentos e sessenta e sete reais e oitenta e nove centavos'],
+  [2000000, 'dois milhões de reais'], [2500000, 'dois milhões e quinhentos mil reais'],
+  [10000000, 'dez milhões de reais'],
+];
+
+const MOEDA_TEXTO_BRASILEIRO: Array<[string, string]> = [
+  ['1,00', 'um real'], ['10,50', 'dez reais e cinquenta centavos'], ['1.000,00', 'mil reais'],
+  ['1.001,01', 'mil e um reais e um centavo'],
+  ['1.234,56', 'mil duzentos e trinta e quatro reais e cinquenta e seis centavos'],
+  ['2.500,00', 'dois mil e quinhentos reais'],
+  ['12.345,67', 'doze mil trezentos e quarenta e cinco reais e sessenta e sete centavos'],
+  ['100.000,00', 'cem mil reais'],
+  ['123.456,78', 'cento e vinte e três mil quatrocentos e cinquenta e seis reais e setenta e oito centavos'],
+  ['1.000.000,00', 'um milhão de reais'],
+  ['1.234.567,89', 'um milhão duzentos e trinta e quatro mil quinhentos e sessenta e sete reais e oitenta e nove centavos'],
+];
+
+const TODOS_OS_VALORES_DE_MOEDA: Array<[number, string]> = [
+  ...MOEDA_REAIS_E_CENTAVOS,
+  ...MOEDA_MILHARES,
+  ...MOEDA_MILHOES,
+];
+
 describe('moedaPorExtenso', () => {
-  it('escreve reais e centavos', () => {
-    expect(moedaPorExtenso(1)).toBe('um real');
-    expect(moedaPorExtenso(10)).toBe('dez reais');
-    expect(moedaPorExtenso(1.01)).toBe('um real e um centavo');
-    expect(moedaPorExtenso(2.5)).toBe('dois reais e cinquenta centavos');
-    expect(moedaPorExtenso(0.005)).toBe('um centavo');
+  it('escreve reais e centavos, com singular e plural', () => {
+    for (const [entrada, esperado] of MOEDA_REAIS_E_CENTAVOS) {
+      expect(moedaPorExtenso(entrada), `moedaPorExtenso(${entrada})`).toBe(esperado);
+    }
   });
 
-  it('trata zero, milhão redondo e texto mascarado sem o prefixo R$', () => {
-    expect(moedaPorExtenso(0)).toBe('zero reais');
-    expect(moedaPorExtenso(1000000)).toBe('um milhão de reais');
-    expect(moedaPorExtenso(2000000)).toBe('dois milhões de reais');
-    // O R$ fica no texto do template, não no valor do campo: com prefixo, não converte.
-    expect(moedaPorExtenso('R$ 10,00')).toBe('');
-    expect(moedaPorExtenso('10,00')).toBe('dez reais');
-    expect(moedaPorExtenso('1.234,56')).toBe(
-      'mil, duzentos e trinta e quatro reais e cinquenta e seis centavos'
+  it('escreve os milhares (casos críticos da vírgula)', () => {
+    for (const [entrada, esperado] of MOEDA_MILHARES) {
+      expect(moedaPorExtenso(entrada), `moedaPorExtenso(${entrada})`).toBe(esperado);
+    }
+  });
+
+  it('escreve os milhões, usando "de reais" no milhão redondo', () => {
+    for (const [entrada, esperado] of MOEDA_MILHOES) {
+      expect(moedaPorExtenso(entrada), `moedaPorExtenso(${entrada})`).toBe(esperado);
+    }
+  });
+
+  it('aceita o valor escrito no formato brasileiro', () => {
+    for (const [entrada, esperado] of MOEDA_TEXTO_BRASILEIRO) {
+      expect(moedaPorExtenso(entrada), `moedaPorExtenso("${entrada}")`).toBe(esperado);
+    }
+  });
+
+  it('não usa vírgula no extenso do valor', () => {
+    for (const [entrada] of TODOS_OS_VALORES_DE_MOEDA) {
+      expect(moedaPorExtenso(entrada), `moedaPorExtenso(${entrada})`).not.toContain(',');
+    }
+    // o caso que antes saía com vírgula
+    expect(moedaPorExtenso(1234.56)).toBe(
+      'mil duzentos e trinta e quatro reais e cinquenta e seis centavos'
+    );
+    expect(moedaPorExtenso('1.234.567,89')).toBe(
+      'um milhão duzentos e trinta e quatro mil quinhentos e sessenta e sete reais e oitenta e nove centavos'
     );
   });
 
-  it('documenta a divergência com o filtro moeda: centavos x reais', () => {
-    // O filtro `moeda` (máscara) interpreta o texto digitado sem separador como centavos…
-    expect(formatarMoeda('123456')).toBe('1.234,56');
-    // …enquanto moedaPorExtenso interpreta o mesmo texto como reais.
-    expect(moedaPorExtenso('123456')).toBe(
-      'cento e vinte e três mil, quatrocentos e cinquenta e seis reais'
+  it('começa por "zero reais" quando não há reais inteiros', () => {
+    expect(moedaPorExtenso(0.01)).toBe('zero reais e um centavo');
+    expect(moedaPorExtenso(0.005)).toBe('zero reais e um centavo');
+    expect(moedaPorExtenso('0,10')).toBe('zero reais e dez centavos');
+  });
+
+  it('aceita o valor com o prefixo R$ (copiado do texto do documento)', () => {
+    expect(moedaPorExtenso('R$ 10,00')).toBe('dez reais');
+    expect(moedaPorExtenso('R$ 1.234,56')).toBe(
+      'mil duzentos e trinta e quatro reais e cinquenta e seis centavos'
     );
   });
 

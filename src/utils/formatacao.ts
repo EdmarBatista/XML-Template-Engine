@@ -196,22 +196,22 @@ export function numeroPorExtenso(numeroInput: ValorCampo, numDois = true): strin
     return partes[0].texto;
   }
 
-  // Conectar classes de acordo com a gramática brasileira:
-  // Se o último grupo for < 100 ou centena exata (100, 200, etc.), liga-se com " e "
-  // Caso contrário, separa-se com vírgula ", "
+  // Conectar as classes numéricas conforme a convenção de documentos administrativos:
+  // SEM vírgula entre classes. A conjunção " e " entra quando a classe seguinte é menor que 100
+  // ou uma centena exata, em qualquer posição — ex.: 1.234 -> "mil duzentos e trinta e quatro";
+  // 1.500 -> "mil e quinhentos"; 1.001.001 -> "um milhão e mil e um".
   let resultado = partes[0].texto;
 
   for (let i = 1; i < partes.length; i++) {
     const atual = partes[i];
-    const isUltimo = i === partes.length - 1;
     const v = atual.valor;
     const ehCentenaExata = v % 100 === 0;
     const ehMenorQue100 = v < 100;
 
-    if (isUltimo && (ehMenorQue100 || ehCentenaExata)) {
+    if (ehMenorQue100 || ehCentenaExata) {
       resultado += ' e ' + atual.texto;
     } else {
-      resultado += ', ' + atual.texto;
+      resultado += ' ' + atual.texto;
     }
   }
 
@@ -220,6 +220,18 @@ export function numeroPorExtenso(numeroInput: ValorCampo, numDois = true): strin
 
 
 
+/**
+ * Remove símbolo de moeda e espaços de um valor digitado ou colado no documento
+ * (ex.: "R$ 1.234,56" -> "1.234,56"). Sem isso, um valor copiado do próprio texto do
+ * documento não era reconhecido e o extenso saía vazio.
+ */
+export function limparSimboloMoeda(valor: ValorCampo): string {
+  return String(valor ?? '')
+    .replace(/R\$|BRL|US\$|\$/gi, '')
+    .replace(/\s+/g, '')
+    .trim();
+}
+
 export function parseNumeroMoeda(valor: ValorCampo): number {
   if (valor === null || valor === undefined || valor === '') {
     return NaN;
@@ -227,7 +239,7 @@ export function parseNumeroMoeda(valor: ValorCampo): number {
   if (typeof valor === 'number') {
     return Number.isFinite(valor) ? valor : NaN;
   }
-  let str = String(valor).trim();
+  let str = limparSimboloMoeda(valor);
   if (!str) return NaN;
 
   // Se contiver vírgula (ex: "1.234,56" ou "0,10" ou "11000,23")
@@ -268,6 +280,10 @@ export function moedaPorExtenso(numeroInput: ValorCampo): string {
         extenso += inteiroExtenso + ' reais';
       }
     }
+  } else {
+    // R$ 0,01 -> "zero reais e um centavo": o extenso começa pela mesma quantia de reais
+    // que aparece nos algarismos, mesmo quando ela é zero.
+    extenso = 'zero reais';
   }
 
   if (centavos > 0) {
