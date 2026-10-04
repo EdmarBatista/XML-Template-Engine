@@ -198,6 +198,12 @@ export interface NumberingContext {
   lastLevel8Number?: string;
   levelCounters?: Record<number, number>;
   levelNumbers?: Record<number, string>;
+  /**
+   * Sementes de numeração vindas do Word (`next`/`subNext`/`subSubNext`), guardadas na
+   * primeira chamada do renderizador para serem consumidas somente quando o nível
+   * correspondente for realmente emitido. Uso interno — não é preciso preencher.
+   */
+  sementes?: Record<number, number>;
   lastNumber: string;
   habilitado: boolean;
   numerarBlocos: boolean;

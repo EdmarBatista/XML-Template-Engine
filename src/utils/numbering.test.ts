@@ -89,13 +89,32 @@ describe('calcularProximoNumero — contexto reidratado', () => {
   it('usa next como semente do contador quando o contexto vem do Word', () => {
     const c = ctx({ prefixo: '1', next: 5 });
     expect(calcularProximoNumero(c, 2, 2)).toBe('1.5');
-    // emitir um número no nível de cima zera os contadores mais profundos,
-    // inclusive a semente subNext que veio do Word
+    // Sem semente para o nível 3, o filho do primeiro pai do nível 2 começa em 1.
     expect(calcularProximoNumero(c, 3, 2)).toBe('1.5.1');
   });
 
   it('usa subNext como semente quando o primeiro número é de nível mais fundo', () => {
     const c = ctx({ prefixo: '1', subNext: 3 });
     expect(calcularProximoNumero(c, 3, 2)).toBe('1.1.3');
+  });
+
+  it('não descarta a semente subNext antes de o nível ser emitido', () => {
+    const c = ctx({ prefixo: '1', next: 5, subNext: 3 });
+
+    expect(calcularProximoNumero(c, 2, 2)).toBe('1.5');
+    // O nível 3 ainda não foi emitido: a semente 3 vinda do Word continua valendo, mesmo
+    // depois de o número de nível 2 ter reiniciado os contadores mais profundos.
+    expect(calcularProximoNumero(c, 3, 2)).toBe('1.5.3');
+    expect(calcularProximoNumero(c, 3, 2)).toBe('1.5.4');
+    // Consumida a semente, o filho do novo pai do nível 2 recomeça em 1.
+    expect(calcularProximoNumero(c, 2, 2)).toBe('1.6');
+    expect(calcularProximoNumero(c, 3, 2)).toBe('1.6.1');
+  });
+
+  it('não descarta a semente subSubNext antes de o nível ser emitido', () => {
+    const c = ctx({ prefixo: '1', next: 5, subNext: 3, subSubNext: 2 });
+
+    expect(calcularProximoNumero(c, 2, 2)).toBe('1.5');
+    expect(calcularProximoNumero(c, 4, 2)).toBe('1.5.1.2');
   });
 });

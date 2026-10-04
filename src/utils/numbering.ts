@@ -12,6 +12,13 @@ export function calcularProximoNumero(
       4: contextoNumeracao.subSubNext || 1,
       5: 1, 6: 1, 7: 1, 8: 1,
     };
+    // Guarda as sementes vindas do Word: elas valem para a PRIMEIRA emissão de cada nível e
+    // não podem ser apagadas por um reinício causado por número de nível mais raso. Sem isso,
+    // com next=5 e subNext=3 o contexto emitia 1.5 e depois 1.5.1 (a semente 3 se perdia).
+    contextoNumeracao.sementes = {};
+    if (contextoNumeracao.next) contextoNumeracao.sementes[2] = contextoNumeracao.next;
+    if (contextoNumeracao.subNext) contextoNumeracao.sementes[3] = contextoNumeracao.subNext;
+    if (contextoNumeracao.subSubNext) contextoNumeracao.sementes[4] = contextoNumeracao.subSubNext;
   }
   if (!contextoNumeracao.levelNumbers) {
     contextoNumeracao.levelNumbers = {};
@@ -58,9 +65,13 @@ export function calcularProximoNumero(
   contextoNumeracao.levelCounters[relativeLvl] = currentIdx + 1;
   contextoNumeracao.levelNumbers[relativeLvl] = num;
   contextoNumeracao.lastNumber = num;
+  // a semente do nível emitido foi consumida
+  if (contextoNumeracao.sementes) delete contextoNumeracao.sementes[relativeLvl];
 
   for (let d = relativeLvl + 1; d <= 8; d++) {
-    contextoNumeracao.levelCounters[d] = 1;
+    // O nível mais profundo reinicia — mas se a semente dele ainda não foi usada, ela volta
+    // ao contador: é o que continua a numeração que veio do Word em vez de recomeçar em 1.
+    contextoNumeracao.levelCounters[d] = contextoNumeracao.sementes?.[d] ?? 1;
     delete contextoNumeracao.levelNumbers[d];
   }
 
