@@ -38,6 +38,7 @@
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^6.1.1",
     "jsdom": "^30.0.1",
+    "pdfjs-dist": "^6.4.299",
     "pdfmake": "^0.3.11",
     "puppeteer": "^25.9.0",
     "rollup-plugin-external-globals": "^0.13.0",
