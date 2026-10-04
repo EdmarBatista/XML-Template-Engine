@@ -36,7 +36,10 @@
  *   npm run dev
  *   npx tsx teste/conferir_exportacoes.js
  *
- * Porta/URL configurável por APP_URL (padrão http://localhost:3000).
+ * Porta/URL configurável por APP_URL (padrão http://127.0.0.1:3000).
+ * O padrão é o IPv4 literal de propósito: "localhost" resolve para `::1` antes de
+ * `127.0.0.1` (ordem `verbatim` do Node), e o vite escuta só em IPv4 (0.0.0.0) —
+ * se outra aplicação ocupar a mesma porta em IPv6, "localhost" fala com o alvo errado.
  * Sai com código 1 quando alguma numeração divergir.
  */
 
@@ -59,7 +62,7 @@ global.XMLSerializer = dom.window.XMLSerializer;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+const APP_URL = process.env.APP_URL || 'http://127.0.0.1:3000';
 /** Mesmo DOCX de referência usado pelo gerar.js. */
 const DOCX_ORIGEM = path.resolve(
   __dirname,

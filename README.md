@@ -827,18 +827,20 @@ Converte o `.docx` de referência, sobe a aplicação, renderiza no Chrome (Pupp
 # 1. Em um terminal, suba a aplicação
 npm run dev
 
-# 2. Em outro, rode a bancada (padrão: http://localhost:3000)
+# 2. Em outro, rode a bancada (padrão: http://127.0.0.1:3000)
 npx tsx teste/gerar.js
 
-# Se a porta 3000 estiver ocupada por outra aplicação, aponte a URL:
-APP_URL=http://127.0.0.1:3000 npx tsx teste/gerar.js
+# Para apontar para outro endereço, sobrescreva com APP_URL:
+APP_URL=http://192.168.0.10:3000 npx tsx teste/gerar.js
 
 # 3. Conferências
 node teste/conferir_amostragem.js      # 15 amostras numeradas vs. teste/pdf_texto.txt
 npx tsx teste/conferir_exportacoes.js  # paridade: tela x Word (arrastado e gerado) x PDF
 ```
 
-> No PowerShell, a variável de ambiente é definida em linha própria: `$env:APP_URL='http://127.0.0.1:3000'; npx tsx teste/gerar.js`
+> O padrão da bancada é `127.0.0.1` (IPv4 literal), e não `localhost`: o nome `localhost` resolve para `::1` antes de `127.0.0.1` (ordem `verbatim` do Node), enquanto o Vite escuta apenas em IPv4 — com `localhost`, outra aplicação na mesma porta em IPv6 responderia no lugar da sua.
+
+> No PowerShell, a variável de ambiente é definida em linha própria: `$env:APP_URL='http://192.168.0.10:3000'; npx tsx teste/gerar.js`
 
 Artefatos gravados em `teste/`: `output.xml`, `output_json.json`, `output_puppeteer.txt` e `output_puppeteer.html`. Junto com `pdf_texto.txt`, formam as **baselines de referência** versionadas — servem para comparar, não para sobrescrever sem intenção.
 

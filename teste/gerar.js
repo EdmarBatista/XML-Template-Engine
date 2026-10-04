@@ -37,12 +37,12 @@ async function main() {
   });
   
   const page = await browser.newPage();
-  // Porta/URL configuravel por variavel de ambiente. O padrao permanece o do
-  // teste/README.md (http://localhost:3000). Existe porque outra aplicacao pode
-  // ocupar a mesma porta em IPv6 (::{1}) enquanto o vite escuta so em IPv4
-  // (0.0.0.0) — nesse caso "localhost" resolve para a outra app e o teste fala
-  // com o alvo errado. Rodar com APP_URL=http://127.0.0.1:3000 contorna isso.
-  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  // Porta/URL configuravel por variavel de ambiente. O padrao e o IPv4 literal
+  // (http://127.0.0.1:3000), e nao "localhost": o nome resolve para `::1` antes de
+  // `127.0.0.1` (ordem verbatim do Node), enquanto o vite escuta so em IPv4 (0.0.0.0).
+  // Com "localhost", outra aplicacao na mesma porta em IPv6 responde no lugar da nossa
+  // e o teste fala com o alvo errado. APP_URL sobrescreve quando for preciso.
+  const appUrl = process.env.APP_URL || 'http://127.0.0.1:3000';
   console.log(`Acessando aplicação local (${appUrl})...`);
 
   try {
