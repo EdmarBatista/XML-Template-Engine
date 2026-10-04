@@ -248,7 +248,7 @@ Isso torna a ferramenta especialmente útil para processos em que existe uma gra
   - **Inspetor de Variáveis e Modelo**: Painel para visualização da árvore AST, lista de variáveis detectadas e alertas de validação de escopo.
 - 🌐 **Consultas e Máscaras Automáticas**:
   - Máscaras para **telefone** (fixo e celular), monetária (`moeda`), CPF, CNPJ e CEP, com validação rigorosa integrada.
-  - Consulta automática de CEP via **ViaCEP** e CNPJ via **ReceitaWS/OpenCNPJ**.
+  - Consulta automática de CEP via **ViaCEP** e CNPJ via **OpenCNPJ** (`api.opencnpj.org`).
   - Formatação de valores e datas por extenso em português.
 - 💾 **Persistência Local**: Todo o estado (modelos customizados, dados preenchidos, zoom, preferências de barra lateral e exibição) é persistido no `localStorage`.
 - 📥 **Gestão de Modelos, Drag & Drop e Histórico**:
@@ -590,13 +590,14 @@ O motor conta com um algoritmo avançado de numeração hierárquica contínua q
 | Filtro | Exemplo de Entrada | Saída Formatada |
 |---|---|---|
 | `moeda` | `1500.5` ou `1500,50` | `1.500,50` |
-| `moedaPorExtenso` | `1500.50` | `um mil e quinhentos reais e cinquenta centavos` |
+| `moedaPorExtenso` | `1500.50` | `mil e quinhentos reais e cinquenta centavos` |
 | `numeroPorExtenso` | `42` | `quarenta e dois` |
 | `data` | `2026-08-25` | `25/08/2026` |
 | `dataPorExtenso` | `2026-08-25` | `25 de agosto de 2026` |
 | `cpf` | `12345678900` | `123.456.789-00` |
 | `cnpj` | `12345678000195` | `12.345.678/0001-95` |
 | `cep` | `01001000` | `01001-000` |
+| `telefone` | `11987654321` | `(11) 98765-4321` |
 | `romano` | `14` | `XIV` |
 
 #### Tags Estruturais:
@@ -646,11 +647,12 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 
 | Camada | Tecnologia |
 |---|---|
-| **Framework & UI** | React 19, TypeScript, Vite 6, Tailwind CSS v4 |
-| **Animações & Ícones** | Lucide React, Motion |
+| **Framework & UI** | React 19, TypeScript 7, Vite 8, Tailwind CSS v4 |
+| **Ícones** | Lucide React |
 | **Editor de Código** | CodeMirror 6 (`@uiw/react-codemirror`, `@codemirror/lang-xml`, `@codemirror/lang-json`) |
-| **Geração e Conversão de Documentos** | `docx` (Word), `pdfmake` (PDF), `jszip` (Leitura Nativa DOCX -> XML) |
+| **Geração e Conversão de Documentos** | `docx` 9.8.1 (Word), `pdfmake` 0.3.11 (PDF), `jszip` 3.10.2 (leitura Nativa DOCX -> XML e pacotes ZIP) — mesmas versões fixadas nas tags de CDN do `index.html` |
 | **Parsing & AST** | Parser XML customizado para árvore sintática intermediária (AST) |
+| **Testes** | Vitest 5 + Testing Library (jsdom) na suíte unitária; Puppeteer 25 e `pdfjs-dist` na bancada de aceitação |
 
 ---
 
@@ -740,32 +742,43 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 │   │   ├── validacao.ts            # Validações (email/CPF/CNPJ/CEP) e validarCampo
 │   │   ├── listas.ts               # CSV/foreach (formatarItemForeach, valoresDaLista)
 │   │   ├── caminhos.ts             # obterValorPorCaminho e obterTipoEfetivoColuna
+│   │   ├── colunasTabela.ts        # Rótulo genérico e id de coluna derivado do rótulo
 │   │   ├── paragraphs.ts           # Quebra de parágrafos por \n / <br>
 │   │   ├── numbering.ts            # Contexto e cálculo hierárquico puro de numeração de seções
 │   │   ├── domDocumentExtractor.ts # Extrator semântico DOM para Word e PDF
 │   │   ├── expressionEvaluator.ts  # Avaliador de expressões lógicas (<if expr="...">)
+│   │   ├── erros.ts                # Extração segura da mensagem de erro (unknown -> texto)
 │   │   ├── pdfExporter.ts          # Exportador nativo para PDF (via DOM)
 │   │   ├── wordExporter.ts         # Exportador para Microsoft Word (via DOM) (.docx)
+│   │   ├── wordDom.ts              # Contrato dos atributos data-word-* entre renderizador e exportadores
 │   │   ├── xmlParser.ts            # Parser XML -> Modelo Intermediário (AST)
 │   │   ├── xmlFormatter.ts         # Formatador e embelezador de XML
 │   │   ├── xmlLinter.ts            # Linter em tempo real para validação e alertas de tags inválidas
 │   │   └── xmlEditorCompletions.ts # Autocomplete inteligente de tags, atributos e variáveis
 │   ├── types.ts                    # Definições de tipos TypeScript
+│   ├── vite-env.d.ts               # Tipos de ambiente do Vite (import.meta.env)
 │   ├── App.tsx                     # Componente raiz e gerenciador de estado
 │   ├── main.tsx                    # Ponto de entrada da aplicação React
 │   └── index.css                   # Estilos globais Tailwind CSS
 ├── index.html                      # HTML principal da aplicação
 ├── package.json                    # Dependências e scripts npm
 ├── tsconfig.json                   # Configurações do compilador TypeScript
-└── vite.config.ts                  # Configuração do Vite e plugins
+├── vite.config.ts                  # Configuração do Vite e plugins
+├── vitest.config.ts                # Configuração do Vitest (suíte unitária)
+├── zip_standalone.js               # Empacota o build em app_standalone.html e .zip
+├── teste/                          # Bancada de aceitação ponta a ponta e baselines de comparação
+├── .github/workflows/              # CI: deploy no GitHub Pages e aceitação manual
+└── AGENTS.md                       # Regras e diretrizes do projeto para agentes de IA
 ```
+
+> Os testes unitários ficam ao lado do código (`*.test.ts`, `*.test.tsx`) e, por isso, não aparecem na árvore acima.
 
 ---
 
 ## 💻 Desenvolvimento e Execução
 
 ### Pré-requisitos
-- **Node.js** (versão 18 ou superior)
+- **Node.js** 20.19 ou superior (ou 22.12+) — versão mínima exigida pelo Vite 8
 - Gerenciador de pacotes **npm**
 
 ### Comandos Principais
@@ -780,12 +793,98 @@ npm run dev
 # Validar TypeScript / Linter
 npm run lint
 
+# Rodar a suíte de testes unitários (Vitest)
+npm test
+
 # Gerar build de produção otimizado
 npm run build
 
 # Visualizar build localmente
 npm run preview
 ```
+
+---
+
+## 🧪 Testes e Verificação Contínua
+
+### Suíte unitária (Vitest)
+
+Os testes ficam ao lado do código (`*.test.ts` / `*.test.tsx`) e cobrem os motores de conversão, formatação e numeração, os serviços e os componentes principais.
+
+```bash
+# Rodar a suíte completa
+npm test
+
+# Rodar um arquivo específico
+npx vitest run src/utils/formatacao.test.ts
+```
+
+### Bancada de aceitação ponta a ponta (`teste/`)
+
+Converte o `.docx` de referência, sobe a aplicação, renderiza no Chrome (Puppeteer) e grava os artefatos de comparação na própria pasta `teste/`.
+
+```bash
+# 1. Em um terminal, suba a aplicação
+npm run dev
+
+# 2. Em outro, rode a bancada (padrão: http://localhost:3000)
+npx tsx teste/gerar.js
+
+# Se a porta 3000 estiver ocupada por outra aplicação, aponte a URL:
+APP_URL=http://127.0.0.1:3000 npx tsx teste/gerar.js
+
+# 3. Conferências
+node teste/conferir_amostragem.js      # 15 amostras numeradas vs. teste/pdf_texto.txt
+npx tsx teste/conferir_exportacoes.js  # paridade: tela x Word (arrastado e gerado) x PDF
+```
+
+> No PowerShell, a variável de ambiente é definida em linha própria: `$env:APP_URL='http://127.0.0.1:3000'; npx tsx teste/gerar.js`
+
+Artefatos gravados em `teste/`: `output.xml`, `output_json.json`, `output_puppeteer.txt` e `output_puppeteer.html`. Junto com `pdf_texto.txt`, formam as **baselines de referência** versionadas — servem para comparar, não para sobrescrever sem intenção.
+
+### Integração contínua (GitHub Actions)
+
+| Workflow | Gatilho | O que executa |
+|---|---|---|
+| `.github/workflows/deploy.yml` | push em `main` / `master` | `npm run lint` + `npm test` + `npm run build` e publica o `dist` no GitHub Pages |
+| `.github/workflows/aceitacao.yml` | manual (`workflow_dispatch`) | a bancada completa (`teste/gerar.js`) e a validação do contrato do XML: nenhum `<p>` com atributo, nenhuma `<secao>` com `numero=`, além dos limiares mínimos de linhas e seções |
+
+---
+
+## 📦 Distribuição
+
+O deploy oficial roda no **GitHub Pages**, publicado pelo workflow `deploy.yml` a partir do conteúdo de `dist/`:
+
+```text
+https://edmarbatista.github.io/XML-Template-Engine/
+```
+
+### Arquivo único (`app_standalone`)
+
+O `npm run build` encadeia `tsc -b`, o build do Vite (`vite-plugin-singlefile`) e o `zip_standalone.js`, produzindo um HTML autônomo — JS, CSS e ícones embutidos no próprio arquivo — para uso sem servidor:
+
+| Arquivo | Tamanho aprox. | Uso |
+|---|---|---|
+| `app_standalone.html` | ~1,1 MB | abrir direto no navegador |
+| `app_standalone.zip` | ~317 KB | mesma página, compactada para envio |
+
+Ambos são artefatos de build e não são versionados (constam no `.gitignore`).
+
+### Dependência de rede (importante)
+
+Três bibliotecas de exportação são carregadas por **CDN** no `index.html`, e não pelo bundle:
+
+| Biblioteca | Papel | CDN |
+|---|---|---|
+| `pdfmake` 0.3.11 + `vfs_fonts` | exportar PDF | jsdelivr |
+| `docx` 9.8.1 | exportar e importar Word | unpkg |
+| `jszip` 3.10.2 | pacotes `.zip` e leitura de `.docx` | cdnjs |
+
+No `vite.config.ts` elas são marcadas como externas (`external: ['docx', 'jszip']` + `rollup-plugin-external-globals`; o `pdfmake` é lido de `window.pdfMake`). Isso mantém o arquivo único em ~1,1 MB — com elas embutidas no bundle, ele passaria de 3 MB.
+
+Consequência prática: **exportar Word/PDF e importar `.docx`/`.zip` exigem internet**. Sem rede, a aplicação abre, edita e visualiza normalmente; apenas essas operações falham. As consultas de CEP/CNPJ (ViaCEP, OpenCNPJ) e as fontes do Google também são online por natureza.
+
+Para uso 100% offline, é preciso remover as tags `<script>` do CDN no `index.html` e o `externalGlobals` do `vite.config.ts`, aceitando o aumento do arquivo final.
 
 ---
 
