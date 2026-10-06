@@ -237,8 +237,13 @@ export default function App() {
   const [isSideBySideEditing, setIsSideBySideEditing] = React.useState(false);
   const [sideBySideXmlCode, setSideBySideXmlCode] = React.useState('');
   const [backupOriginalXml, setBackupOriginalXml] = React.useState('');
+  /** XML do editor lado a lado como estava no último salvamento: base do indicador "nada para salvar". */
+  const [sideBySideXmlSalvo, setSideBySideXmlSalvo] = React.useState('');
   const [xmlEditorWidth, setXmlEditorWidth] = React.useState(420);
   const [isResizingXml, setIsResizingXml] = React.useState(false);
+
+  /** Há alteração não salva no editor lado a lado? Controla o destaque do botão Salvar. */
+  const ladoALadoSujo = sideBySideXmlCode !== sideBySideXmlSalvo;
 
   const startResizingXml = React.useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -443,12 +448,21 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => {
+                          if (!ladoALadoSujo) return;
                           aplicarNovoXmlEJson(sideBySideXmlCode, dados, xmlName);
-                          setIsSideBySideEditing(false);
-                          showToast('XML salvo permanentemente!');
+                          setSideBySideXmlSalvo(sideBySideXmlCode);
+                          showToast('XML salvo! A edição lado a lado continua aberta.');
                         }}
-                        className="flex items-center gap-1 px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium shadow-xs transition"
-                        title="Salvar alterações permanentemente"
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded font-medium shadow-xs transition ${
+                          ladoALadoSujo
+                            ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                            : 'bg-slate-800 border border-slate-700 text-slate-500 hover:bg-slate-800'
+                        }`}
+                        title={
+                          ladoALadoSujo
+                            ? 'Salvar alterações permanentemente'
+                            : 'Nada para salvar: sem alterações desde o último salvamento'
+                        }
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>Salvar</span>
@@ -692,6 +706,7 @@ export default function App() {
             onStartSideBySide={(xmlContent) => {
               setBackupOriginalXml(rawXml);
               setSideBySideXmlCode(xmlContent);
+              setSideBySideXmlSalvo(xmlContent);
               setIsSideBySideEditing(true);
               showToast('Modo de Edição lado a lado ativado.');
             }}

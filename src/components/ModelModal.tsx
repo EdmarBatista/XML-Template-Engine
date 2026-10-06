@@ -223,7 +223,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     setSucessoJson(true);
     setTimeout(() => {
       setSucessoJson(false);
-      setIsEditingJson(false);
     }, 600);
   };
 
@@ -679,10 +678,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           type="button"
                           onClick={handleApplyJson}
                           className="flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded shadow-xs transition"
-                          title="Atualizar Documento (Ctrl + S)"
+                          title="Salvar (Ctrl + S)"
                         >
                           {sucessoJson ? <Check className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 fill-white" />}
-                          <span>{sucessoJson ? 'Atualizado!' : 'Atualizar Documento'}</span>
+                          <span>{sucessoJson ? 'Salvo!' : 'Salvar'}</span>
                         </button>
                       </>
                     ) : (
@@ -839,24 +838,14 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           type="button"
                           onClick={handleApplyXml}
                           className="flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded shadow-xs transition"
-                          title="Atualizar Documento (Ctrl + S)"
+                          title="Salvar (Ctrl + S)"
                         >
                           {sucessoXml ? <Check className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 fill-white" />}
-                          <span>{sucessoXml ? 'Atualizado!' : 'Atualizar Documento'}</span>
+                          <span>{sucessoXml ? 'Salvo!' : 'Salvar'}</span>
                         </button>
                       </>
                     ) : (
                       <>
-                        <button
-                          type="button"
-                          onClick={() => setIsEditingXml(true)}
-                          className="flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded shadow-xs transition"
-                          title="Editar o modelo XML"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                          <span>Editar</span>
-                        </button>
-
                         {onStartSideBySide && (
                           <button
                             type="button"
@@ -871,6 +860,16 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             <span className="text-xs">Edição lado a lado</span>
                           </button>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingXml(true)}
+                          className="flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded shadow-xs transition"
+                          title="Editar o modelo XML"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span>Editar</span>
+                        </button>
                       </>
                     )}
                   </div>
