@@ -223,7 +223,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     setSucessoJson(true);
     setTimeout(() => {
       setSucessoJson(false);
-    }, 600);
+    }, 1000);
   };
 
   // Validação XML
@@ -335,7 +335,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     setSucessoXml(true);
     setTimeout(() => {
       setSucessoXml(false);
-    }, 800);
+    }, 1000);
   };
 
   const handleJsonKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
