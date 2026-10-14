@@ -184,15 +184,6 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({
         <FileText className="w-4 h-4 text-rose-400" />
       </button>
 
-      <a
-        href="/app_standalone.zip"
-        download="app_standalone.zip"
-        className="btn-toolbar flex items-center justify-center"
-        title="Baixar App Standalone (.zip)"
-      >
-        <FolderArchive className="w-4 h-4 text-emerald-400" />
-      </a>
-
       <button
         type="button"
         onClick={onToggleDarkMode}
