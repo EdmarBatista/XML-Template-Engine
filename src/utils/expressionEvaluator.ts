@@ -1,7 +1,6 @@
 /**
  * Avaliador de expressões lógicas e de comparação para tags <if expr="...">
  */
-
 import type { DadosDocumento, ValorCampo } from '../types';
 
 function dividirExpressao(expr: string, operador: string): [string, string] | null {
@@ -39,11 +38,9 @@ function avaliarComparacao(expr: string, dados: DadosDocumento): boolean {
     }
     return false;
   }
-
   const [, varName, operator, rawValue] = match;
   const leftValue = dados[varName] !== undefined ? dados[varName] : '';
   let rightValue: ValorCampo = rawValue.trim();
-
   if ((rightValue.startsWith("'") && rightValue.endsWith("'")) || (rightValue.startsWith('"') && rightValue.endsWith('"'))) {
     rightValue = rightValue.slice(1, -1);
   } else if (rightValue === 'true') {
@@ -54,35 +51,43 @@ function avaliarComparacao(expr: string, dados: DadosDocumento): boolean {
     rightValue = Number(rightValue);
   }
 
-  const numLeft = Number(leftValue);
-  const numRight = Number(rightValue);
-  const isBothNumeric = !isNaN(numLeft) && !isNaN(numRight) && leftValue !== '' && rightValue !== '';
+  let normLeft: ValorCampo = leftValue;
+  if (normLeft === 'true') normLeft = true;
+  else if (normLeft === 'false') normLeft = false;
+
+  let normRight: ValorCampo = rightValue;
+  if (normRight === 'true') normRight = true;
+  else if (normRight === 'false') normRight = false;
+
+  const numLeft = Number(normLeft);
+  const numRight = Number(normRight);
+  const isBothNumeric = !isNaN(numLeft) && !isNaN(numRight) && normLeft !== '' && normRight !== '';
 
   switch (operator) {
     case '==':
-      if (typeof leftValue === 'boolean' || typeof rightValue === 'boolean') {
-        return Boolean(leftValue) === Boolean(rightValue);
+      if (typeof normLeft === 'boolean' || typeof normRight === 'boolean') {
+        return Boolean(normLeft) === Boolean(normRight);
       }
       if (isBothNumeric) {
         return numLeft === numRight;
       }
-      return String(leftValue).trim() === String(rightValue).trim();
+      return String(normLeft).trim() === String(normRight).trim();
     case '!=':
-      if (typeof leftValue === 'boolean' || typeof rightValue === 'boolean') {
-        return Boolean(leftValue) !== Boolean(rightValue);
+      if (typeof normLeft === 'boolean' || typeof normRight === 'boolean') {
+        return Boolean(normLeft) !== Boolean(normRight);
       }
       if (isBothNumeric) {
         return numLeft !== numRight;
       }
-      return String(leftValue).trim() !== String(rightValue).trim();
+      return String(normLeft).trim() !== String(normRight).trim();
     case '>':
-      return isBothNumeric ? numLeft > numRight : String(leftValue) > String(rightValue);
+      return isBothNumeric ? numLeft > numRight : String(normLeft) > String(normRight);
     case '<':
-      return isBothNumeric ? numLeft < numRight : String(leftValue) < String(rightValue);
+      return isBothNumeric ? numLeft < numRight : String(normLeft) < String(normRight);
     case '>=':
-      return isBothNumeric ? numLeft >= numRight : String(leftValue) >= String(rightValue);
+      return isBothNumeric ? numLeft >= numRight : String(normLeft) >= String(normRight);
     case '<=':
-      return isBothNumeric ? numLeft <= numRight : String(leftValue) <= String(rightValue);
+      return isBothNumeric ? numLeft <= numRight : String(normLeft) <= String(normRight);
     default:
       return false;
   }
@@ -107,7 +112,6 @@ export function decodificarEntidadesXml(str: string): string {
 
 export function avaliarExpressao(expr: string, dados: DadosDocumento): boolean {
   if (!expr) return true;
-
   const limpa = decodificarEntidadesXml(expr).trim();
 
   // Tratamento de operadores OR (|| ou OR)

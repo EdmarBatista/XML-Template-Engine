@@ -64,6 +64,13 @@ describe('avaliarExpressao — comparações', () => {
     expect(avaliarExpressao('assinado == true', { assinado: false })).toBe(false);
   });
 
+  it('compara booleanos com literais em string com aspas como "true" e "false"', () => {
+    expect(avaliarExpressao("de_engenharia == 'true'", { de_engenharia: true })).toBe(true);
+    expect(avaliarExpressao("de_engenharia == 'false'", { de_engenharia: true })).toBe(false);
+    expect(avaliarExpressao("de_engenharia == 'false'", { de_engenharia: false })).toBe(true);
+    expect(avaliarExpressao("de_engenharia == 'true'", { de_engenharia: false })).toBe(false);
+  });
+
   it('trata valor ausente como string vazia', () => {
     expect(avaliarExpressao('x == ""', {})).toBe(true);
   });
