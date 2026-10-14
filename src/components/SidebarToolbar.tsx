@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight, Code, Download, Edit3, FileDown, FileText, ListOrdered, Printer, RotateCcw, Sliders, Upload, ChevronsUpDown, Copy, Check, ZoomIn, ZoomOut, ChevronLeft, Archive, FolderArchive, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, Edit3, FileText, ListOrdered, RotateCcw, Sliders, Upload, Copy, Check, ZoomIn, ZoomOut, ChevronLeft, Archive, Moon, Sun } from 'lucide-react';
 import { TemplateItem } from '../data/defaultTemplates';
 import { TemplateSelector } from './TemplateSelector';
 
