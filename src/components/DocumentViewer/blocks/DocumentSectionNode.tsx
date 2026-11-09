@@ -5,6 +5,7 @@ import {
   atributosDeSecao,
   atributosDeTituloDeSecao,
 } from '../../../utils/wordDom';
+import { calcularRecuoHierarquicoCm } from '../../../utils/domDocumentExtractor';
 
 export interface DocumentSectionNodeProps {
   node: AstNode;
@@ -131,12 +132,18 @@ export function renderDocumentSectionNode(
   if (safeNivelSecao === 2) {
     fontSizePx = 15.5 * fontScale;
     titleClass = "font-bold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-0.5 mt-4 select-text";
-    containerClass = "my-4 ml-2 pl-2 border-l-2 border-slate-100 dark:border-slate-800 space-y-2 select-text";
+    containerClass = "my-4 pl-2 border-l-2 border-slate-100 dark:border-slate-800 space-y-2 select-text";
   } else if (safeNivelSecao >= 3) {
     fontSizePx = 14.5 * fontScale;
     titleClass = "font-semibold italic text-slate-700 dark:text-slate-300 mt-3 select-text";
-    containerClass = "my-3 ml-3 pl-2 border-l border-slate-200 dark:border-slate-800 space-y-2 select-text";
+    containerClass = "my-3 pl-2 border-l border-slate-200 dark:border-slate-800 space-y-2 select-text";
   }
+
+  // A seção aninhada acrescenta apenas o degrau em relação ao pai; os elementos
+  // de conteúdo descontam esse acumulado para chegar ao recuo absoluto do nível.
+  const recuoSecaoCm = calcularRecuoHierarquicoCm(safeNivelSecao);
+  const recuoPaiCm = calcularRecuoHierarquicoCm(Math.max(0, safeNivelSecao - 1));
+  const degrauSecaoCm = Math.max(0, recuoSecaoCm - recuoPaiCm);
 
   return (
     <div
@@ -148,6 +155,7 @@ export function renderDocumentSectionNode(
         reiniciar,
       })}
       className={containerClass}
+      style={degrauSecaoCm > 0 ? { marginLeft: `${degrauSecaoCm}cm` } : undefined}
     >
       {titulo && (
         <h3
@@ -169,7 +177,12 @@ export function renderDocumentSectionNode(
             : titulo}
         </h3>
       )}
-      <div className="space-y-2" {...ATRIBUTOS_SECAO_CONTEUDO}>
+      <div
+        className="space-y-2"
+        {...ATRIBUTOS_SECAO_CONTEUDO}
+        data-word-indent-base-cm={recuoSecaoCm}
+        style={{ '--edm-secao-indent': `${recuoSecaoCm}cm` } as React.CSSProperties}
+      >
         {filhosRenderizados}
       </div>
     </div>

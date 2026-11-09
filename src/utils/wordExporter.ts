@@ -46,6 +46,7 @@ import {
   WORD_TIPO_ITEM,
 } from './wordDom';
 import {
+  calcularHangingNumeracaoCm,
   calcularRecuoHierarquicoCm,
   cmParaTwip,
   extrairSegmentosDeDom,
@@ -143,6 +144,8 @@ function criarParagrafo(
   ajustes: {
     alinhamento?: string;
     recuoEsquerdo?: number;
+    /** Quanto a primeira linha recua à esquerda do texto (numeração nativa). */
+    hanging?: number;
     espacoAntes?: number;
     espacoDepois?: number;
     numbering?: { reference: string; level: number };
@@ -153,11 +156,17 @@ function criarParagrafo(
 ): Paragraph {
   const alinhamento = alinhamentoWord(ajustes.alinhamento || opcoes.alinhamento);
   const recuoCm = ajustes.recuoEsquerdo !== undefined ? ajustes.recuoEsquerdo : (opcoes.recuoEsquerdo || 0);
+  const hangingCm = ajustes.hanging && ajustes.hanging > 0 ? ajustes.hanging : 0;
 
   return new Paragraph({
     alignment: alinhamento,
     indent: {
-      left: cmParaTwip(recuoCm),
+      // O texto (e as linhas seguintes) fica no recuo + hanging; o marcador
+      // começa no recuo-base porque o Word subtrai o hanging da primeira linha.
+      // Somamos os twips já arredondados para left - hanging ser exatamente o
+      // recuo-base, sem diferença de 1 twip por arredondamento.
+      left: cmParaTwip(recuoCm) + cmParaTwip(hangingCm),
+      ...(hangingCm > 0 ? { hanging: cmParaTwip(hangingCm) } : {}),
     },
     spacing: espacoParagrafo(opcoes, ajustes),
     numbering: ajustes.numbering,
@@ -436,6 +445,7 @@ function converterElementosBlocoDom(
             criarParagrafo(runs, opcoesTitulo, {
               alinhamento: 'esquerda',
               recuoEsquerdo: recuoTitulo,
+              hanging: calcularHangingNumeracaoCm(currentLevel),
               heading,
               outlineLevel,
               numbering: {
@@ -512,6 +522,7 @@ function converterElementosBlocoDom(
           criarParagrafo(runs, opcoesTitulo, {
             alinhamento: 'esquerda',
             recuoEsquerdo: recuoTitulo,
+            hanging: calcularHangingNumeracaoCm(currentLevel),
             numbering: {
               reference: numbering!.reference,
               level: nivelParaIlvl(currentLevel, opcoes.nivelMaximoNumeracao),
@@ -553,12 +564,12 @@ function converterElementosBlocoDom(
           const segmentos = extrairSegmentosDeDom(tempDiv, {}, opcoes, deveUsarNumeracao);
           const normalizados = normalizarSegmentos(segmentos);
           bufferNodes = [];
-          const recuoCalculado = calcularRecuoHierarquicoCm(levelPara);
-          const recuoFinal = recuoSecao > 0 ? recuoSecao : recuoCalculado;
+          // O nível do parágrafo é a fonte da verdade. O recuo herdado da seção
+          // só vale para nós sem nível próprio (tratados no ramo 9); usá-lo aqui
+          // achatava os níveis 2..6 no recuo do conteúdo da seção.
+          const recuoFinal = calcularRecuoHierarquicoCm(levelPara);
 
-
-
-      const chunks: import('./domDocumentExtractor').SegmentoDom[][] = [];
+          const chunks: import('./domDocumentExtractor').SegmentoDom[][] = [];
             let currentChunk: import('./domDocumentExtractor').SegmentoDom[] = [];
             normalizados.forEach(seg => {
               if (seg.isParagraphBreak) {
@@ -579,6 +590,7 @@ function converterElementosBlocoDom(
                   criarParagrafo(segmentosParaRuns(chunk, opcoes), opcoes, {
                     alinhamento: alinhamentoFinal,
                     recuoEsquerdo: recuoFinal,
+                    hanging: calcularHangingNumeracaoCm(levelPara),
                     numbering: {
                       reference: numbering!.reference,
                       level: nivelParaIlvl(levelPara, opcoes.nivelMaximoNumeracao),
@@ -640,8 +652,9 @@ function converterElementosBlocoDom(
       });
       chunks.push(currentChunk);
 
-      const recuoCalculado = calcularRecuoHierarquicoCm(levelPara);
-      const recuoFinal = recuoSecao > 0 ? recuoSecao : recuoCalculado;
+      // Mesma regra do parágrafo dentro de tabela: o recuo vem do nível efetivo
+      // do parágrafo, nunca do recuo herdado da seção.
+      const recuoFinal = calcularRecuoHierarquicoCm(levelPara);
 
       chunks.forEach(chunk => {
         const hasText = chunk.some(s => s.texto.trim().length > 0);
@@ -652,6 +665,7 @@ function converterElementosBlocoDom(
             criarParagrafo(segmentosParaRuns(chunk, opcoes), opcoes, {
               alinhamento: alinhamentoFinal,
               recuoEsquerdo: recuoFinal,
+              hanging: calcularHangingNumeracaoCm(levelPara),
               numbering: {
                 reference: numbering!.reference,
                 level: nivelParaIlvl(levelPara, opcoes.nivelMaximoNumeracao),
@@ -749,7 +763,11 @@ function criarOpcoesNumeracao(opcoes: Required<WordExportOptions>, referencia = 
   return {
     reference: referencia,
     levels: Array.from({ length: 9 }, (_, level) => {
-      const recuo = calcularRecuoHierarquicoCm(level);
+      // `level` aqui é o ilvl do Word (base 0); a regra de recuo trabalha com o
+      // nível semântico (base 1), como o `data-word-level` publicado no DOM.
+      // Sem o +1, o numbering.xml ficava meio centímetro atrás do parágrafo.
+      const recuo = calcularRecuoHierarquicoCm(level + 1);
+      const hanging = calcularHangingNumeracaoCm(level + 1);
       return {
         level,
         format: LevelFormat.DECIMAL,
@@ -765,8 +783,8 @@ function criarOpcoesNumeracao(opcoes: Required<WordExportOptions>, referencia = 
           },
           paragraph: {
             indent: {
-              left: cmParaTwip(recuo),
-              hanging: 0,
+              left: cmParaTwip(recuo) + cmParaTwip(hanging),
+              hanging: cmParaTwip(hanging),
             },
           },
         },

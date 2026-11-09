@@ -449,9 +449,8 @@ function converterElementosBlocoDomPdf(
           bufferNodes = [];
 
           if (normalizados.length > 0) {
-            const recuoCalculadoCm = calcularRecuoHierarquicoCm(levelPara);
-            const recuoFinalCm = recuoSecaoCm > 0 ? recuoSecaoCm : recuoCalculadoCm;
-            const recuoFinalPt = cmParaPt(recuoFinalCm);
+            // O nível efetivo do parágrafo manda; o recuo da seção não o substitui.
+            const recuoFinalPt = cmParaPt(calcularRecuoHierarquicoCm(levelPara));
 
             resultado.push({
               text: segmentosParaPdfText(normalizados),
@@ -491,9 +490,8 @@ function converterElementosBlocoDomPdf(
       const normalizados = normalizarSegmentos(segmentos);
 
       if (normalizados.length > 0) {
-        const recuoCalculadoCm = calcularRecuoHierarquicoCm(levelPara);
-        const recuoFinalCm = recuoSecaoCm > 0 ? recuoSecaoCm : recuoCalculadoCm;
-        const recuoFinalPt = cmParaPt(recuoFinalCm);
+        // Mesma regra do Word: recuo do nível efetivo do parágrafo.
+        const recuoFinalPt = cmParaPt(calcularRecuoHierarquicoCm(levelPara));
 
         resultado.push({
           text: segmentosParaPdfText(normalizados),

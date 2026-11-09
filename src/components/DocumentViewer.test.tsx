@@ -6,6 +6,7 @@ import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DocumentViewer } from './DocumentViewer';
 import type { AstNode, FormStructure } from '../types';
+import { ATRIBUTOS_SECAO_CONTEUDO, WORD_ATTR_TIPO } from '../utils/wordDom';
 
 const estrutura: FormStructure = {
   grupos: [],
@@ -48,6 +49,72 @@ function montar(extra: Partial<Parameters<typeof DocumentViewer>[0]> = {}) {
     />
   );
 }
+
+describe('DocumentViewer — recuo hierárquico na tela', () => {
+  const hierarquico: AstNode = {
+    tipo: 'conteudo',
+    filhos: [
+      {
+        tipo: 'secao',
+        atributos: { titulo: 'CAPÍTULO' },
+        filhos: [
+          { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'Parágrafo herdado nível 2' }] },
+          {
+            tipo: 'p',
+            atributos: { nivel: '3' },
+            filhos: [{ tipo: 'texto', texto: 'Parágrafo explícito nível 3' }],
+          },
+          {
+            tipo: 'secao',
+            atributos: { titulo: 'SUBCAPÍTULO' },
+            filhos: [
+              { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'Parágrafo herdado nível 3' }] },
+              {
+                tipo: 'p',
+                atributos: { nivel: '4' },
+                filhos: [{ tipo: 'texto', texto: 'Parágrafo explícito nível 4' }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  const paragrafo = (texto: string): HTMLElement => {
+    const encontrado = [...document.querySelectorAll<HTMLElement>('[data-word-type="paragrafo"]')].find(
+      el => (el.textContent || '').includes(texto)
+    );
+    if (!encontrado) throw new Error(`Parágrafo "${texto}" não renderizado`);
+    return encontrado;
+  };
+
+  it('publica o recuo absoluto do nível efetivo de cada parágrafo', () => {
+    montar({ conteudo: hierarquico });
+
+    expect(paragrafo('Parágrafo herdado nível 2').dataset.wordIndentCm).toBe('0.5');
+    expect(paragrafo('Parágrafo explícito nível 3').dataset.wordIndentCm).toBe('1');
+    expect(paragrafo('Parágrafo herdado nível 3').dataset.wordIndentCm).toBe('1');
+    expect(paragrafo('Parágrafo explícito nível 4').dataset.wordIndentCm).toBe('1.5');
+  });
+
+  it('acrescenta apenas o degrau da seção e compensa no conteúdo', () => {
+    montar({ conteudo: hierarquico });
+
+    const secoes = [...document.querySelectorAll<HTMLElement>('[data-word-type="secao"]')];
+    const raiz = secoes.find(el => el.dataset.wordLevel === '1');
+    const aninhada = secoes.find(el => el.dataset.wordLevel === '2');
+
+    expect(raiz?.style.marginLeft).toBe('');
+    expect(aninhada?.style.marginLeft).toBe('0.5cm');
+
+    const seletorConteudo = `:scope > [${WORD_ATTR_TIPO}="${ATRIBUTOS_SECAO_CONTEUDO[WORD_ATTR_TIPO]}"]`;
+    const conteudoRaiz = raiz?.querySelector<HTMLElement>(seletorConteudo);
+    const conteudoAninhado = aninhada?.querySelector<HTMLElement>(seletorConteudo);
+    expect(conteudoRaiz?.dataset.wordIndentBaseCm).toBe('0');
+    expect(conteudoAninhado?.dataset.wordIndentBaseCm).toBe('0.5');
+  });
+});
 
 describe('DocumentViewer — render do documento', () => {
   it('publica o anchor #documento-visualizado de onde os exportadores leem', () => {

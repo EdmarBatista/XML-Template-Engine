@@ -7,6 +7,7 @@ import { obterValorPorCaminho } from '../../../utils/documentUtils';
 
 import { AstNode, NumberingContext, ContextoLocal, DadosDocumento } from '../../../types';
 import { dividirEmLinhas } from '../../../utils/paragraphs';
+import { calcularRecuoHierarquicoCm } from '../../../utils/domDocumentExtractor';
 
 export interface DocumentParagraphNodeProps {
   /** Nós AST que compõem o corpo do parágrafo */
@@ -66,6 +67,10 @@ export function renderDocumentParagraphNodes({
   // O nível do parágrafo pode vir do atributo do nó ou do contexto hierárquico
   const explicitNivel = node?.atributos?.nivel ? parseInt(node.atributos.nivel, 10) : undefined;
   const effectiveNivel = explicitNivel !== undefined ? explicitNivel : nivel;
+  // O recuo absoluto vem do nível efetivo; a variável --edm-secao-indent,
+  // publicada pelo conteúdo da seção, desconta o acumulado dos containers
+  // aninhados. Assim a tela reproduz o mesmo cálculo do Word e do PDF.
+  const recuoParagrafoCm = calcularRecuoHierarquicoCm(effectiveNivel);
 
   linhas.forEach((linha, li) => {
     let prefixoNum = '';
@@ -140,8 +145,12 @@ export function renderDocumentParagraphNodes({
         data-word-level={effectiveNivel}
         data-word-align={alinhamentoPadrao}
         data-word-numerado={prefixoNum ? 'true' : 'false'}
+        data-word-indent-cm={recuoParagrafoCm}
         className={`text-slate-800 dark:text-slate-200 my-2 leading-relaxed select-text ${alignClass} relative group`}
-        style={{ fontSize: `${fontScale}rem` }}
+        style={{
+          fontSize: `${fontScale}rem`,
+          marginLeft: `calc(${recuoParagrafoCm}cm - var(--edm-secao-indent, 0cm))`,
+        }}
       >
         {prefixoNum && (
           <span data-word-num="true" data-num-prefix="true" className="font-bold mr-2 text-slate-900 dark:text-slate-100">{prefixoNum}</span>

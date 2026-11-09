@@ -107,7 +107,7 @@ export const DOCUMENT_THEME = {
   },
 
   // 6. Margens da Página e Recuos Hierárquicos
-  // REGRA: Deslocamento no Word (.docx) e PDF (não na visualização em tela).
+  // REGRA: Deslocamento no Word (.docx), PDF e visualização em tela.
   // O primeiro nível a ter deslocamento é o nível >= 2 (ex: 5.16.1): recuo = (nivel - 1) * 0.5 cm.
   // Nível 0 (ex: 5.) e Nível 1 (ex: 5.16) ficam alinhados à margem esquerda (0 cm).
   margins: {
