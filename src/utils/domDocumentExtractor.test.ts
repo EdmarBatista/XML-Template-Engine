@@ -91,12 +91,13 @@ describe('paraHexCor', () => {
 });
 
 describe('recuo hierárquico do documento', () => {
-  it('começa a indentar do nível 2 em diante, meio centímetro por nível', () => {
+  it('começa a indentar do nível 3 em diante, meio centímetro por nível', () => {
     expect(calcularRecuoHierarquicoCm(0)).toBe(0);
     expect(calcularRecuoHierarquicoCm(1)).toBe(0);
-    expect(calcularRecuoHierarquicoCm(2)).toBe(0.5);
-    expect(calcularRecuoHierarquicoCm(3)).toBe(1);
-    expect(calcularRecuoHierarquicoCm(4)).toBe(1.5);
+    expect(calcularRecuoHierarquicoCm(2)).toBe(0);
+    expect(calcularRecuoHierarquicoCm(3)).toBe(0.5);
+    expect(calcularRecuoHierarquicoCm(4)).toBe(1);
+    expect(calcularRecuoHierarquicoCm(5)).toBe(1.5);
   });
 });
 

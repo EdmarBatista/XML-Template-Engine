@@ -60,6 +60,10 @@ describe('DocumentViewer — recuo hierárquico na tela', () => {
         filhos: [
           { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'Parágrafo herdado nível 2' }] },
           {
+            tipo: 'subtitulo',
+            filhos: [{ tipo: 'texto', texto: 'Subtítulo sem alinhamento' }],
+          },
+          {
             tipo: 'p',
             atributos: { nivel: '3' },
             filhos: [{ tipo: 'texto', texto: 'Parágrafo explícito nível 3' }],
@@ -92,10 +96,18 @@ describe('DocumentViewer — recuo hierárquico na tela', () => {
   it('publica o recuo absoluto do nível efetivo de cada parágrafo', () => {
     montar({ conteudo: hierarquico });
 
-    expect(paragrafo('Parágrafo herdado nível 2').dataset.wordIndentCm).toBe('0.5');
-    expect(paragrafo('Parágrafo explícito nível 3').dataset.wordIndentCm).toBe('1');
-    expect(paragrafo('Parágrafo herdado nível 3').dataset.wordIndentCm).toBe('1');
-    expect(paragrafo('Parágrafo explícito nível 4').dataset.wordIndentCm).toBe('1.5');
+    // Níveis 1 e 2 compartilham a margem; o degrau começa no nível 3.
+    expect(paragrafo('Parágrafo herdado nível 2').dataset.wordIndentCm).toBe('0');
+    expect(paragrafo('Parágrafo explícito nível 3').dataset.wordIndentCm).toBe('0.5');
+    expect(paragrafo('Parágrafo herdado nível 3').dataset.wordIndentCm).toBe('0.5');
+    expect(paragrafo('Parágrafo explícito nível 4').dataset.wordIndentCm).toBe('1');
+  });
+
+  it('mantém o subtítulo sem atributo alinhado à esquerda', () => {
+    montar({ conteudo: hierarquico });
+
+    const subtitulo = document.querySelector<HTMLElement>('[data-word-type="subtitulo"]');
+    expect(subtitulo?.dataset.wordAlign).toBe('esquerda');
   });
 
   it('acrescenta apenas o degrau da seção e compensa no conteúdo', () => {
@@ -106,13 +118,13 @@ describe('DocumentViewer — recuo hierárquico na tela', () => {
     const aninhada = secoes.find(el => el.dataset.wordLevel === '2');
 
     expect(raiz?.style.marginLeft).toBe('');
-    expect(aninhada?.style.marginLeft).toBe('0.5cm');
+    expect(aninhada?.style.marginLeft).toBe('');
 
     const seletorConteudo = `:scope > [${WORD_ATTR_TIPO}="${ATRIBUTOS_SECAO_CONTEUDO[WORD_ATTR_TIPO]}"]`;
     const conteudoRaiz = raiz?.querySelector<HTMLElement>(seletorConteudo);
     const conteudoAninhado = aninhada?.querySelector<HTMLElement>(seletorConteudo);
     expect(conteudoRaiz?.dataset.wordIndentBaseCm).toBe('0');
-    expect(conteudoAninhado?.dataset.wordIndentBaseCm).toBe('0.5');
+    expect(conteudoAninhado?.dataset.wordIndentBaseCm).toBe('0');
   });
 });
 

@@ -13,7 +13,6 @@ import { DocumentViewer } from '../components/DocumentViewer';
 import { exportarParaWord } from './wordExporter';
 import { exportarParaPdf } from './pdfExporter';
 import {
-  calcularHangingNumeracaoCm,
   calcularRecuoHierarquicoCm,
   cmParaPt,
   cmParaTwip,
@@ -97,16 +96,8 @@ function paragrafoComTexto(xml: string, texto: string): string {
 function recuoWord(xml: string, texto: string): number {
   const paragrafo = paragrafoComTexto(xml, texto);
   const recuo = paragrafo.match(/<w:ind[^>]*w:left="(\d+)"/);
-  const hanging = paragrafo.match(/<w:ind[^>]*w:hanging="(\d+)"/);
-  // O docx omite w:ind quando o recuo é zero. O recuo-base do marcador é
-  // left - hanging; em parágrafos não numerados não há hanging.
-  return (recuo ? Number(recuo[1]) : 0) - (hanging ? Number(hanging[1]) : 0);
-}
-
-function hangingWord(xml: string, texto: string): number {
-  const paragrafo = paragrafoComTexto(xml, texto);
-  const hanging = paragrafo.match(/<w:ind[^>]*w:hanging="(\d+)"/);
-  return hanging ? Number(hanging[1]) : 0;
+  // O docx omite w:ind quando o recuo é zero.
+  return recuo ? Number(recuo[1]) : 0;
 }
 
 function ilvlWord(xml: string, texto: string): number | null {
@@ -191,6 +182,10 @@ function montarComRenderer(): { documento: HTMLElement; unmount: () => void } {
         atributos: { titulo: 'CAPÍTULO' },
         filhos: [
           {
+            tipo: 'subtitulo',
+            filhos: [{ tipo: 'texto', texto: 'Subtítulo sem alinhamento' }],
+          },
+          {
             tipo: 'if',
             atributos: { expr: "mostrar == 'sim'" },
             filhos: [
@@ -250,12 +245,11 @@ describe('recuo hierárquico dos exportadores', () => {
       expect(recuoWord(xml, `Parágrafo nível ${nivel}`)).toBe(
         cmParaTwip(calcularRecuoHierarquicoCm(nivel))
       );
-      // O marcador começa no recuo-base; o texto e as linhas seguintes ficam
-      // em left = recuo + hanging, com o mesmo hanging reservado ao número.
-      expect(hangingWord(xml, `Parágrafo nível ${nivel}`)).toBe(
-        cmParaTwip(calcularHangingNumeracaoCm(nivel))
-      );
     }
+
+    // O documento de referência mantém 1. e 1.1. na mesma margem.
+    expect(recuoWord(xml, 'Parágrafo nível 1')).toBe(recuoWord(xml, 'Parágrafo nível 2'));
+    expect(recuoWord(xml, 'Parágrafo nível 1')).toBe(0);
   });
 
   it('Word: numbering.xml concorda com o recuo e o ilvl do parágrafo', async () => {
@@ -275,10 +269,8 @@ describe('recuo hierárquico dos exportadores', () => {
     for (let ilvl = 0; ilvl <= 8; ilvl++) {
       const definicao = niveis.get(ilvl);
       expect(definicao, `nível ilvl=${ilvl} ausente no numbering.xml`).toBeDefined();
-      expect(definicao!.left - definicao!.hanging).toBe(
-        cmParaTwip(calcularRecuoHierarquicoCm(ilvl + 1))
-      );
-      expect(definicao!.hanging).toBe(cmParaTwip(calcularHangingNumeracaoCm(ilvl + 1)));
+      expect(definicao!.left).toBe(cmParaTwip(calcularRecuoHierarquicoCm(ilvl + 1)));
+      expect(definicao!.hanging).toBe(0);
     }
   });
 
@@ -314,6 +306,12 @@ describe('recuo hierárquico dos exportadores', () => {
         cmParaPt(calcularRecuoHierarquicoCm(nivel))
       );
     }
+
+    // O documento de referência mantém 1. e 1.1. na mesma margem.
+    expect(recuoPdf(definicao.content, 'Parágrafo nível 1')).toBe(
+      recuoPdf(definicao.content, 'Parágrafo nível 2')
+    );
+    expect(recuoPdf(definicao.content, 'Parágrafo nível 1')).toBe(0);
   });
 
   it('Word e PDF: conteúdo realmente renderizado por if/foreach mantém o recuo', async () => {
@@ -330,6 +328,11 @@ describe('recuo hierárquico dos exportadores', () => {
         cmParaTwip(calcularRecuoHierarquicoCm(5))
       );
 
+      // Subtítulo sem alinhamento: esquerda e sem recuo no Word também.
+      const subtituloWord = paragrafoComTexto(xml, 'Subtítulo sem alinhamento');
+      expect(subtituloWord).toContain('<w:jc w:val="left"/>');
+      expect(subtituloWord).not.toMatch(/<w:ind[^>]*w:left="[1-9]/);
+
       const definicao = await capturarDefinicaoPdf(documento);
       expect(recuoPdf(definicao.content, 'Gerado pelo if nível 4')).toBe(
         cmParaPt(calcularRecuoHierarquicoCm(4))
@@ -337,6 +340,14 @@ describe('recuo hierárquico dos exportadores', () => {
       expect(recuoPdf(definicao.content, 'Gerado pelo foreach nível 5')).toBe(
         cmParaPt(calcularRecuoHierarquicoCm(5))
       );
+
+      // Subtítulo sem alinhamento no XML: à esquerda, no mesmo eixo dos itens 1.1.
+      const subtitulo = definicao.content.find(item =>
+        textoPdf(item).includes('Subtítulo sem alinhamento')
+      );
+      expect(subtitulo).toBeDefined();
+      expect((subtitulo as unknown as { alignment?: string }).alignment).toBe('left');
+      expect((subtitulo as unknown as { margin?: number[] }).margin?.[0]).toBe(0);
     } finally {
       unmount();
     }

@@ -235,7 +235,9 @@ export function renderDocumentAstBlocks(
     } else if (node.tipo === 'titulo' || node.tipo === 'subtitulo') {
       // titulo = nível 1 (h1), subtitulo = nível 2 (h2)
       const tag = node.tipo === 'titulo' ? 'h1' : 'h2';
-      const alinhamento = node.atributos?.alinhamento || 'centro';
+      // Título do documento continua centralizado; subtítulo sem atributo fica
+      // à esquerda, alinhado aos itens 1.1 do documento de referência.
+      const alinhamento = node.atributos?.alinhamento || (node.tipo === 'titulo' ? 'centro' : 'esquerda');
       const alignClass =
         alinhamento === 'centro' ? 'text-center' : alinhamento === 'direita' ? 'text-right' : 'text-left';
 

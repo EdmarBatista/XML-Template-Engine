@@ -46,7 +46,6 @@ import {
   WORD_TIPO_ITEM,
 } from './wordDom';
 import {
-  calcularHangingNumeracaoCm,
   calcularRecuoHierarquicoCm,
   cmParaTwip,
   extrairSegmentosDeDom,
@@ -144,8 +143,6 @@ function criarParagrafo(
   ajustes: {
     alinhamento?: string;
     recuoEsquerdo?: number;
-    /** Quanto a primeira linha recua à esquerda do texto (numeração nativa). */
-    hanging?: number;
     espacoAntes?: number;
     espacoDepois?: number;
     numbering?: { reference: string; level: number };
@@ -156,17 +153,13 @@ function criarParagrafo(
 ): Paragraph {
   const alinhamento = alinhamentoWord(ajustes.alinhamento || opcoes.alinhamento);
   const recuoCm = ajustes.recuoEsquerdo !== undefined ? ajustes.recuoEsquerdo : (opcoes.recuoEsquerdo || 0);
-  const hangingCm = ajustes.hanging && ajustes.hanging > 0 ? ajustes.hanging : 0;
 
   return new Paragraph({
     alignment: alinhamento,
     indent: {
-      // O texto (e as linhas seguintes) fica no recuo + hanging; o marcador
-      // começa no recuo-base porque o Word subtrai o hanging da primeira linha.
-      // Somamos os twips já arredondados para left - hanging ser exatamente o
-      // recuo-base, sem diferença de 1 twip por arredondamento.
-      left: cmParaTwip(recuoCm) + cmParaTwip(hangingCm),
-      ...(hangingCm > 0 ? { hanging: cmParaTwip(hangingCm) } : {}),
+      // Sem hanging: o marcador, o texto e as linhas seguintes compartilham o
+      // mesmo recuo. É o mesmo comportamento do PDF e da visualização.
+      left: cmParaTwip(recuoCm),
     },
     spacing: espacoParagrafo(opcoes, ajustes),
     numbering: ajustes.numbering,
@@ -445,7 +438,6 @@ function converterElementosBlocoDom(
             criarParagrafo(runs, opcoesTitulo, {
               alinhamento: 'esquerda',
               recuoEsquerdo: recuoTitulo,
-              hanging: calcularHangingNumeracaoCm(currentLevel),
               heading,
               outlineLevel,
               numbering: {
@@ -522,7 +514,6 @@ function converterElementosBlocoDom(
           criarParagrafo(runs, opcoesTitulo, {
             alinhamento: 'esquerda',
             recuoEsquerdo: recuoTitulo,
-            hanging: calcularHangingNumeracaoCm(currentLevel),
             numbering: {
               reference: numbering!.reference,
               level: nivelParaIlvl(currentLevel, opcoes.nivelMaximoNumeracao),
@@ -590,7 +581,6 @@ function converterElementosBlocoDom(
                   criarParagrafo(segmentosParaRuns(chunk, opcoes), opcoes, {
                     alinhamento: alinhamentoFinal,
                     recuoEsquerdo: recuoFinal,
-                    hanging: calcularHangingNumeracaoCm(levelPara),
                     numbering: {
                       reference: numbering!.reference,
                       level: nivelParaIlvl(levelPara, opcoes.nivelMaximoNumeracao),
@@ -665,7 +655,6 @@ function converterElementosBlocoDom(
             criarParagrafo(segmentosParaRuns(chunk, opcoes), opcoes, {
               alinhamento: alinhamentoFinal,
               recuoEsquerdo: recuoFinal,
-              hanging: calcularHangingNumeracaoCm(levelPara),
               numbering: {
                 reference: numbering!.reference,
                 level: nivelParaIlvl(levelPara, opcoes.nivelMaximoNumeracao),
@@ -767,7 +756,6 @@ function criarOpcoesNumeracao(opcoes: Required<WordExportOptions>, referencia = 
       // nível semântico (base 1), como o `data-word-level` publicado no DOM.
       // Sem o +1, o numbering.xml ficava meio centímetro atrás do parágrafo.
       const recuo = calcularRecuoHierarquicoCm(level + 1);
-      const hanging = calcularHangingNumeracaoCm(level + 1);
       return {
         level,
         format: LevelFormat.DECIMAL,
@@ -783,8 +771,8 @@ function criarOpcoesNumeracao(opcoes: Required<WordExportOptions>, referencia = 
           },
           paragraph: {
             indent: {
-              left: cmParaTwip(recuo) + cmParaTwip(hanging),
-              hanging: cmParaTwip(hanging),
+              left: cmParaTwip(recuo),
+              hanging: 0,
             },
           },
         },

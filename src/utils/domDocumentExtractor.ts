@@ -122,28 +122,19 @@ export function paraHexCorComHash(valor?: string, padrao = '#000000'): string {
 /**
  * REGRA DE IDENTAÇÃO HIERÁRQUICA DO DOCUMENTO:
  * - O deslocamento / recuo à esquerda deve ocorrer no Word (.docx), no PDF e na visualização em tela.
- * - O primeiro nível a ter deslocamento é o nível >= 2 (ex: 5.16.1, três segmentos ou subnível).
+ * - O primeiro nível a ter deslocamento é o nível >= 3 (ex: 5.16.1, três segmentos).
  * - Nível 0 (Seção principal, ex: 1. / 5.): recuo = 0 cm.
- * - Nível 1 (Primeiro subnível / item, ex: 1.1 / 5.16): recuo = 0 cm.
- * - Nível >= 2 (Subitens subordinados, ex: 1.1.1 / 5.16.1): recuo = (nivel - 1) * 0.5 cm.
- *   Fórmula: nivel <= 1 ? 0 : (nivel - 1) * 0.5
+ * - Nível 1 (Seção, ex: 1. / 5.): recuo = 0 cm.
+ * - Nível 2 (Item de primeiro grau, ex: 1.1 / 5.16): recuo = 0 cm.
+ * - Nível >= 3 (Subitens subordinados, ex: 1.1.1 / 5.16.1): recuo = (nivel - 2) * 0.5 cm.
+ *   Fórmula: nivel <= 2 ? 0 : (nivel - 2) * 0.5
+ *
+ * O nível 2 fica alinhado ao nível 1 de propósito: o documento de referência
+ * mantém "1." e "1.1." na mesma margem, e só os subitens (1.1.1 em diante)
+ * recebem o degrau progressivo.
  */
 export function calcularRecuoHierarquicoCm(nivel: number): number {
-  return nivel <= 1 ? 0 : Math.round((nivel - 1) * 0.5 * 100) / 100;
-}
-
-/**
- * Deslocamento à esquerda do marcador de numeração nativa do Word.
- *
- * O marcador começa no recuo-base do nível (`w:left` - `w:hanging`), e o texto
- * após ele — assim como as linhas seguintes — fica em `w:left`. Para o número
- * não invadir o texto, `w:left` é o recuo-base mais a largura estimada do
- * marcador; é por isso que os exportadores somam o hanging ao recuo.
- */
-export function calcularHangingNumeracaoCm(nivel: number): number {
-  const nivelSeguro = Number.isFinite(nivel) ? Math.max(1, Math.trunc(nivel)) : 1;
-  // "1.1.1." em Arial 10pt usa ~0,30 cm por segmento; 0,35 cm deixa folga.
-  return Math.max(0.5, Math.round(nivelSeguro * 0.35 * 100) / 100);
+  return nivel <= 2 ? 0 : Math.round((nivel - 2) * 0.5 * 100) / 100;
 }
 
 /**
