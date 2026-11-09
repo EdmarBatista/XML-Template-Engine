@@ -1,5 +1,5 @@
 import React from 'react';
-import { AstNode, ListStyleType, ContextoLocal } from '../../../types';
+import { AstNode, ListStyleType, ContextoLocal, FieldMetadata } from '../../../types';
 import { avaliarExpressao, extrairVariaveisDaExpressao } from '../../../utils/expressionEvaluator';
 import { formatarItemForeach, obterValorPorCaminho, valoresDaLista } from '../../../utils/documentUtils';
 
@@ -24,6 +24,8 @@ export interface DocumentListNodeProps {
   destaquesAtivos?: Record<string, number>;
   /** Callback para focar no campo do formulário ao clicar */
   onFocusField?: (fieldId: string) => void;
+  /** Metadados dos campos, para qtde_linhas/tem_linhas distinguirem lista_csv. */
+  campos?: Record<string, FieldMetadata>;
 }
 
 interface CondicionalContextoItem {
@@ -46,6 +48,7 @@ export const DocumentListNode: React.FC<DocumentListNodeProps> = ({
   contextoLocal,
   destaquesAtivos = {},
   onFocusField,
+  campos,
 }) => {
   const rawTipo = (node.atributos?.tipo || node.atributos?.formato || node.atributos?.estilo || '').toLowerCase().trim();
   const isNumeradaAttr = node.atributos?.numerada === 'true' || node.atributos?.numerado === 'true';
@@ -153,7 +156,7 @@ export const DocumentListNode: React.FC<DocumentListNodeProps> = ({
       } else if (itemNode.tipo === 'if') {
         const expr = itemNode.atributos?.expr || '';
         const escopoAtualizado = { ...escopo, ...(localCtx || {}) };
-        if (avaliarExpressao(expr, escopoAtualizado)) {
+        if (avaliarExpressao(expr, escopoAtualizado, campos)) {
           const variaveis = extrairVariaveisDaExpressao(expr);
           const dest = variaveis.some(v => Boolean(destaquesAtivos[v]));
           const subCond: CondicionalContextoItem = {

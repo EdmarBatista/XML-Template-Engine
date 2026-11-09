@@ -28,6 +28,7 @@ import {
   Sliders,
 } from 'lucide-react';
 import { FieldMetadata, FormItem, FormStructure, XmlPart, DadosDocumento } from '../types';
+import type { Pendencia } from '../utils/pendencias';
 import {
   normalizarDigitos,
   validarCampo,
@@ -58,6 +59,8 @@ interface SidebarProps {
   sidebarWidth: number;
   headerActions?: React.ReactNode;
   deslocarSidebar?: boolean;
+  /** Pendências atuais para marcação dos campos e contador do cabeçalho. */
+  pendencias?: Pendencia[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -74,6 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   sidebarWidth,
   headerActions,
   deslocarSidebar = true,
+  pendencias = [],
 }) => {
   const grupos = estrutura?.grupos || [];
   const campos = estrutura?.campos || {};
@@ -189,7 +193,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const campoVisivel = (campo: FieldMetadata) => {
     if (!campo.condicao) return true;
-    return avaliarExpressao(campo.condicao, dados);
+    return avaliarExpressao(campo.condicao, dados, campos);
   };
 
   const renderCampo = (campoId: string, nivel = 0) => {
@@ -207,6 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const valor = dados[campo.id] ?? '';
     const statusValidacao = validarCampo(campo, valor);
     const isCondicional = Boolean(campo.condicao || nivel > 0);
+    const temPendencia = pendencias.some(p => p.id === campo.id);
 
     return (
       <div
@@ -223,13 +228,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isCondicional
             ? 'bg-blue-50/60 border-blue-200/80 ml-3 pl-3 shadow-xs dark:bg-blue-950/40 dark:border-blue-800/60'
             : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs dark:bg-slate-800 dark:border-slate-700 dark:hover:border-slate-600'
-        } ${!statusValidacao.valido ? 'border-red-300 ring-1 ring-red-200' : ''}`}
+        } ${!statusValidacao.valido ? 'border-red-300 ring-1 ring-red-200' : ''} ${
+          temPendencia && statusValidacao.valido ? 'border-amber-400 ring-1 ring-amber-200' : ''
+        }`}
       >
         {/* Label & Type Tag */}
         <div className="flex items-center justify-between gap-1 mb-1.5">
           {campo.tipo === 'radio' || campo.tipo === 'checkbox' ? (
             <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 select-none">
               <span>{campo.label}</span>
+              {temPendencia && (
+                <span className="text-red-500 font-bold" title="Campo obrigatório sem preenchimento">
+                  *
+                </span>
+              )}
             </span>
           ) : (
             <label
@@ -237,6 +249,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="text-xs font-semibold text-slate-800 dark:text-slate-100 cursor-pointer flex items-center gap-1.5 select-none"
             >
               <span>{campo.label}</span>
+              {temPendencia && (
+                <span className="text-red-500 font-bold" title="Campo obrigatório sem preenchimento">
+                  *
+                </span>
+              )}
             </label>
           )}
 
@@ -385,7 +402,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return renderCampo(item.id, nivel);
       }
       if (item.tipo === 'if') {
-        if (!item.expr || !avaliarExpressao(item.expr, dados)) return null;
+        if (!item.expr || !avaliarExpressao(item.expr, dados, campos)) return null;
         return (
           <div key={idx} className="space-y-2 border-l-2 border-blue-400 pl-2 my-1">
             {renderItens(item.itens, nivel + 1)}
@@ -412,7 +429,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return true;
         }
       } else if (item.tipo === 'if') {
-        if (item.expr && avaliarExpressao(item.expr, dados)) {
+        if (item.expr && avaliarExpressao(item.expr, dados, campos)) {
           if (grupoPossuiCamposVisiveis(item.itens)) return true;
         }
       }
@@ -431,7 +448,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             idsVisiveis.add(item.id);
           }
         } else if (item.tipo === 'if') {
-          if (item.expr && avaliarExpressao(item.expr, dados)) {
+          if (item.expr && avaliarExpressao(item.expr, dados, campos)) {
             percorrerItens(item.itens);
           }
         }
@@ -467,6 +484,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <ChevronRight className="w-4 h-4" />
         </button>
         {headerActions}
+        {pendencias.length > 0 && (
+          <span
+            className="w-8 h-8 rounded-md bg-amber-500/20 border border-amber-500/60 text-amber-300 text-xs font-bold flex items-center justify-center shrink-0"
+            title={`${pendencias.length} pendência(s) bloqueiam a exportação`}
+          >
+            {pendencias.length}
+          </span>
+        )}
       </aside>
     );
   }
@@ -544,6 +569,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onBuscaChange={setBusca}
             onExpandirRecolherTudo={expandirOuRecolherTudo}
             esconderProgresso
+            pendenciasCount={pendencias.length}
             progressoExtra={
               <button
                 type="button"
@@ -575,6 +601,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onBuscaChange={setBusca}
         onExpandirRecolherTudo={expandirOuRecolherTudo}
         headerActions={headerActions}
+        pendenciasCount={pendencias.length}
       />
 
       {/* Accordion Groups List */}

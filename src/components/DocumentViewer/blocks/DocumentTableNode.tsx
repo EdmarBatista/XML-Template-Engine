@@ -189,7 +189,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
           });
         } else if (celula.tipo === 'if') {
           const expr = celula.atributos?.expr || '';
-          if (avaliarExpressao(expr, { ...escopoBase, ...ctx })) {
+          if (avaliarExpressao(expr, { ...escopoBase, ...ctx }, estrutura?.campos)) {
             const variaveis = extrairVariaveisDaExpressao(expr);
             const dest = variaveis.some(v => Boolean(destaquesAtivos[v]));
             const subCond: CondicionalContextoItem = {
@@ -353,7 +353,7 @@ export const DocumentTableNode: React.FC<DocumentTableNodeProps> = ({
         processarFilhos(child.filhos || [], childKey, ctx, parentCondContext);
       } else if (child.tipo === 'if') {
         const expr = child.atributos?.expr || '';
-        if (avaliarExpressao(expr, escopoAtual)) {
+        if (avaliarExpressao(expr, escopoAtual, estrutura?.campos)) {
           const variaveis = extrairVariaveisDaExpressao(expr);
           const dest = variaveis.some(v => Boolean(destaquesAtivos[v]));
           const subCond: CondicionalContextoItem = {

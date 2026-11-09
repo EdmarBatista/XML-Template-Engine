@@ -378,7 +378,7 @@ function converterElementosBlocoDom(
         bold: true,
         italic: true,
         tamanhoFonte: DOCUMENT_THEME.typography.sizes.subtitlePt,
-        cor: DOCUMENT_THEME.colors.textSecondaryHex,
+        cor: DOCUMENT_THEME.colors.textHex,
       }, opcoes, false);
       const runs = segmentosParaRuns(normalizarSegmentos(segmentos), opcoes);
 

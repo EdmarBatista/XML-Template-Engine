@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ChevronsUpDown } from 'lucide-react';
+import { AlertTriangle, Search, ChevronsUpDown } from 'lucide-react';
 
 interface SidebarHeaderProps {
   preenchidos: number;
@@ -11,6 +11,7 @@ interface SidebarHeaderProps {
   headerActions?: React.ReactNode;
   progressoExtra?: React.ReactNode;
   esconderProgresso?: boolean;
+  pendenciasCount?: number;
 }
 
 export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
@@ -23,6 +24,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
   headerActions,
   progressoExtra,
   esconderProgresso = false,
+  pendenciasCount = 0,
 }) => {
   return (
     <>
@@ -43,6 +45,14 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
               style={{ width: `${pct}%` }}
             />
           </div>
+          {pendenciasCount > 0 && (
+            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-amber-500">
+              <AlertTriangle className="w-3 h-3 shrink-0" />
+              <span>
+                {pendenciasCount} {pendenciasCount === 1 ? 'pendência bloqueia' : 'pendências bloqueiam'} a exportação
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -68,6 +78,14 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             >
               <ChevronsUpDown className="w-4 h-4" />
             </button>
+            {pendenciasCount > 0 && (
+              <span
+                className="px-1.5 py-1 rounded-md text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-700 shrink-0"
+                title={`${pendenciasCount} pendência(s) bloqueiam a exportação`}
+              >
+                {pendenciasCount}
+              </span>
+            )}
             {progressoExtra}
           </div>
         </div>

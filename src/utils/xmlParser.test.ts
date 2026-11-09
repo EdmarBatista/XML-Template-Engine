@@ -238,6 +238,18 @@ describe('extrairCampos — o <formulario> vira estrutura de campos e grupos', (
     expect(campos.t.rows).toBe(4);
   });
 
+  it('lê obrigatoriedade condicional e mensagem de pendência', () => {
+    const { campos } = modeloDe(
+      '<select id="eng" obrigatorio="tipo_contratacao == \'serviços\'" mensagem_pendencia="Escolha sim ou não"><option>Sim</option></select>' +
+        '<tabela id="etapas" obrigatorio="incluir_etapas == true" />'
+    );
+
+    expect(campos.eng.obrigatorio).toBe("tipo_contratacao == 'serviços'");
+    expect(campos.eng.mensagemPendencia).toBe('Escolha sim ou não');
+    expect(campos.etapas.obrigatorio).toBe('incluir_etapas == true');
+    expect(campos.etapas.mensagemPendencia).toBeUndefined();
+  });
+
   it('lê as opções do select com texto e valor', () => {
     const { campos } = modeloDe(
       '<select id="uf"><option>SP</option><option valor="rj">Rio</option></select>'

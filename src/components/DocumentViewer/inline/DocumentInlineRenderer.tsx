@@ -138,6 +138,7 @@ export function renderInlineAstNodes(
           onFocusField={onFocusField}
           renderInlineNodes={selfRenderInline}
           contextoLocal={ctxLocal}
+          campos={estrutura?.campos}
         />
       );
     } else if (node.tipo === 'foreach') {

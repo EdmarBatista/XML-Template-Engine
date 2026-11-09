@@ -149,7 +149,7 @@ export function renderDocumentAstBlocks(
 
     if (node.tipo === 'if') {
       const expr = node.atributos?.expr || '';
-      const avaliado = avaliarExpressao(expr, escopo);
+      const avaliado = avaliarExpressao(expr, escopo, estrutura?.campos);
       
       if (avaliado) {
         const renderedChildren = selfRenderBlocks(node.filhos || [], ctxNum, `${blockKey}_if`, ctxLocal, nivel);
@@ -162,6 +162,7 @@ export function renderDocumentAstBlocks(
             destaquesAtivos={destaquesAtivos}
             onFocusField={onFocusField}
             renderedChildren={renderedChildren}
+            campos={estrutura?.campos}
           />
         );
       }
@@ -294,6 +295,7 @@ export function renderDocumentAstBlocks(
           contextoLocal={ctxLocal}
           destaquesAtivos={destaquesAtivos}
           onFocusField={onFocusField}
+          campos={estrutura?.campos}
         />
       );
     } else if (node.tipo === 'tabela') {

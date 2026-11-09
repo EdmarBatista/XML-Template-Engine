@@ -340,7 +340,7 @@ function converterElementosBlocoDomPdf(
       const segmentos = extrairSegmentosDeDom(el, {
         italic: true,
         tamanhoFonte: DOCUMENT_THEME.typography.sizes.subtitlePt,
-        cor: DOCUMENT_THEME.colors.textSecondary,
+        cor: DOCUMENT_THEME.colors.text,
       }, opcoes);
       const textRuns = segmentosParaPdfText(normalizarSegmentos(segmentos));
 
@@ -350,7 +350,7 @@ function converterElementosBlocoDomPdf(
         italics: true,
         alignment: alinhamento,
         margin: [0, DOCUMENT_THEME.spacing.subtitle.beforePt, 0, DOCUMENT_THEME.spacing.subtitle.afterPt],
-        color: DOCUMENT_THEME.colors.textSecondary,
+        color: DOCUMENT_THEME.colors.text,
       });
       return;
     }

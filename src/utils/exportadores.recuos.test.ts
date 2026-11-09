@@ -331,6 +331,7 @@ describe('recuo hierárquico dos exportadores', () => {
       // Subtítulo sem alinhamento: esquerda e sem recuo no Word também.
       const subtituloWord = paragrafoComTexto(xml, 'Subtítulo sem alinhamento');
       expect(subtituloWord).toContain('<w:jc w:val="left"/>');
+      expect(subtituloWord).toContain('<w:color w:val="0F172A"/>');
       expect(subtituloWord).not.toMatch(/<w:ind[^>]*w:left="[1-9]/);
 
       const definicao = await capturarDefinicaoPdf(documento);
@@ -348,6 +349,7 @@ describe('recuo hierárquico dos exportadores', () => {
       expect(subtitulo).toBeDefined();
       expect((subtitulo as unknown as { alignment?: string }).alignment).toBe('left');
       expect((subtitulo as unknown as { margin?: number[] }).margin?.[0]).toBe(0);
+      expect((subtitulo as unknown as { color?: string }).color).toBe('#0F172A');
     } finally {
       unmount();
     }
