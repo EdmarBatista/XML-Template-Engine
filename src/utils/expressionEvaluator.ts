@@ -1,8 +1,7 @@
 /**
  * Avaliador de expressões lógicas e de comparação para tags <if expr="...">
  */
-import type { DadosDocumento, FieldMetadata, ValorCampo } from '../types';
-import { valoresDaLista } from './listas';
+import type { DadosDocumento, ValorCampo } from '../types';
 
 function dividirExpressao(expr: string, operador: string): [string, string] | null {
   let aspas: string | null = null;
@@ -64,66 +63,6 @@ function removerParentesesExternos(expr: string): string {
   return atual;
 }
 
-function valorTemConteudo(valor: unknown): boolean {
-  if (valor === null || valor === undefined || valor === false) return false;
-  if (Array.isArray(valor)) return valor.some(item => valorTemConteudo(item));
-  return String(valor).trim() !== '';
-}
-
-function linhaTemConteudo(linha: unknown): boolean {
-  if (linha === null || linha === undefined) return false;
-  if (typeof linha === 'object') {
-    return Object.values(linha as Record<string, unknown>).some(valorTemConteudo);
-  }
-  return valorTemConteudo(linha);
-}
-
-function qtdeLinhasDoCampo(
-  id: string,
-  dados: DadosDocumento,
-  campos?: Record<string, FieldMetadata>
-): number {
-  const valor = Object.prototype.hasOwnProperty.call(dados, id) ? dados[id] : undefined;
-  const meta = campos?.[id];
-
-  if (Array.isArray(valor)) {
-    const ehTabela = meta?.tipo === 'tabela' || valor.some(item => item !== null && typeof item === 'object');
-    if (ehTabela) return valor.filter(linhaTemConteudo).length;
-    return valoresDaLista(valor).length;
-  }
-
-  if (typeof valor === 'string' && meta?.tipoInput === 'lista_csv') {
-    return valoresDaLista(valor).length;
-  }
-
-  return valorTemConteudo(valor) ? 1 : 0;
-}
-
-interface ChamadaLinhas {
-  nome: 'qtde_linhas' | 'tem_linhas';
-  id: string;
-}
-
-function lerChamadaLinhas(expr: string): ChamadaLinhas | null {
-  const match = expr.match(
-    /^(qtde_linhas|tem_linhas)\s*\(\s*(?:'([^']*)'|"([^"]*)"|([a-zA-Z_]\w*))\s*\)$/
-  );
-  if (!match) return null;
-  return {
-    nome: match[1] as ChamadaLinhas['nome'],
-    id: match[2] ?? match[3] ?? match[4] ?? '',
-  };
-}
-
-function valorChamadaLinhas(
-  chamada: ChamadaLinhas,
-  dados: DadosDocumento,
-  campos?: Record<string, FieldMetadata>
-): number {
-  const quantidade = qtdeLinhasDoCampo(chamada.id, dados, campos);
-  return chamada.nome === 'tem_linhas' ? (quantidade > 0 ? 1 : 0) : quantidade;
-}
-
 function compararValores(leftValue: ValorCampo, operator: string, rawValue: string): boolean {
   let rightValue: ValorCampo = rawValue.trim();
   if ((rightValue.startsWith("'") && rightValue.endsWith("'")) || (rightValue.startsWith('"') && rightValue.endsWith('"'))) {
@@ -178,34 +117,8 @@ function compararValores(leftValue: ValorCampo, operator: string, rawValue: stri
   }
 }
 
-function avaliarComparacao(
-  expr: string,
-  dados: DadosDocumento,
-  campos?: Record<string, FieldMetadata>
-): boolean {
+function avaliarComparacao(expr: string, dados: DadosDocumento): boolean {
   expr = removerParentesesExternos(expr).trim();
-
-  // qtde_linhas('x') > 2 / tem_linhas('x') == false
-  const chamadaComparada = expr.match(
-    /^(qtde_linhas|tem_linhas)\s*\(\s*(?:'([^']*)'|"([^"]*)"|([a-zA-Z_]\w*))\s*\)\s*(==|!=|>=|<=|>|<)\s*(.+)$/
-  );
-  if (chamadaComparada) {
-    const chamada: ChamadaLinhas = {
-      nome: chamadaComparada[1] as ChamadaLinhas['nome'],
-      id: chamadaComparada[2] ?? chamadaComparada[3] ?? chamadaComparada[4] ?? '',
-    };
-    return compararValores(
-      valorChamadaLinhas(chamada, dados, campos),
-      chamadaComparada[5],
-      chamadaComparada[6]
-    );
-  }
-
-  // tem_linhas('x') / qtde_linhas('x') isolados
-  const chamada = lerChamadaLinhas(expr);
-  if (chamada) {
-    return valorChamadaLinhas(chamada, dados, campos) > 0;
-  }
 
   const match = expr.match(/^([a-zA-Z_]\w*)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
   if (!match) {
@@ -242,11 +155,7 @@ export function decodificarEntidadesXml(str: string): string {
   return res;
 }
 
-export function avaliarExpressao(
-  expr: string,
-  dados: DadosDocumento,
-  campos?: Record<string, FieldMetadata>
-): boolean {
+export function avaliarExpressao(expr: string, dados: DadosDocumento): boolean {
   if (!expr) return true;
   let limpa = decodificarEntidadesXml(expr).trim();
   limpa = removerParentesesExternos(limpa);
@@ -254,31 +163,26 @@ export function avaliarExpressao(
   // Tratamento de operadores OR (|| ou OR)
   const ou = dividirExpressao(limpa, '||') || dividirExpressao(limpa, ' OR ');
   if (ou) {
-    return avaliarExpressao(ou[0], dados, campos) || avaliarExpressao(ou[1], dados, campos);
+    return avaliarExpressao(ou[0], dados) || avaliarExpressao(ou[1], dados);
   }
 
   // Tratamento de operadores AND (&& ou AND)
   const e = dividirExpressao(limpa, '&&') || dividirExpressao(limpa, ' AND ');
   if (e) {
-    return avaliarExpressao(e[0], dados, campos) && avaliarExpressao(e[1], dados, campos);
+    return avaliarExpressao(e[0], dados) && avaliarExpressao(e[1], dados);
   }
 
-  return avaliarComparacao(limpa, dados, campos);
+  return avaliarComparacao(limpa, dados);
 }
 
 export function extrairVariaveisDaExpressao(expr: string): string[] {
   if (!expr) return [];
   const decodificado = decodificarEntidadesXml(expr);
   const limpo = decodificado
-    // A função vale pelo seu argumento: o id citado continua sendo um campo usado.
-    .replace(
-      /\b(?:qtde_linhas|tem_linhas)\s*\(\s*(?:'([^']*)'|"([^"]*)"|([a-zA-Z_]\w*))\s*\)/gi,
-      (_match, simples: string, dupla: string, semAspas: string) => ` ${simples || dupla || semAspas || ''} `
-    )
     .replace(/'[^']*'/g, '')
     .replace(/"[^"]*"/g, '')
     .replace(/[=!<>+&|()[\],]+/g, ' ')
-    .replace(/\b(true|false|null|undefined|AND|OR|and|or|not|qtde_linhas|tem_linhas)\b/gi, ' ')
+    .replace(/\b(true|false|null|undefined|AND|OR|and|or|not)\b/gi, ' ')
     .replace(/\b\d+(\.\d+)?\b/g, ' ');
 
   return limpo

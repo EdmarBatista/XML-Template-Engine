@@ -213,8 +213,6 @@ export function extrairCampos(formularioNode: Element): FormStructure {
     const descricao = campoEl.getAttribute('descricao') || '';
     const tipoInput = (campoEl.getAttribute('tipo') || (tag === 'number' ? 'number' : 'texto')).toLowerCase().trim();
     const placeholder = campoEl.getAttribute('placeholder') || '';
-    const obrigatorio = campoEl.getAttribute('obrigatorio');
-    const mensagemPendencia = campoEl.getAttribute('mensagem_pendencia');
 
     const campo: FieldMetadata = {
       id,
@@ -224,9 +222,6 @@ export function extrairCampos(formularioNode: Element): FormStructure {
       descricao,
       placeholder,
     };
-
-    if (obrigatorio !== null) campo.obrigatorio = obrigatorio.trim();
-    if (mensagemPendencia !== null) campo.mensagemPendencia = mensagemPendencia.trim();
 
     if (tag === 'tabela') {
       const colunas: TableColumnMetadata[] = [];

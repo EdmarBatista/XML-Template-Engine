@@ -120,11 +120,6 @@ describe('extrairVariaveisDaExpressao — varredura para o aviso de variável n�
     expect(extrairVariaveisDaExpressao('item.valor > 10')).toEqual(['item.valor']);
   });
 
-  it('não trata qtde_linhas/tem_linhas como campo, mas mantém o id argumento', () => {
-    expect(
-      extrairVariaveisDaExpressao("qtde_linhas('etapas_execucao') > 0 && tem_linhas('materiais')")
-    ).toEqual(['etapas_execucao', 'materiais']);
-  });
 });
 
 describe('avaliarExpressao — parênteses', () => {
@@ -152,53 +147,5 @@ describe('avaliarExpressao — parênteses', () => {
     expect(avaliarExpressao('(((a == 1)))', { a: '1' })).toBe(true);
     expect(avaliarExpressao('((a == 1) || (b == 2)) && c == 3', { a: '1', c: '3' })).toBe(true);
     expect(avaliarExpressao('(a == 1) && (b == 2)', { a: '1', b: '9' })).toBe(false);
-  });
-});
-
-describe('avaliarExpressao — qtde_linhas e tem_linhas', () => {
-  const dados = {
-    incluir_etapas_execucao: true,
-    etapas_execucao: [{ etapa: 'Mobilização' }, { etapa: '' }],
-    tabela_vazia: [{ etapa: '' }, {}],
-    materiais_equipamentos: [{ item: 'A' }, { item: 'B' }, { item: 'C' }],
-    lista_csv: 'A, B, C',
-    nome: 'Fulano',
-    vazio: '',
-  };
-
-  const campos = {
-    etapas_execucao: { id: 'etapas_execucao', label: 'Etapas', tipo: 'tabela' as const },
-    tabela_vazia: { id: 'tabela_vazia', label: 'Vazia', tipo: 'tabela' as const },
-    materiais_equipamentos: { id: 'materiais_equipamentos', label: 'Materiais', tipo: 'tabela' as const },
-    lista_csv: { id: 'lista_csv', label: 'Lista', tipo: 'input' as const, tipoInput: 'lista_csv' },
-  };
-
-  it('conta apenas linhas de tabela com ao menos uma célula preenchida', () => {
-    expect(avaliarExpressao("qtde_linhas('etapas_execucao') == 1", dados, campos)).toBe(true);
-    expect(avaliarExpressao("qtde_linhas('tabela_vazia') == 0", dados, campos)).toBe(true);
-    expect(avaliarExpressao("qtde_linhas('materiais_equipamentos') > 2", dados, campos)).toBe(true);
-  });
-
-  it('tem_linhas equivale a qtde_linhas > 0', () => {
-    expect(avaliarExpressao("tem_linhas('etapas_execucao')", dados, campos)).toBe(true);
-    expect(avaliarExpressao("tem_linhas('tabela_vazia')", dados, campos)).toBe(false);
-    expect(
-      avaliarExpressao(
-        "incluir_etapas_execucao == true && tem_linhas('etapas_execucao')",
-        dados,
-        campos
-      )
-    ).toBe(true);
-  });
-
-  it('conta itens de lista_csv, campo escalar e campo vazio', () => {
-    expect(avaliarExpressao("qtde_linhas('lista_csv') == 3", dados, campos)).toBe(true);
-    expect(avaliarExpressao("qtde_linhas('nome') == 1", dados, campos)).toBe(true);
-    expect(avaliarExpressao("qtde_linhas('vazio') == 0", dados, campos)).toBe(true);
-  });
-
-  it('campo inexistente devolve zero sem exceção', () => {
-    expect(avaliarExpressao("qtde_linhas('campo_inexistente') > 0", dados, campos)).toBe(false);
-    expect(avaliarExpressao("tem_linhas('campo_inexistente')", dados, campos)).toBe(false);
   });
 });

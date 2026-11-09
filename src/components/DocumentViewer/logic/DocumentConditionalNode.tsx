@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { AstNode, NumberingContext, ContextoLocal, FieldMetadata } from '../../../types';
+import { AstNode, NumberingContext, ContextoLocal } from '../../../types';
 import { avaliarExpressao, extrairVariaveisDaExpressao } from '../../../utils/expressionEvaluator';
 
 export interface DocumentInlineConditionalNodeProps {
@@ -30,8 +30,6 @@ export interface DocumentInlineConditionalNodeProps {
   ) => React.ReactNode[];
   /** Contexto local de variáveis */
   contextoLocal?: ContextoLocal;
-  /** Metadados dos campos, para qtde_linhas/tem_linhas distinguirem lista_csv. */
-  campos?: Record<string, FieldMetadata>;
 }
 
 /**
@@ -45,10 +43,9 @@ export const DocumentInlineConditionalNode: React.FC<DocumentInlineConditionalNo
   onFocusField,
   renderInlineNodes,
   contextoLocal,
-  campos,
 }) => {
   const expr = node.atributos?.expr || '';
-  const avaliado = avaliarExpressao(expr, escopo, campos);
+  const avaliado = avaliarExpressao(expr, escopo);
   if (!avaliado) return null;
 
   const variaveisUsadas = extrairVariaveisDaExpressao(expr);
@@ -86,8 +83,6 @@ export interface DocumentBlockConditionalNodeProps {
   onFocusField: (fieldId: string) => void;
   /** Filhos já renderizados síncronamente */
   renderedChildren: React.ReactNode[];
-  /** Metadados dos campos, para qtde_linhas/tem_linhas distinguirem lista_csv. */
-  campos?: Record<string, FieldMetadata>;
 }
 
 /**
@@ -100,10 +95,9 @@ export const DocumentBlockConditionalNode: React.FC<DocumentBlockConditionalNode
   destaquesAtivos,
   onFocusField,
   renderedChildren,
-  campos,
 }) => {
   const expr = node.atributos?.expr || '';
-  const avaliado = avaliarExpressao(expr, escopo, campos);
+  const avaliado = avaliarExpressao(expr, escopo);
   if (!avaliado) return null;
 
   const variaveisUsadas = extrairVariaveisDaExpressao(expr);

@@ -100,10 +100,6 @@ export interface FieldMetadata {
   step?: string | number;
   rows?: number | string;
   condicao?: string;
-  /** Expressão de obrigatoriedade: "true" ou uma condição avaliada com os dados. */
-  obrigatorio?: string;
-  /** Mensagem exibida quando o campo obrigatório está vazio. */
-  mensagemPendencia?: string;
   opcoes?: string[];
   opcoesDetalhadas?: FieldOption[];
   colunas?: TableColumnMetadata[];

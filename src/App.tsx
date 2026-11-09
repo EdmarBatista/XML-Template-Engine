@@ -51,7 +51,6 @@ import { StorageService } from './services/storageService';
 import { construirEstadoInicial, parseXmlDocument, criarModeloIntermediario } from './utils/xmlParser';
 import { converterDocxParaModeloXml } from './docx/converter';
 import { TEMPLATE_NOVO_DOCUMENTO } from './utils/xmlEditorCompletions';
-import { coletarPendencias } from './utils/pendencias';
 import { motivoDoErro } from './utils/erros';
 export default function App() {
   // Notificações visuais
@@ -277,18 +276,6 @@ export default function App() {
       return modelo;
     }
   }, [isSideBySideEditing, sideBySideXmlCode, modelo, xmlName, xmlParts]);
-
-  const pendencias = React.useMemo(
-    () =>
-      previewModelo
-        ? coletarPendencias(
-            previewModelo.formulario.campos,
-            dados,
-            previewModelo.formulario.grupos
-          )
-        : [],
-    [previewModelo, dados]
-  );
 
   const handleConvertWord = async () => {
     if (!wordFileToConvert) return;
@@ -538,7 +525,6 @@ export default function App() {
               estrutura={previewModelo.formulario}
               dados={dados}
               onChange={updateField}
-              pendencias={pendencias}
               onFieldFocus={handleFocusFieldFromSidebar}
               campoFocadoSidebar={campoFocadoSidebar}
               deslocarSidebar={irParaCampoAtivo}
@@ -565,8 +551,6 @@ export default function App() {
                   onSaveZip={handleSaveZip}
                   onExportWord={handleExportWord}
                   onExportPdf={handleExportPdf}
-                  pendencias={pendencias}
-                  onIrParaPendencia={handleFocusFieldInSidebar}
                   
                   onOpenModelModal={openModelModal}
                   onClearForm={handleClearForm}
