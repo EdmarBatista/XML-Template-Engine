@@ -9,6 +9,7 @@ import {
   ehNivelRaiz,
   lerNivelDeNumeracao,
   lerNumeracaoPropria,
+  WORD_ATTR_ALIGN,
   WORD_ATTR_IGNORE,
   WORD_ATTR_NUMERADA,
   WORD_ATTR_TIPO,
@@ -70,6 +71,15 @@ function getPdfMake(): PdfMakeGlobal | null {
 const PDF_PADROES: Required<PdfExportOptions> = {
   ...DOCUMENT_THEME.pdf.defaultOptions,
 };
+
+/** Converte o alinhamento publicado no DOM (`esquerda`, `centro`, ...) para o pdfmake. */
+function alinhamentoPdf(valor?: string | null): 'left' | 'center' | 'right' | 'justify' {
+  const nome = String(valor || '').trim().toLowerCase();
+  if (nome === 'centro' || nome === 'center') return 'center';
+  if (nome === 'direita' || nome === 'right') return 'right';
+  if (nome === 'justificar' || nome === 'justificado' || nome === 'justify') return 'justify';
+  return 'left';
+}
 
 /**
  * Subconjunto das estruturas de conteudo do pdfmake que este projeto escreve.
@@ -324,6 +334,9 @@ function converterElementosBlocoDomPdf(
 
     // 2. Subtítulo (<subtitulo> ou <h2 data-word-type="subtitulo">)
     if (wordType === WORD_TIPO_SUBTITULO || tag === 'h2') {
+      // O renderizador publica o alinhamento do XML em data-word-align; o PDF
+      // não pode fixar "center" e ignorar, por exemplo, alinhamento="esquerda".
+      const alinhamento = alinhamentoPdf(el.getAttribute(WORD_ATTR_ALIGN) || 'esquerda');
       const segmentos = extrairSegmentosDeDom(el, {
         italic: true,
         tamanhoFonte: DOCUMENT_THEME.typography.sizes.subtitlePt,
@@ -335,7 +348,7 @@ function converterElementosBlocoDomPdf(
         text: textRuns.length > 0 ? textRuns : (el.textContent?.trim() || ''),
         fontSize: DOCUMENT_THEME.typography.sizes.subtitlePt,
         italics: true,
-        alignment: 'center',
+        alignment: alinhamento,
         margin: [0, DOCUMENT_THEME.spacing.subtitle.beforePt, 0, DOCUMENT_THEME.spacing.subtitle.afterPt],
         color: DOCUMENT_THEME.colors.textSecondary,
       });

@@ -342,6 +342,29 @@ describe('recuo hierárquico dos exportadores', () => {
     }
   });
 
+  it('PDF: respeita o alinhamento do subtítulo publicado no DOM', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <h2 data-word-type="subtitulo" data-word-outline-level="2" data-word-align="esquerda">Subtítulo esquerda</h2>
+        <h2 data-word-type="subtitulo" data-word-outline-level="2" data-word-align="centro">Subtítulo centro</h2>
+        <h2 data-word-type="subtitulo" data-word-outline-level="2" data-word-align="direita">Subtítulo direita</h2>
+        <h2 data-word-type="subtitulo" data-word-outline-level="2" data-word-align="justificar">Subtítulo justificado</h2>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const definicao = await capturarDefinicaoPdf(documento);
+
+    const alinhamento = (texto: string): string | undefined => {
+      const no = definicao.content.find(item => textoPdf(item).includes(texto));
+      if (!no) throw new Error(`Subtítulo "${texto}" não encontrado no conteúdo do PDF`);
+      return (no as unknown as { alignment?: string }).alignment;
+    };
+
+    expect(alinhamento('Subtítulo esquerda')).toBe('left');
+    expect(alinhamento('Subtítulo centro')).toBe('center');
+    expect(alinhamento('Subtítulo direita')).toBe('right');
+    expect(alinhamento('Subtítulo justificado')).toBe('justify');
+  });
+
   it('PDF: mantém o recuo em seção aninhada, if/foreach e ao redor de tabela', async () => {
     const definicao = await capturarDefinicaoPdf(montarDocumento());
 
