@@ -278,7 +278,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       data-vars={!isHeader && listaNome && hasValue ? `${listaNome} ${listaNome}.${colKey || ''}` : (conditionalFocusVar || undefined)}
-      className={`border border-slate-300 dark:border-slate-600 px-3 py-2 text-left align-top whitespace-normal [overflow-wrap:anywhere] select-text relative transition-all duration-300 ${bgTextClasses} ${
+      className={`border border-slate-300 dark:border-slate-600 px-3 py-2 text-left align-top whitespace-normal [overflow-wrap:anywhere] [&_[data-vars]]:py-0 [&_[data-vars]]:border-y-0 select-text relative transition-all duration-300 ${bgTextClasses} ${
         editando ? 'p-0.5 bg-white dark:bg-slate-800 ring-2 ring-blue-500 z-30 shadow-md' : ''
       } ${className}`}
       style={{
