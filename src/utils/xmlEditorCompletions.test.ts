@@ -229,3 +229,84 @@ describe('verificarVariaveisXml — variável usada e não declarada', () => {
     expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual([]);
   });
 });
+
+describe('verificarVariaveisXml — o ">" dentro das aspas de um atributo não corta a tag', () => {
+  it('lê o expr de <if> quando outro atributo tem ">" dentro das aspas duplas', () => {
+    const xml = `<conteudo><if nota="a > b" expr="x == 1"><p>ok</p></if></conteudo>`;
+    expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['x']);
+  });
+
+  it('lê o expr de <if> quando outro atributo tem ">" dentro das aspas simples', () => {
+    const xml = `<conteudo><if nota='a > b' expr='y == 2'><p>ok</p></if></conteudo>`;
+    expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['y']);
+  });
+
+  it('lê o expr de uma tag de <if> multilinha com ">" em atributo anterior', () => {
+    const xml = `<conteudo>
+      <if
+        nota="a > b"
+        expr="z == 1"
+      ><p>ok</p></if>
+    </conteudo>`;
+    expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['z']);
+  });
+
+  it('lê o expr de uma tag de <if> auto-fechada', () => {
+    const xml = `<conteudo><if expr="w == 1" /></conteudo>`;
+    expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['w']);
+  });
+
+  it('lê lista e var de <foreach> com ">" em outro atributo', () => {
+    const xml = `<documento>
+      <formulario><tabela id="itens"><coluna id="nome" /></tabela></formulario>
+      <conteudo>
+        <foreach nota="a > b" lista="itens" var="item"><p>{{item.nome}}</p></foreach>
+      </conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(xml)).toEqual({
+      usadasNaoDeclaradas: [],
+      declaradasNaoUsadas: [],
+    });
+  });
+
+  it('lê os atributos independentemente da ordem em que aparecem', () => {
+    const xml = `<documento>
+      <formulario><tabela id="itens"><coluna id="nome" /></tabela></formulario>
+      <conteudo>
+        <foreach var="item" nota="a > b" lista="itens"><p>{{item.nome}}</p></foreach>
+        <if nota="a > b" expr="total == 1"><p>ok</p></if>
+      </conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(xml)).toEqual({
+      usadasNaoDeclaradas: ['total'],
+      declaradasNaoUsadas: [],
+    });
+  });
+
+  it('não trata a tag de fechamento como se fosse a de abertura', () => {
+    const xml = `<conteudo><if expr="a == 1"><p>ok</p></if><if expr="b == 1"><p>ok</p></if></conteudo>`;
+    expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['a', 'b']);
+  });
+
+  it('ignora <if> dentro de comentário e de CDATA', () => {
+    const xml = `<conteudo>
+      <!-- <if expr="fantasma == 1"> -->
+      <![CDATA[ <if expr="outroFantasma == 1"> ]]>
+      <if expr="real == 1"><p>ok</p></if>
+    </conteudo>`;
+    expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['real']);
+  });
+
+  it('usa o atributo "de" quando "lista" está vazio', () => {
+    const xml = `<documento>
+      <formulario><tabela id="itens"><coluna id="nome" /></tabela></formulario>
+      <conteudo>
+        <foreach lista="" de="itens" var="item"><p>{{item.nome}}</p></foreach>
+      </conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(xml)).toEqual({
+      usadasNaoDeclaradas: [],
+      declaradasNaoUsadas: [],
+    });
+  });
+});

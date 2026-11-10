@@ -102,6 +102,199 @@ export function extrairCamposDeclarados(xmlString: string): CampoExtraido[] {
 }
 
 /**
+ * Lê os atributos de uma tag de abertura varrendo o conteúdo caractere a caractere.
+ *
+ * Recebe o que vem depois do nome da tag (entre `<nome` e o `>`), mas também aceita o conteúdo
+ * com o nome junto: o primeiro token sem `=` é descartado como nome da tag.
+ *
+ * Nada de regex de tag inteira: o `[^>]*?` que existia aqui (e nas três regex de atributo do
+ * validador) parava no primeiro `>` mesmo quando ele estava dentro de um valor entre aspas —
+ * em `<if nota="a > b" expr="x == 1">` o `expr` nunca era lido.
+ *
+ * Regras:
+ * - respeita valores entre aspas simples e duplas (inclusive com `>`, `<` e `=` dentro);
+ * - aceita espaços e quebras de linha entre atributos e ao redor do `=`;
+ * - aceita `valor=""` vazio (e também valor sem aspas);
+ * - ignora a `/` do auto-fechamento;
+ * - normaliza os nomes dos atributos para minúsculas;
+ * - atributo repetido: vale o primeiro (mesmo comportamento das regex anteriores).
+ */
+function lerAtributosDaTag(conteudoTag: string): Record<string, string> {
+  const atributos: Record<string, string> = {};
+  if (!conteudoTag) return atributos;
+
+  const texto = conteudoTag;
+  const n = texto.length;
+  let i = 0;
+  // O primeiro token sem `=` é o nome da tag; os demais são atributos sem valor.
+  let primeiroToken = true;
+
+  const ehEspaco = (c: string) => c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f';
+
+  while (i < n) {
+    const c = texto[i];
+    // separadores e a barra do auto-fechamento não iniciam atributo
+    if (ehEspaco(c) || c === '/' || c === '>') {
+      i++;
+      continue;
+    }
+
+    // 1. nome do atributo (ou o nome da tag, no primeiro token)
+    const inicioNome = i;
+    while (i < n && !ehEspaco(texto[i]) && texto[i] !== '=' && texto[i] !== '/' && texto[i] !== '>') {
+      i++;
+    }
+    const nome = texto.slice(inicioNome, i);
+
+    // 2. olha adiante para ver se vem um `=`
+    let j = i;
+    while (j < n && ehEspaco(texto[j])) j++;
+
+    if (j < n && texto[j] === '=') {
+      // 3. valor do atributo
+      j++;
+      while (j < n && ehEspaco(texto[j])) j++;
+      let valor = '';
+      const abre = texto[j];
+      if (abre === '"' || abre === "'") {
+        j++;
+        const inicioValor = j;
+        while (j < n && texto[j] !== abre) j++;
+        valor = texto.slice(inicioValor, j);
+        if (j < n) j++; // consome a aspa de fechamento
+      } else {
+        const inicioValor = j;
+        while (j < n && !ehEspaco(texto[j]) && texto[j] !== '>') j++;
+        valor = texto.slice(inicioValor, j);
+      }
+      primeiroToken = false;
+      const chave = nome.toLowerCase();
+      if (chave && !Object.prototype.hasOwnProperty.call(atributos, chave)) {
+        atributos[chave] = valor;
+      }
+      i = j;
+    } else {
+      // Token sem `=`: o primeiro é o nome da tag; os seguintes são atributos booleanos,
+      // que ficam registrados com valor vazio.
+      if (!primeiroToken && nome) {
+        const chave = nome.toLowerCase();
+        if (!Object.prototype.hasOwnProperty.call(atributos, chave)) {
+          atributos[chave] = '';
+        }
+      }
+      primeiroToken = false;
+      i = j;
+    }
+  }
+
+  return atributos;
+}
+
+/**
+ * Itera as tags de abertura cujo nome está em `nomes` (comparação sem diferenciar maiúsculas),
+ * devolvendo `{ nome, atributos }` na ordem em que aparecem no documento.
+ *
+ * O `>` de fechamento da tag é procurado FORA das aspas, varrendo caractere a caractere — é o
+ * que permite ler `<if nota="a > b" expr="x == 1">`. Tags de fechamento (`</tag>`), comentários,
+ * CDATA, declarações (`<!...>`) e instruções (`<?...>`) são ignorados. XML malformado (tag sem
+ * `>`) encerra a iteração em vez de girar em loop.
+ */
+function* iterarTagsDeAbertura(
+  xml: string,
+  nomes: Set<string>
+): Generator<{ nome: string; atributos: Record<string, string> }> {
+  if (!xml || nomes.size === 0) return;
+
+  const n = xml.length;
+  let i = 0;
+
+  while (i < n) {
+    const abre = xml.indexOf('<', i);
+    if (abre === -1) return;
+
+    const seguinte = xml[abre + 1];
+    if (seguinte === undefined) return;
+    // fecha tag, comentário/CDATA/declaração e instrução de processamento não abrem tag
+    if (seguinte === '/') {
+      i = abre + 2;
+      continue;
+    }
+    if (seguinte === '!') {
+      if (xml.startsWith('<!--', abre)) {
+        const fim = xml.indexOf('-->', abre + 4);
+        if (fim === -1) return;
+        i = fim + 3;
+        continue;
+      }
+      if (xml.startsWith('<![CDATA[', abre)) {
+        const fim = xml.indexOf(']]>', abre + 9);
+        if (fim === -1) return;
+        i = fim + 3;
+        continue;
+      }
+      const fim = xml.indexOf('>', abre + 2);
+      if (fim === -1) return;
+      i = fim + 1;
+      continue;
+    }
+    if (seguinte === '?') {
+      const fim = xml.indexOf('?>', abre + 2);
+      if (fim === -1) return;
+      i = fim + 2;
+      continue;
+    }
+
+    // nome da tag: até espaço, `/` ou `>`
+    const inicioNome = abre + 1;
+    let fimNome = inicioNome;
+    while (
+      fimNome < n &&
+      xml[fimNome] !== ' ' &&
+      xml[fimNome] !== '\t' &&
+      xml[fimNome] !== '\n' &&
+      xml[fimNome] !== '\r' &&
+      xml[fimNome] !== '/' &&
+      xml[fimNome] !== '>'
+    ) {
+      fimNome++;
+    }
+
+    const nome = xml.slice(inicioNome, fimNome).toLowerCase();
+    if (!nome || !nomes.has(nome)) {
+      // segue depois do '<' para não perder uma tag que comece no meio do nome
+      i = abre + 1;
+      continue;
+    }
+
+    // `>` de fechamento, fora das aspas
+    let k = fimNome;
+    let aspas: string | null = null;
+    while (k < n) {
+      const c = xml[k];
+      if (aspas) {
+        if (c === aspas) aspas = null;
+      } else if (c === '"' || c === "'") {
+        aspas = c;
+      } else if (c === '>') {
+        break;
+      }
+      k++;
+    }
+    if (k >= n) return; // malformado: tag sem `>` — nada mais a ler com segurança
+
+    yield { nome, atributos: lerAtributosDaTag(xml.slice(fimNome, k)) };
+    i = k + 1;
+  }
+}
+
+/** Tags cujo atributo `var` declara a variável de iteração de um loop. */
+const TAGS_COM_VAR_DE_LOOP = new Set(['foreach', 'linhas']);
+/** Tags cujo atributo `expr` traz uma expressão condicional. */
+const TAGS_COM_EXPR = new Set(['if']);
+/** Tags cujo atributo `lista` (ou, na falta dele, `de`) aponta a coleção iterada. */
+const TAGS_COM_LISTA = new Set(['foreach', 'tabela']);
+
+/**
  * Valida o uso de variáveis no XML:
  * - Identifica variáveis usadas em {{...}} que não foram declaradas no formulário.
  * - Identifica campos declarados no formulário que não foram referenciados no documento.
@@ -142,10 +335,8 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
 
   // Identifica variáveis de iteração de loops (<foreach var="it">, <linhas var="linha">)
   const loopVars = new Set<string>();
-  const regexForeachVar = /<(?:foreach|linhas)\b[^>]*?\bvar\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
-  let loopMatch: RegExpExecArray | null;
-  while ((loopMatch = regexForeachVar.exec(xmlString)) !== null) {
-    const varLoop = (loopMatch[1] ?? loopMatch[2] ?? '').trim();
+  for (const tag of iterarTagsDeAbertura(xmlString, TAGS_COM_VAR_DE_LOOP)) {
+    const varLoop = (tag.atributos.var ?? '').trim();
     if (varLoop) loopVars.add(varLoop);
   }
 
@@ -169,10 +360,8 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
   }
 
   // 2. Extrai referências em tags de condição (<if expr="...">)
-  const regexCondicao = /<if\b[^>]*?\bexpr\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
-  let condMatch: RegExpExecArray | null;
-  while ((condMatch = regexCondicao.exec(xmlString)) !== null) {
-    const expr = condMatch[1] ?? condMatch[2] ?? '';
+  for (const tag of iterarTagsDeAbertura(xmlString, TAGS_COM_EXPR)) {
+    const expr = tag.atributos.expr ?? '';
     const tokens = extrairVariaveisDaExpressao(expr);
     tokens.forEach(t => {
       const limpo = t.replace(/\[\d+\]/g, '');
@@ -181,10 +370,8 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
   }
 
   // 3. Extrai referências em tags de loop (<foreach lista="...">)
-  const regexLoopLista = /<(?:foreach|tabela)\b[^>]*?\b(?:lista|de)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
-  let listaMatch: RegExpExecArray | null;
-  while ((listaMatch = regexLoopLista.exec(xmlString)) !== null) {
-    const lista = (listaMatch[1] ?? listaMatch[2] ?? '').trim();
+  for (const tag of iterarTagsDeAbertura(xmlString, TAGS_COM_LISTA)) {
+    const lista = (tag.atributos.lista?.trim() || tag.atributos.de?.trim() || '');
     if (lista) variaveisUsadas.add(lista);
   }
 
