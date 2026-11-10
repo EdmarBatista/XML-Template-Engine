@@ -387,7 +387,11 @@ describe('recuo hierárquico dos exportadores', () => {
     const documento = document.getElementById('documento-visualizado') as HTMLElement;
     const xml = await abrirDocumentoWord(await exportarParaWord(documento, 'subtitulo.docx'));
 
-    expect(paragrafoComTexto(xml, 'Classificação do objeto')).not.toMatch(/<w:i(?:\s+w:val="(?:1|true|on)")?\s*\/>/);
+    const subtituloSimples = paragrafoComTexto(xml, 'Classificação do objeto');
+    expect(subtituloSimples).not.toMatch(/<w:i(?:\s+w:val="(?:1|true|on)")?\s*\/>/);
+    // Mesmo espaçamento do modelo AGU (Nvel1-SemNumerao): 6 pt antes e 6 pt depois.
+    expect(subtituloSimples).toMatch(/w:before="120"/);
+    expect(subtituloSimples).toMatch(/w:after="120"/);
     expect(paragrafoComTexto(xml, 'ênfase')).toMatch(/<w:i(?:\s+w:val="(?:1|true|on)")?\s*\/>/);
   });
 
@@ -402,7 +406,7 @@ describe('recuo hierárquico dos exportadores', () => {
 
     const paragrafoPdf = (texto: string) => {
       const no = definicao.content.find(item => textoPdf(item).includes(texto)) as
-        | { italics?: boolean; text?: unknown }
+        | { italics?: boolean; text?: unknown; margin?: number[] }
         | undefined;
       if (!no) throw new Error(`Subtítulo "${texto}" não encontrado no conteúdo do PDF`);
       return no;
@@ -412,6 +416,8 @@ describe('recuo hierárquico dos exportadores', () => {
     const runsSimples = Array.isArray(simples.text) ? (simples.text as { italics?: boolean }[]) : [];
     expect(simples.italics).toBeFalsy();
     expect(runsSimples.every(run => !run.italics)).toBe(true);
+    // Mesmo espaçamento do modelo AGU (Nvel1-SemNumerao): 6 pt antes e 6 pt depois.
+    expect(simples.margin).toEqual([0, 6, 0, 6]);
 
     const comEnfase = paragrafoPdf('ênfase');
     const runsComEnfase = Array.isArray(comEnfase.text)

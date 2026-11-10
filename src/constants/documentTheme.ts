@@ -99,7 +99,7 @@ export const DOCUMENT_THEME = {
   // 5. Espaçamentos Verticais e Margens dos Parágrafos (pt)
   spacing: {
     title: { beforePt: 0, afterPt: 8 },
-    subtitle: { beforePt: 0, afterPt: 12 },
+    subtitle: { beforePt: 6, afterPt: 6 },
     sectionTitle: { beforePt: 10, afterPt: 4 },
     paragraph: { beforePt: 2, afterPt: 4 },
     list: { beforePt: 4, afterPt: 6 },
