@@ -122,6 +122,16 @@ describe('extrairVariaveisDaExpressao — varredura para o aviso de variável n�
 
 });
 
+describe('avaliarExpressao — funções removidas', () => {
+  it('não reconhece qtde_linhas como função', () => {
+    expect(avaliarExpressao("qtde_linhas('etapas') > 0", { etapas: [{ etapa: 'A' }] })).toBe(false);
+  });
+
+  it('não reconhece tem_linhas como função', () => {
+    expect(avaliarExpressao("tem_linhas('etapas')", { etapas: [{ etapa: 'A' }] })).toBe(false);
+  });
+});
+
 describe('avaliarExpressao — parênteses', () => {
   const comParenteses =
     "tipo_contratacao == 'obras' || (tipo_contratacao == 'serviços' && servico_engenharia == 'sim')";

@@ -331,7 +331,9 @@ Campos são organizados dentro de `<grupo titulo="...">`:
 - **Atributos de `<coluna>`**: `id` (obrigatório), `label`, `tipo`, `placeholder`, `min`, `max`, `step`, `opcoes` (valores separados por vírgula ou tags `<option>` filhas).
 
 #### Condicionais no Formulário (`<if>`):
-Permite exibir ou ocultar campos dinamicamente no formulário com base em valores preenchidos:
+Permite exibir ou ocultar campos dinamicamente no formulário com base em valores preenchidos.
+A linguagem aceita comparações (`==`, `!=`, `>`, `>=`, `<`, `<=`), os operadores lógicos `&&`, `||` e `!` e agrupamento com parênteses, que preservam a precedência:
+`tipo_contratacao == 'obras' || (tipo_contratacao == 'serviços' && servico_engenharia == 'sim')`.
 ```xml
 <grupo titulo="Dados Adicionais">
   <checkbox id="tem_fiador" label="Possui Fiador?" />

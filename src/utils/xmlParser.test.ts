@@ -238,6 +238,26 @@ describe('extrairCampos — o <formulario> vira estrutura de campos e grupos', (
     expect(campos.t.rows).toBe(4);
   });
 
+  it('ignora atributos removidos obrigatorio/mensagem_pendencia sem quebrar o campo', () => {
+    const { campos } = modeloDe(
+      '<input id="a" label="A" obrigatorio="true" mensagem_pendencia="Preencha" />'
+    );
+
+    expect(campos.a).toMatchObject({ id: 'a', label: 'A', tipo: 'input' });
+    expect('obrigatorio' in campos.a).toBe(false);
+    expect('mensagemPendencia' in campos.a).toBe(false);
+  });
+
+  it('continua lendo textarea, select e radio', () => {
+    const { campos } = modeloDe(
+      '<textarea id="t" label="Texto" /><select id="s"><option>Um</option></select><radio id="r"><option valor="sim">Sim</option><option valor="nao">Não</option></radio>'
+    );
+
+    expect(campos.t).toMatchObject({ tipo: 'textarea', rows: 4 });
+    expect(campos.s.tipo).toBe('select');
+    expect(campos.r).toMatchObject({ tipo: 'radio', opcoes: ['Sim', 'Não'] });
+  });
+
   it('lê as opções do select com texto e valor', () => {
     const { campos } = modeloDe(
       '<select id="uf"><option>SP</option><option valor="rj">Rio</option></select>'
