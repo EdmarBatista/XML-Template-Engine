@@ -214,12 +214,12 @@ describe('extrairSegmentosDeDom — texto e formatação inline', () => {
     ]);
   });
 
-  it('põe o número em negrito só quando é título principal', () => {
+  it('põe todo número de numeração em negrito', () => {
     const dentroDeH1 = el('<h1><span data-word-num="true">1.</span></h1>').firstChild!;
     expect(extrairSegmentosDeDom(dentroDeH1, estilo, opcoes)).toEqual([{ texto: '1.', bold: true }]);
 
     const dentroDeParagrafo = el('<div><span data-word-num="true">1.1</span></div>').firstChild!;
-    expect(extrairSegmentosDeDom(dentroDeParagrafo, estilo, opcoes)).toEqual([{ texto: '1.1', bold: false }]);
+    expect(extrairSegmentosDeDom(dentroDeParagrafo, estilo, opcoes)).toEqual([{ texto: '1.1', bold: true }]);
   });
 
   it('aplica a cor do texto e a cor de variável', () => {

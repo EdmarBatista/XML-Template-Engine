@@ -766,7 +766,9 @@ function criarOpcoesNumeracao(opcoes: Required<WordExportOptions>, referencia = 
             font: opcoes.fonte,
             size: ptParaHalfPoint(level === 0 ? opcoes.secaoTamanhoFonte : opcoes.tamanhoFonte),
             color: paraHexCor(opcoes.corTexto, DOCUMENT_THEME.colors.textHex),
-            bold: level === 0 ? Boolean(opcoes.secaoNegrito) : false,
+            // O número da numeração nativa (1., 1.1., 1.1.1., ...) é sempre negrito;
+            // isso não altera o texto do parágrafo, só o rótulo gerado pelo Word.
+            bold: true,
           },
           paragraph: {
             indent: {

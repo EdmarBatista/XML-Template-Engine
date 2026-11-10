@@ -117,20 +117,22 @@ function abstractIdDoNumId(numbering: string, numId: number): number {
 function niveisNumbering(
   xml: string,
   abstractId: number
-): Map<number, { left: number; hanging: number }> {
+): Map<number, { left: number; hanging: number; bold: boolean }> {
   const abstract = xml.match(
     new RegExp(`<w:abstractNum w:abstractNumId="${abstractId}"[^>]*>([\\s\\S]*?)</w:abstractNum>`)
   );
   if (!abstract) throw new Error(`abstractNum ${abstractId} não encontrado no numbering.xml`);
 
-  const mapa = new Map<number, { left: number; hanging: number }>();
+  const mapa = new Map<number, { left: number; hanging: number; bold: boolean }>();
   for (const bloco of abstract[1].matchAll(/<w:lvl [^>]*w:ilvl="(\d+)"[^>]*>([\s\S]*?)<\/w:lvl>/g)) {
     const ilvl = Number(bloco[1]);
     const left = bloco[2].match(/<w:ind[^>]*w:left="(\d+)"/);
     const hanging = bloco[2].match(/<w:ind[^>]*w:hanging="(\d+)"/);
+    const bold = /<w:b(?:\s+w:val="(?:1|true|on)")?\s*\/>/.test(bloco[2]);
     mapa.set(ilvl, {
       left: left ? Number(left[1]) : 0,
       hanging: hanging ? Number(hanging[1]) : 0,
+      bold,
     });
   }
   return mapa;
@@ -271,7 +273,38 @@ describe('recuo hierárquico dos exportadores', () => {
       expect(definicao, `nível ilvl=${ilvl} ausente no numbering.xml`).toBeDefined();
       expect(definicao!.left).toBe(cmParaTwip(calcularRecuoHierarquicoCm(ilvl + 1)));
       expect(definicao!.hanging).toBe(0);
+      // Os números 1., 1.1., 1.1.1., ... saem em negrito em todos os níveis, sem
+      // alterar o texto do parágrafo (o rPr do nível vale só para o rótulo).
+      expect(definicao!.bold, `número do nível ilvl=${ilvl} deveria ser negrito`).toBe(true);
     }
+  });
+
+  it('PDF: números de seção e de parágrafo saem em negrito', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <h3 data-word-type="secao-titulo" data-word-level="1" data-word-numerar="true">
+          <span data-word-num="true">1.1. </span>Título de seção
+        </h3>
+        <div data-word-type="paragrafo" data-word-level="2" data-word-numerado="true">
+          <span data-word-num="true" data-num-prefix="true" class="font-bold">1.1.1. </span>Parágrafo numerado
+        </div>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const definicao = await capturarDefinicaoPdf(documento);
+
+    const numeroNegrito = (texto: string, numero: string): boolean => {
+      const no = definicao.content.find(item => textoPdf(item).includes(texto)) as
+        | { text?: unknown }
+        | undefined;
+      if (!no) throw new Error(`Parágrafo "${texto}" não encontrado no PDF`);
+      const runs = Array.isArray(no.text) ? (no.text as { text?: string; bold?: boolean }[]) : [];
+      const run = runs.find(r => String(r.text || '').includes(numero));
+      if (!run) throw new Error(`Número "${numero}" não encontrado em "${texto}"`);
+      return run.bold === true;
+    };
+
+    expect(numeroNegrito('Título de seção', '1.1.')).toBe(true);
+    expect(numeroNegrito('Parágrafo numerado', '1.1.1.')).toBe(true);
   });
 
   it('Word: mantém o recuo em seção aninhada, if/foreach e ao redor de tabela', async () => {
