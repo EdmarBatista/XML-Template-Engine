@@ -194,7 +194,7 @@ function montarComRenderer(): { documento: HTMLElement; unmount: () => void } {
               {
                 tipo: 'p',
                 atributos: { nivel: '4' },
-                filhos: [{ tipo: 'texto', texto: 'Gerado pelo if nível 4' }],
+                filhos: [{ tipo: 'texto', texto: 'Gerado pelo if no contexto' }],
               },
             ],
           },
@@ -205,7 +205,7 @@ function montarComRenderer(): { documento: HTMLElement; unmount: () => void } {
               {
                 tipo: 'p',
                 atributos: { nivel: '5' },
-                filhos: [{ tipo: 'texto', texto: 'Gerado pelo foreach nível 5' }],
+                filhos: [{ tipo: 'texto', texto: 'Gerado pelo foreach no contexto' }],
               },
             ],
           },
@@ -354,11 +354,11 @@ describe('recuo hierárquico dos exportadores', () => {
       const xml = await abrirDocumentoWord(
         await exportarParaWord(documento, 'renderizado.docx', { ativarNumeracaoDocumento: true })
       );
-      expect(recuoWord(xml, 'Gerado pelo if nível 4')).toBe(
-        cmParaTwip(calcularRecuoHierarquicoCm(4))
+      expect(recuoWord(xml, 'Gerado pelo if no contexto')).toBe(
+        cmParaTwip(calcularRecuoHierarquicoCm(2))
       );
-      expect(recuoWord(xml, 'Gerado pelo foreach nível 5')).toBe(
-        cmParaTwip(calcularRecuoHierarquicoCm(5))
+      expect(recuoWord(xml, 'Gerado pelo foreach no contexto')).toBe(
+        cmParaTwip(calcularRecuoHierarquicoCm(2))
       );
 
       // Subtítulo sem alinhamento: esquerda e sem recuo no Word também.
@@ -368,11 +368,11 @@ describe('recuo hierárquico dos exportadores', () => {
       expect(subtituloWord).not.toMatch(/<w:ind[^>]*w:left="[1-9]/);
 
       const definicao = await capturarDefinicaoPdf(documento);
-      expect(recuoPdf(definicao.content, 'Gerado pelo if nível 4')).toBe(
-        cmParaPt(calcularRecuoHierarquicoCm(4))
+      expect(recuoPdf(definicao.content, 'Gerado pelo if no contexto')).toBe(
+        cmParaPt(calcularRecuoHierarquicoCm(2))
       );
-      expect(recuoPdf(definicao.content, 'Gerado pelo foreach nível 5')).toBe(
-        cmParaPt(calcularRecuoHierarquicoCm(5))
+      expect(recuoPdf(definicao.content, 'Gerado pelo foreach no contexto')).toBe(
+        cmParaPt(calcularRecuoHierarquicoCm(2))
       );
 
       // Subtítulo sem alinhamento no XML: à esquerda, no mesmo eixo dos itens 1.1.
@@ -458,6 +458,18 @@ describe('recuo hierárquico dos exportadores', () => {
       : [];
     expect(comEnfase.italics).toBeFalsy();
     expect(runsComEnfase.some(run => run.italics)).toBe(true);
+  });
+
+  it('Word: subtítulo com nivel 3 continua gerando outline level 3', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <h2 data-word-type="subtitulo" data-word-outline-level="3" data-word-align="esquerda">Subtítulo nível três</h2>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const xml = await abrirDocumentoWord(await exportarParaWord(documento, 'subtitulo-outline.docx'));
+
+    // O Word trabalha com outlineLvl base 0: nível 3 => 2.
+    expect(paragrafoComTexto(xml, 'Subtítulo nível três')).toContain('<w:outlineLvl w:val="2"/>');
   });
 
   it('PDF: mantém o recuo em seção aninhada, if/foreach e ao redor de tabela', async () => {

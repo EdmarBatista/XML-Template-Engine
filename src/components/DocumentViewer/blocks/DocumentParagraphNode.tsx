@@ -64,29 +64,24 @@ export function renderDocumentParagraphNodes({
       ? 'text-left'
       : 'text-justify';
 
-  // O nível do parágrafo pode vir do atributo do nó ou do contexto hierárquico
-  const explicitNivel = node?.atributos?.nivel ? parseInt(node.atributos.nivel, 10) : undefined;
-  const effectiveNivel = explicitNivel !== undefined ? explicitNivel : nivel;
-  // O recuo absoluto vem do nível efetivo; a variável --edm-secao-indent,
+  // `<p>` é puro: `nivel` e `numerado` não têm efeito (regra do projeto). O nível
+  // vem do contexto hierárquico da <secao>; numeração e recuo seguem apenas ele.
+  const effectiveNivel = nivel;
+  // O recuo absoluto vem do nível de contexto; a variável --edm-secao-indent,
   // publicada pelo conteúdo da seção, desconta o acumulado dos containers
   // aninhados. Assim a tela reproduz o mesmo cálculo do Word e do PDF.
   const recuoParagrafoCm = calcularRecuoHierarquicoCm(effectiveNivel);
 
   linhas.forEach((linha, li) => {
     let prefixoNum = '';
-    const isExplicitlyDisabled = node?.atributos?.numerado === 'false';
-    const isExplicitlyEnabled = node?.atributos?.numerado === 'true';
-    const hasNivel = explicitNivel !== undefined;
 
-    // Um parágrafo recebe numeração se:
-    // 1. A numeração estiver habilitada no contexto
-    // 2. Não estiver explicitamente desabilitada (numerado="false")
-    // 3. Tiver nível explícito (nivel="2", "3", etc.) OU estiver dentro de bloco onde todos parágrafos são numerados por padrão
+    // A numeração do parágrafo vem só do contexto: dentro de uma seção com
+    // numeração ativa, os parágrafos do nível de conteúdo são numerados.
     let extraNumbers: string[] = [];
     const shouldNumber =
       contextoNumeracao.habilitado &&
-      !isExplicitlyDisabled &&
-      (hasNivel || isExplicitlyEnabled || (contextoNumeracao.numerarBlocos && effectiveNivel >= 2));
+      Boolean(contextoNumeracao.numerarBlocos) &&
+      effectiveNivel >= 2;
 
     if (shouldNumber) {
       let extraLineBreaks = 0;

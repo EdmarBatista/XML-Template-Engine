@@ -66,7 +66,7 @@ describe('DocumentViewer — recuo hierárquico na tela', () => {
           {
             tipo: 'p',
             atributos: { nivel: '3' },
-            filhos: [{ tipo: 'texto', texto: 'Parágrafo explícito nível 3' }],
+            filhos: [{ tipo: 'texto', texto: 'Parágrafo com nivel 3 ignorado' }],
           },
           {
             tipo: 'secao',
@@ -76,7 +76,7 @@ describe('DocumentViewer — recuo hierárquico na tela', () => {
               {
                 tipo: 'p',
                 atributos: { nivel: '4' },
-                filhos: [{ tipo: 'texto', texto: 'Parágrafo explícito nível 4' }],
+                filhos: [{ tipo: 'texto', texto: 'Parágrafo com nivel 4 ignorado' }],
               },
             ],
           },
@@ -93,14 +93,49 @@ describe('DocumentViewer — recuo hierárquico na tela', () => {
     return encontrado;
   };
 
-  it('publica o recuo absoluto do nível efetivo de cada parágrafo', () => {
+  it('publica o recuo absoluto do nível de contexto de cada parágrafo', () => {
     montar({ conteudo: hierarquico });
 
     // Níveis 1 e 2 compartilham a margem; o degrau começa no nível 3.
     expect(paragrafo('Parágrafo herdado nível 2').dataset.wordIndentCm).toBe('0');
-    expect(paragrafo('Parágrafo explícito nível 3').dataset.wordIndentCm).toBe('0.5');
+    // `nivel` em <p> não tem mais efeito: vale o nível da seção.
+    expect(paragrafo('Parágrafo com nivel 3 ignorado').dataset.wordIndentCm).toBe('0');
     expect(paragrafo('Parágrafo herdado nível 3').dataset.wordIndentCm).toBe('0.5');
-    expect(paragrafo('Parágrafo explícito nível 4').dataset.wordIndentCm).toBe('1');
+    expect(paragrafo('Parágrafo com nivel 4 ignorado').dataset.wordIndentCm).toBe('0.5');
+  });
+
+  it('ignora nivel e numerado em <p>: vale apenas o contexto da seção', () => {
+    const comAtributos: AstNode = {
+      tipo: 'conteudo',
+      filhos: [
+        {
+          tipo: 'secao',
+          atributos: { titulo: 'CAPÍTULO' },
+          filhos: [
+            {
+              tipo: 'p',
+              atributos: { nivel: '5' },
+              filhos: [{ tipo: 'texto', texto: 'Primeiro com nivel' }],
+            },
+            {
+              tipo: 'p',
+              atributos: { numerado: 'false' },
+              filhos: [{ tipo: 'texto', texto: 'Segundo com numerado falso' }],
+            },
+          ],
+        },
+      ],
+    };
+    montar({ conteudo: comAtributos });
+
+    const primeiro = paragrafo('Primeiro com nivel');
+    const segundo = paragrafo('Segundo com numerado falso');
+
+    // O nível 5 do atributo é ignorado; ambos ficam no nível 2 da seção.
+    expect(primeiro.querySelector('[data-word-num]')?.textContent?.trim()).toBe('1.1.');
+    expect(segundo.querySelector('[data-word-num]')?.textContent?.trim()).toBe('1.2.');
+    expect(primeiro.dataset.wordIndentCm).toBe('0');
+    expect(segundo.dataset.wordIndentCm).toBe('0');
   });
 
   it('mantém o subtítulo sem atributo alinhado à esquerda', () => {
@@ -240,5 +275,35 @@ describe('DocumentViewer — <secao> sem título continua a numeração', () => 
       el => !(el.textContent || '').trim()
     );
     expect(titulosVazios).toHaveLength(0);
+  });
+
+  it('aninha contêineres sem título até 1.1.1.1', () => {
+    const aninhado: AstNode = {
+      tipo: 'conteudo',
+      filhos: [
+        {
+          tipo: 'secao',
+          atributos: { titulo: 'CAPÍTULO' },
+          filhos: [
+            { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'n1' }] },
+            {
+              tipo: 'secao',
+              filhos: [
+                { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'n2' }] },
+                {
+                  tipo: 'secao',
+                  filhos: [{ tipo: 'p', filhos: [{ tipo: 'texto', texto: 'n3' }] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    montar({ conteudo: aninhado });
+
+    expect(numeroDoParagrafo('n1')).toBe('1.1.');
+    expect(numeroDoParagrafo('n2')).toBe('1.1.1.');
+    expect(numeroDoParagrafo('n3')).toBe('1.1.1.1.');
   });
 });
