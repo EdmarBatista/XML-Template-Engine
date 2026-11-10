@@ -294,6 +294,47 @@ const TAGS_COM_EXPR = new Set(['if']);
 /** Tags cujo atributo `lista` (ou, na falta dele, `de`) aponta a coleção iterada. */
 const TAGS_COM_LISTA = new Set(['foreach', 'tabela']);
 
+/** Regra do projeto: `<p>` é puro; só `alinhamento` é aceito. */
+const ATRIBUTOS_PROIBIDOS_EM_P = ['nivel', 'numerado'] as const;
+const TAGS_PARAGRAFO = new Set(['p']);
+
+export interface AtributosProibidosEmP {
+  /** Quantidade de tags `<p>` com pelo menos um atributo proibido. */
+  total: number;
+  /** Atributos encontrados e quantas tags os usam. */
+  porAtributo: { atributo: string; ocorrencias: number }[];
+}
+
+/**
+ * Diagnóstico (não bloqueante) de `<p nivel="...">` / `<p numerado="...">`.
+ *
+ * A documentação do projeto proíbe atributos em `<p>`, mas o renderizador ainda os
+ * honra para não quebrar templates antigos. Este aviso lista o que falta migrar para
+ * `<secao>` sem título; nenhuma renderização ou exportação é alterada por ele.
+ */
+export function verificarAtributosProibidosEmP(xmlString: string): AtributosProibidosEmP {
+  const contagem = new Map<string, number>();
+  let total = 0;
+
+  if (xmlString && typeof xmlString === 'string') {
+    for (const tag of iterarTagsDeAbertura(xmlString, TAGS_PARAGRAFO)) {
+      const encontrados = ATRIBUTOS_PROIBIDOS_EM_P.filter(attr =>
+        Object.prototype.hasOwnProperty.call(tag.atributos, attr)
+      );
+      if (encontrados.length === 0) continue;
+      total++;
+      for (const atributo of encontrados) {
+        contagem.set(atributo, (contagem.get(atributo) || 0) + 1);
+      }
+    }
+  }
+
+  return {
+    total,
+    porAtributo: Array.from(contagem, ([atributo, ocorrencias]) => ({ atributo, ocorrencias })),
+  };
+}
+
 /**
  * Valida o uso de variáveis no XML:
  * - Identifica variáveis usadas em {{...}} que não foram declaradas no formulário.

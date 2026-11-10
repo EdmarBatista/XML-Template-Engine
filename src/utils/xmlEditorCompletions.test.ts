@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { extrairCamposDeclarados, verificarVariaveisXml } from './xmlEditorCompletions';
+import {
+  extrairCamposDeclarados,
+  verificarAtributosProibidosEmP,
+  verificarVariaveisXml,
+} from './xmlEditorCompletions';
 
 describe('extrairCamposDeclarados — leitura do <formulario>', () => {
   it('devolve lista vazia para XML vazio', () => {
@@ -308,5 +312,43 @@ describe('verificarVariaveisXml — o ">" dentro das aspas de um atributo não c
       usadasNaoDeclaradas: [],
       declaradasNaoUsadas: [],
     });
+  });
+});
+
+describe('verificarAtributosProibidosEmP — diagnóstico de <p> sujo', () => {
+  it('não acusa <p> sem atributos proibidos', () => {
+    const xml = `<conteudo><p alinhamento="centro">ok</p><p>ok</p></conteudo>`;
+    expect(verificarAtributosProibidosEmP(xml)).toEqual({ total: 0, porAtributo: [] });
+  });
+
+  it('conta as tags e os atributos encontrados', () => {
+    const xml = `<conteudo>
+      <p nivel="3">a</p>
+      <p nivel="4" numerado="false">b</p>
+      <p numerado="false">c</p>
+      <p alinhamento="centro">d</p>
+    </conteudo>`;
+    expect(verificarAtributosProibidosEmP(xml)).toEqual({
+      total: 3,
+      porAtributo: [
+        { atributo: 'nivel', ocorrencias: 2 },
+        { atributo: 'numerado', ocorrencias: 2 },
+      ],
+    });
+  });
+
+  it('ignora comentários, CDATA e atributos em outras tags', () => {
+    const xml = `<conteudo>
+      <!-- <p nivel="5">oculto</p> -->
+      <![CDATA[ <p numerado="false">oculto</p> ]]>
+      <secao nivel="3">x</secao>
+      <p>ok</p>
+    </conteudo>`;
+    expect(verificarAtributosProibidosEmP(xml)).toEqual({ total: 0, porAtributo: [] });
+  });
+
+  it('não confunde <pre>/<path> com <p>', () => {
+    const xml = `<conteudo><pre nivel="3">x</pre><path nivel="3" /></conteudo>`;
+    expect(verificarAtributosProibidosEmP(xml).total).toBe(0);
   });
 });

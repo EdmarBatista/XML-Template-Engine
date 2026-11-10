@@ -116,6 +116,19 @@ export function renderDocumentSectionNode(
     numerarBlocos: numerar,
   };
 
+  // Uma <secao> sem título é só um contêiner de nível: ela não imprime cabeçalho e
+  // não consome número de seção. Os filhos, porém, precisam continuar a numeração
+  // do escopo corrente no nível que ela abre — sem isto, cada grupo de subitens
+  // voltaria para x.1 (ex.: 1.1.4 imprimindo 1.1.1).
+  const contadorHerdadoNoPai = !titulo && numerar;
+  const nivelRelativoAberto = proximoNivel - safeNivelSecao + 2;
+  if (contadorHerdadoNoPai) {
+    if (!contextoNumeracao.levelCounters) {
+      contextoNumeracao.levelCounters = { 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 };
+    }
+    subContexto.levelCounters[2] = contextoNumeracao.levelCounters[nivelRelativoAberto] ?? 1;
+  }
+
   const filhosRenderizados = renderAstBlocos(
     node.filhos || [],
     subContexto,
@@ -123,6 +136,18 @@ export function renderDocumentSectionNode(
     contextoLocal,
     proximoNivel
   );
+
+  // Devolve ao escopo pai o contador do nível aberto, para o próximo grupo de
+  // subitens (e não apenas o seguinte dentro deste contêiner) continuar a série.
+  if (contadorHerdadoNoPai) {
+    const contadoresPai = contextoNumeracao.levelCounters!;
+    contadoresPai[nivelRelativoAberto] = subContexto.levelCounters[2] ?? 1;
+    const ultimoNumero = subContexto.levelNumbers?.[2];
+    if (ultimoNumero) {
+      if (!contextoNumeracao.levelNumbers) contextoNumeracao.levelNumbers = {};
+      contextoNumeracao.levelNumbers[nivelRelativoAberto] = ultimoNumero;
+    }
+  }
 
   // Determina tamanho de fonte e estilo baseado no nível de profundidade da seção (outline hierarchy)
   let fontSizePx = 17 * fontScale;

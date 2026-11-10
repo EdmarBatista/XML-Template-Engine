@@ -174,3 +174,71 @@ describe('DocumentViewer — render do documento', () => {
     expect(container.textContent?.length).toBeGreaterThan(0);
   });
 });
+
+describe('DocumentViewer — <secao> sem título continua a numeração', () => {
+  const comContainers: AstNode = {
+    tipo: 'conteudo',
+    filhos: [
+      {
+        tipo: 'secao',
+        atributos: { titulo: 'CAPÍTULO' },
+        filhos: [
+          { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'a1' }] },
+          {
+            tipo: 'secao',
+            filhos: [
+              { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'b1' }] },
+              { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'b2' }] },
+              {
+                tipo: 'if',
+                // O grupo seguinte dentro do contêiner não pode reiniciar a série.
+                atributos: { expr: "nome == 'Fulano'" },
+                filhos: [{ tipo: 'p', filhos: [{ tipo: 'texto', texto: 'b3' }] }],
+              },
+            ],
+          },
+          {
+            tipo: 'secao',
+            filhos: [{ tipo: 'p', filhos: [{ tipo: 'texto', texto: 'b4' }] }],
+          },
+          { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'a2' }] },
+          {
+            tipo: 'secao',
+            filhos: [{ tipo: 'p', filhos: [{ tipo: 'texto', texto: 'b5' }] }],
+          },
+        ],
+      },
+    ],
+  };
+
+  const numeroDoParagrafo = (texto: string): string => {
+    const encontrado = [...document.querySelectorAll<HTMLElement>('[data-word-type="paragrafo"]')].find(
+      el => (el.textContent || '').includes(texto)
+    );
+    if (!encontrado) throw new Error(`Parágrafo "${texto}" não renderizado`);
+    return (encontrado.querySelector<HTMLElement>('[data-word-num]')?.textContent || '').trim();
+  };
+
+  it('continua o contador do nível aberto entre grupos de subitens (1.1.4)', () => {
+    montar({ conteudo: comContainers });
+
+    expect(numeroDoParagrafo('a1')).toBe('1.1.');
+    expect(numeroDoParagrafo('b1')).toBe('1.1.1.');
+    expect(numeroDoParagrafo('b2')).toBe('1.1.2.');
+    expect(numeroDoParagrafo('b3')).toBe('1.1.3.');
+    // O segundo grupo de subitens continua em 1.1.4, sem reiniciar em 1.1.1.
+    expect(numeroDoParagrafo('b4')).toBe('1.1.4.');
+    // O contêiner sem título não consome número de seção: o próximo item é 1.2.
+    expect(numeroDoParagrafo('a2')).toBe('1.2.');
+    expect(numeroDoParagrafo('b5')).toBe('1.2.1.');
+  });
+
+  it('não imprime cabeçalho vazio para o contêiner sem título', () => {
+    montar({ conteudo: comContainers });
+
+    const titulosVazios = [...document.querySelectorAll<HTMLElement>('h3')].filter(
+      el => !(el.textContent || '').trim()
+    );
+    expect(titulosVazios).toHaveLength(0);
+  });
+});

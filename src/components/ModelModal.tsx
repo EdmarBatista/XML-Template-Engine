@@ -25,7 +25,7 @@ import { IntermediateModel, XmlPart, DadosDocumento, ValorCampo } from '../types
 import { TEMPLATE_NOVO_DOCUMENTO } from '../utils/xmlEditorCompletions';
 import { concatenarXmlsParticionados, parseXmlDocument } from '../utils/xmlParser';
 import { formatarXmlString } from '../utils/xmlFormatter';
-import { verificarVariaveisXml } from '../utils/xmlEditorCompletions';
+import { verificarAtributosProibidosEmP, verificarVariaveisXml } from '../utils/xmlEditorCompletions';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { VarsTabEditor, VarsTableResumo } from './ModelModal/VarsTabs';
 
@@ -153,6 +153,19 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       return verificarVariaveisXml(xmlToValidate);
     } catch {
       return { usadasNaoDeclaradas: [], declaradasNaoUsadas: [] };
+    }
+  }, [debouncedXmlCode, localParts]);
+
+  // Diagnóstico da fase 1: lista os <p nivel>/<p numerado> que ainda faltam migrar
+  // para <secao> sem título. Não bloqueia nem altera a renderização/exportação.
+  const atributosProibidosEmP = React.useMemo(() => {
+    try {
+      const xmlToValidate = localParts && localParts.length > 0
+        ? concatenarXmlsParticionados(localParts)
+        : debouncedXmlCode;
+      return verificarAtributosProibidosEmP(xmlToValidate);
+    } catch {
+      return { total: 0, porAtributo: [] as { atributo: string; ocorrencias: number }[] };
     }
   }, [debouncedXmlCode, localParts]);
 
@@ -730,7 +743,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 </div>
               )}
 
-              {(validacaoVariaveis.usadasNaoDeclaradas.length > 0 || validacaoVariaveis.declaradasNaoUsadas.length > 0) && (
+              {(validacaoVariaveis.usadasNaoDeclaradas.length > 0 ||
+                validacaoVariaveis.declaradasNaoUsadas.length > 0 ||
+                atributosProibidosEmP.total > 0) && (
                 <div className="px-3 py-2 bg-slate-900 border border-slate-800 rounded-md flex flex-col gap-1 shrink-0">
                   {validacaoVariaveis.usadasNaoDeclaradas.length > 0 && (
                     <div className="flex items-start gap-1.5 text-xs text-rose-400">
@@ -745,6 +760,20 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                       <span>
                         <strong>Variáveis declaradas mas não usadas:</strong> {validacaoVariaveis.declaradasNaoUsadas.join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  {atributosProibidosEmP.total > 0 && (
+                    <div className="flex items-start gap-1.5 text-xs text-amber-400">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Atributos proibidos em &lt;p&gt;:</strong>{' '}
+                        {atributosProibidosEmP.total}{' '}
+                        {atributosProibidosEmP.total === 1 ? 'ocorrência' : 'ocorrências'} —{' '}
+                        {atributosProibidosEmP.porAtributo
+                          .map(({ atributo, ocorrencias }) => `${atributo} (${ocorrencias})`)
+                          .join(', ')}
+                        . Migre para &lt;secao&gt; sem título.
                       </span>
                     </div>
                   )}
