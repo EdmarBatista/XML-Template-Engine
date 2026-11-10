@@ -378,6 +378,49 @@ describe('recuo hierárquico dos exportadores', () => {
     expect(alinhamento('Subtítulo justificado')).toBe('justify');
   });
 
+  it('Word: subtítulo não é itálico, mas preserva itálico marcado no texto', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <h2 data-word-type="subtitulo" data-word-outline-level="2" data-word-align="esquerda">Classificação do objeto quanto ao modelo de execução</h2>
+        <h2 data-word-type="subtitulo" data-word-outline-level="2" data-word-align="esquerda">Subtítulo com <em>ênfase</em> interna</h2>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const xml = await abrirDocumentoWord(await exportarParaWord(documento, 'subtitulo.docx'));
+
+    expect(paragrafoComTexto(xml, 'Classificação do objeto')).not.toMatch(/<w:i(?:\s+w:val="(?:1|true|on)")?\s*\/>/);
+    expect(paragrafoComTexto(xml, 'ênfase')).toMatch(/<w:i(?:\s+w:val="(?:1|true|on)")?\s*\/>/);
+  });
+
+  it('PDF: subtítulo não é itálico, mas preserva itálico marcado no texto', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <h2 data-word-type="subtitulo" data-word-outline-level="2" data-word-align="esquerda">Classificação do objeto quanto ao modelo de execução</h2>
+        <h2 data-word-type="subtitulo" data-word-outline-level="2" data-word-align="esquerda">Subtítulo com <em>ênfase</em> interna</h2>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const definicao = await capturarDefinicaoPdf(documento);
+
+    const paragrafoPdf = (texto: string) => {
+      const no = definicao.content.find(item => textoPdf(item).includes(texto)) as
+        | { italics?: boolean; text?: unknown }
+        | undefined;
+      if (!no) throw new Error(`Subtítulo "${texto}" não encontrado no conteúdo do PDF`);
+      return no;
+    };
+
+    const simples = paragrafoPdf('Classificação do objeto');
+    const runsSimples = Array.isArray(simples.text) ? (simples.text as { italics?: boolean }[]) : [];
+    expect(simples.italics).toBeFalsy();
+    expect(runsSimples.every(run => !run.italics)).toBe(true);
+
+    const comEnfase = paragrafoPdf('ênfase');
+    const runsComEnfase = Array.isArray(comEnfase.text)
+      ? (comEnfase.text as { italics?: boolean }[])
+      : [];
+    expect(comEnfase.italics).toBeFalsy();
+    expect(runsComEnfase.some(run => run.italics)).toBe(true);
+  });
+
   it('PDF: mantém o recuo em seção aninhada, if/foreach e ao redor de tabela', async () => {
     const definicao = await capturarDefinicaoPdf(montarDocumento());
 

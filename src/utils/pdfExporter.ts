@@ -338,7 +338,6 @@ function converterElementosBlocoDomPdf(
       // não pode fixar "center" e ignorar, por exemplo, alinhamento="esquerda".
       const alinhamento = alinhamentoPdf(el.getAttribute(WORD_ATTR_ALIGN) || 'esquerda');
       const segmentos = extrairSegmentosDeDom(el, {
-        italic: true,
         tamanhoFonte: DOCUMENT_THEME.typography.sizes.subtitlePt,
         cor: DOCUMENT_THEME.colors.text,
       }, opcoes);
@@ -347,7 +346,6 @@ function converterElementosBlocoDomPdf(
       resultado.push({
         text: textRuns.length > 0 ? textRuns : (el.textContent?.trim() || ''),
         fontSize: DOCUMENT_THEME.typography.sizes.subtitlePt,
-        italics: true,
         alignment: alinhamento,
         margin: [0, DOCUMENT_THEME.spacing.subtitle.beforePt, 0, DOCUMENT_THEME.spacing.subtitle.afterPt],
         color: DOCUMENT_THEME.colors.text,

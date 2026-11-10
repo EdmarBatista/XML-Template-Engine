@@ -376,7 +376,6 @@ function converterElementosBlocoDom(
       const alinhamento = el.getAttribute(WORD_ATTR_ALIGN) || 'esquerda';
       const segmentos = extrairSegmentosDeDom(el, {
         bold: true,
-        italic: true,
         tamanhoFonte: DOCUMENT_THEME.typography.sizes.subtitlePt,
         cor: DOCUMENT_THEME.colors.textHex,
       }, opcoes, false);
