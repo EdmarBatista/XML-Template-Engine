@@ -142,10 +142,11 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
 
   // Identifica variáveis de iteração de loops (<foreach var="it">, <linhas var="linha">)
   const loopVars = new Set<string>();
-  const regexForeachVar = /<(?:foreach|linhas)\b[^>]*?\bvar\s*=\s*["']([^"']+)["']/gi;
+  const regexForeachVar = /<(?:foreach|linhas)\b[^>]*?\bvar\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
   let loopMatch: RegExpExecArray | null;
   while ((loopMatch = regexForeachVar.exec(xmlString)) !== null) {
-    loopVars.add(loopMatch[1].trim());
+    const varLoop = (loopMatch[1] ?? loopMatch[2] ?? '').trim();
+    if (varLoop) loopVars.add(varLoop);
   }
 
   // 1. Extrai todas as variáveis interpoladas em {{ ... }}
@@ -168,10 +169,10 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
   }
 
   // 2. Extrai referências em tags de condição (<if expr="...">)
-  const regexCondicao = /<if\b[^>]*?\bexpr\s*=\s*["']([^"']+)["']/gi;
+  const regexCondicao = /<if\b[^>]*?\bexpr\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
   let condMatch: RegExpExecArray | null;
   while ((condMatch = regexCondicao.exec(xmlString)) !== null) {
-    const expr = condMatch[1];
+    const expr = condMatch[1] ?? condMatch[2] ?? '';
     const tokens = extrairVariaveisDaExpressao(expr);
     tokens.forEach(t => {
       const limpo = t.replace(/\[\d+\]/g, '');
@@ -180,10 +181,11 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
   }
 
   // 3. Extrai referências em tags de loop (<foreach lista="...">)
-  const regexLoopLista = /<(?:foreach|tabela)\b[^>]*?\b(?:lista|de)\s*=\s*["']([^"']+)["']/gi;
+  const regexLoopLista = /<(?:foreach|tabela)\b[^>]*?\b(?:lista|de)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
   let listaMatch: RegExpExecArray | null;
   while ((listaMatch = regexLoopLista.exec(xmlString)) !== null) {
-    variaveisUsadas.add(listaMatch[1].trim());
+    const lista = (listaMatch[1] ?? listaMatch[2] ?? '').trim();
+    if (lista) variaveisUsadas.add(lista);
   }
 
   // Identifica Usadas mas NÃO declaradas

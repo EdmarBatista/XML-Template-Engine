@@ -177,4 +177,55 @@ describe('verificarVariaveisXml — variável usada e não declarada', () => {
     // 'valor' está declarado; só 'outro' deve aparecer
     expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual(['outro']);
   });
+
+  it('conta variáveis que aparecem depois de um literal entre aspas na condição', () => {
+    const xml = `<documento>
+      <formulario>
+        <select id="tipo_contratacao"><option>obras</option></select>
+        <checkbox id="servico_engenharia" />
+      </formulario>
+      <conteudo>
+        <if expr="tipo_contratacao == 'serviços' &amp;&amp; servico_engenharia == true"><p>ok</p></if>
+      </conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(xml)).toEqual({
+      usadasNaoDeclaradas: [],
+      declaradasNaoUsadas: [],
+    });
+  });
+
+  it('aceita literal vazio e aspas duplas dentro de expr delimitada por aspas simples', () => {
+    const xml = `<documento>
+      <formulario>
+        <input id="regime_vigencia" label="Regime" />
+        <input id="campo" label="Campo" />
+      </formulario>
+      <conteudo>
+        <if expr="regime_vigencia != ''"><p>ok</p></if>
+        <if expr='campo == "x"'><p>ok</p></if>
+      </conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(xml)).toEqual({
+      usadasNaoDeclaradas: [],
+      declaradasNaoUsadas: [],
+    });
+  });
+
+  it('não transforma os literais da condição em variáveis', () => {
+    const xml = `<documento>
+      <formulario><input id="tipo" label="Tipo" /></formulario>
+      <conteudo><if expr="tipo == 'serviços'"><p>ok</p></if></conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual([]);
+  });
+
+  it('lê var/lista também quando o atributo usa aspas simples', () => {
+    const xml = `<documento>
+      <formulario><tabela id="itens"><coluna id="nome" /></tabela></formulario>
+      <conteudo>
+        <foreach lista='itens' var='item'><p>{{item.nome}}</p></foreach>
+      </conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(xml).usadasNaoDeclaradas).toEqual([]);
+  });
 });
