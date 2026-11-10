@@ -180,11 +180,22 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
                         </label>
                       ) : colTipo === 'textarea' ? (
                         <textarea
-                          rows={2}
+                          rows={Math.max(
+                            2,
+                            Math.min(
+                              10,
+                              String(valorCelula ?? '')
+                                .split(/\r?\n/)
+                                .reduce(
+                                  (total, linha) => total + Math.max(1, Math.ceil(linha.length / 42)),
+                                  0
+                                )
+                            )
+                          )}
                           value={valorCelula}
                           placeholder={col.placeholder || ''}
                           onChange={e => handleCellChange(lIdx, col.id, e.target.value, colTipo)}
-                          className="w-full text-xs text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full text-xs text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 resize-y min-h-[56px] focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                         />
                       ) : colTipo === 'number' ? (
                         <input

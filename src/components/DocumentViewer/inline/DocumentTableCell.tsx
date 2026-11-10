@@ -226,6 +226,14 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
 
   const CellTag = isHeader ? 'th' : 'td';
   const hasValue = valorBruto !== undefined && valorBruto !== null && String(valorBruto).trim() !== '';
+  const textAreaRows = React.useMemo(() => {
+    const linhas = String(valorTemp ?? '').split(/\r?\n/);
+    const estimadas = linhas.reduce(
+      (total, linha) => total + Math.max(1, Math.ceil(linha.length / 52)),
+      0
+    );
+    return Math.max(2, Math.min(12, estimadas));
+  }, [valorTemp]);
   const placeholderText = placeholder || colMeta?.label || (colKey ? `[${colKey.replace(/_/g, ' ')}]` : '...');
 
   const estaDestacadoEfetivo = isHighlighted || Boolean(conditionalHighlight);
@@ -270,7 +278,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       data-vars={!isHeader && listaNome && hasValue ? `${listaNome} ${listaNome}.${colKey || ''}` : (conditionalFocusVar || undefined)}
-      className={`border border-slate-300 dark:border-slate-600 px-3 py-2 text-left select-text relative transition-all duration-300 ${bgTextClasses} ${
+      className={`border border-slate-300 dark:border-slate-600 px-3 py-2 text-left align-top whitespace-normal [overflow-wrap:anywhere] select-text relative transition-all duration-300 ${bgTextClasses} ${
         editando ? 'p-0.5 bg-white dark:bg-slate-800 ring-2 ring-blue-500 z-30 shadow-md' : ''
       } ${className}`}
       style={{
@@ -375,7 +383,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
           ) : isTextArea ? (
             <textarea
               ref={inputRef as React.Ref<HTMLTextAreaElement>}
-              rows={2}
+              rows={textAreaRows}
               autoFocus
               value={String(valorTemp)}
               placeholder={placeholderText}
