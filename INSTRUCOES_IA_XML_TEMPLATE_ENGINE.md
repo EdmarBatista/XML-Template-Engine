@@ -140,3 +140,62 @@ Entregar somente os resultados referentes ao motor:
 - limitações ou testes não executados.
 
 **Não editar o template TR AGU.** A outra IA será responsável por manter compatibilidade do XML do TR com os recursos efetivamente disponíveis no motor.
+
+## 9. Atualização de dependências e das libs de CDN
+
+### 9.1 Regra de sincronia (a que mais causa defeito)
+
+Três bibliotecas **não entram no bundle**: `pdfmake`, `docx` e `jszip` são carregadas por `<script>` no `index.html` e consumidas em `window`. Atualizar o `package.json` sem atualizar as tags deixa o app rodando a versão antiga — e a suíte de testes passa, porque em teste elas vêm do `node_modules`.
+
+Toda atualização dessas três tem de tocar, **no mesmo commit**:
+
+1. `package.json` — o range da dependência;
+2. `index.html` — linhas ~36–41 (`pdfmake.min.js`, `vfs_fonts.js`, `docx` UMD, `jszip` do cdnjs);
+3. `README.md` — tabela "Stack Tecnológica" e tabela "Dependência de rede".
+
+Endereços a conferir antes de fixar (`<versao>` trocado):
+
+- `https://cdn.jsdelivr.net/npm/pdfmake@<versao>/build/pdfmake.min.js` e `.../vfs_fonts.js`
+- `https://unpkg.com/docx@<versao>/dist/index.umd.cjs`
+- `https://cdnjs.cloudflare.com/ajax/libs/jszip/<versao>/jszip.min.js`
+
+Checagem rápida: `curl -sIL -o /dev/null -w "%{http_code}" <url>` precisa dar `200`, e um `GET` (sem `-I`) deve informar tamanho plausível (página de erro do CDN também responde 200 em alguns casos).
+
+### 9.2 Sequência
+
+```bash
+npm outdated --long           # Current / Wanted / Latest de cada pacote
+npm update                    # aplica tudo dentro do range declarado
+npm install -D pkg@^X.Y.Z     # majors, um a um, testando depois de cada um
+npx tsc --noEmit
+npm test
+npm run build                 # tsc -b + vite build + zip_standalone.js
+```
+
+`npm run build` gera `app_standalone.html` e `app_standalone.zip` — são artefatos e estão no `.gitignore`; precisam ser regerados sempre que `index.html` ou o bundle mudarem.
+
+### 9.3 O que ler no changelog antes de decidir
+
+- **pdfmake**: a linha 0.3 trocou a API de callbacks por **Promises** (`createPdf(...).download()`/`getBlob()`/`getDataUrl()` são `async`). Passar callback na 0.3 nunca chama nada e dá a impressão de travamento — foi a origem de um falso diagnóstico de "exportação quebrada". Erros de stream só passaram a rejeitar as promises na **0.3.13**, e a **0.3.14** corrige o CVE-2026-119743 (cache de recursos por URL compartilhado entre documentos). Por isso: não voltar para a 0.2.x. Changelog local em `node_modules/pdfmake/CHANGELOG.md`.
+- **docx**: o pacote não traz changelog; consultar as releases de `github.com/dolanmiu/docx`. Exemplos recentes: 9.15.2 corrigiu types que injetavam `glob` em `import.meta` (quebrava projetos Next), 9.15.3 é performance do `patchDocument`.
+- **CVE**: se a atualização corrige vulnerabilidade, ela deixa de ser opcional e o commit deve citar o CVE.
+- **`@types/*`**: majors são independentes do runtime e podem ficar atrás (`jsdom` está em 31 e `@types/jsdom` segue em 30.0.0 — a 31 não existe). Não forçar alinhamento.
+- **vite / vitest / react / tailwind**: patch e minor costumam ser seguros; major exige suíte e build reais antes de commitar.
+
+### 9.4 Smoke test das exportações (o build não cobre)
+
+A suíte valida a definição entregue ao Word/PDF, não a execução das libs de CDN. Depois de mexer em `docx` ou `pdfmake`:
+
+1. `npm run dev` e abrir o app;
+2. no console do app, gerar um PDF mínimo e conferir os bytes:
+   ```js
+   const gen = window.pdfMake.createPdf({ content: ['abc'] });
+   (await gen.getBlob()).size;   // > 0 (API Promise da 0.3)
+   ```
+3. conferir o Word: `window.docx.Packer.toBlob(new window.docx.Document({ sections: [{ children: [] }] }))` devolve um Blob;
+4. exportar um documento real pela interface, em Word e em PDF.
+
+### 9.5 Fechamento obrigatório
+
+`npx tsc --noEmit`, `npm test`, `npm run build`, revisão do diff e commit citando as versões (e o CVE, quando houver). Registrar no relatório quais pacotes ficaram fora do range e por quê.
+
