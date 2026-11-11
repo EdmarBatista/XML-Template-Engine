@@ -4,6 +4,7 @@ import { FieldMetadata, ValorCampo } from '../../../types';
 import {
   aplicarMascaraCampo,
   exibirValorComMascara,
+  formatarHora,
   normalizarValorCampo,
 } from '../../../utils/documentUtils';
 
@@ -54,6 +55,11 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
 
   const tipoMascara = (campo?.tipoInput || filtro || '').toLowerCase();
   const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(tipoMascara);
+  const isTimeField =
+    campo?.tipo === 'hora' ||
+    campo?.tipoInput === 'hora' ||
+    filtro === 'hora' ||
+    filtro === 'horaPorExtenso';
 
   React.useEffect(() => {
     if (!editando) {
@@ -201,6 +207,41 @@ export const DocumentInlineVariable: React.FC<DocumentInlineVariableProps> = ({
             />
             <span className="select-none">{campo.label || id}</span>
           </label>
+        </span>
+      );
+    }
+
+    if (isTimeField) {
+      return (
+        <span
+          ref={containerRef}
+          onClick={e => e.stopPropagation()}
+          className="inline-block align-middle my-0.5 z-20 relative max-w-full"
+        >
+          <input
+            type="time"
+            step="60"
+            value={formatarHora(valorTemp)}
+            autoFocus
+            onFocus={e => {
+              try {
+                (e.target as HTMLInputElement).showPicker?.();
+              } catch {}
+            }}
+            onChange={e => {
+              const novoVal = e.target.value;
+              setValorTemp(novoVal);
+              onUpdateField(id, novoVal, 'inline');
+              setEditando(false);
+            }}
+            onBlur={salvar}
+            onKeyDown={e => {
+              if (e.key === 'Enter') salvar();
+              if (e.key === 'Escape') cancelar();
+            }}
+            className="bg-white dark:bg-slate-900 dark:text-slate-100 border-2 border-blue-500 rounded px-2 py-1 text-xs text-slate-900 font-sans outline-none shadow-md font-medium cursor-pointer"
+            style={{ fontSize: `${12 * fontScale}px` }}
+          />
         </span>
       );
     }

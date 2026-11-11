@@ -2,7 +2,7 @@
 // O preview renderiza React no DOM; é ele que publica o contrato data-word-* e o
 // #documento-visualizado de onde os exportadores leem.
 
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DocumentViewer } from './DocumentViewer';
 import type { AstNode, FormStructure } from '../types';
@@ -371,5 +371,40 @@ describe('DocumentViewer — alinhamento normalizado', () => {
     const subtitulo = container.querySelector<HTMLElement>('[data-word-type="subtitulo"]');
     expect(subtitulo?.className).toContain('text-justify');
     expect(subtitulo?.getAttribute('data-word-align')).toBe('justificado');
+  });
+});
+
+describe('DocumentViewer — edição inline de horário', () => {
+  it('abre input type="time" ao editar a variável com duplo clique', () => {
+    const estruturaHora: FormStructure = {
+      grupos: [],
+      campos: {
+        hora_inicio: { id: 'hora_inicio', label: 'Início', tipo: 'hora', tipoInput: 'hora' },
+      },
+    };
+
+    const { container } = montar({
+      conteudo: {
+        tipo: 'conteudo',
+        filhos: [
+          {
+            tipo: 'p',
+            filhos: [{ tipo: 'texto', texto: 'Das {{hora_inicio}}h' }],
+          },
+        ],
+      },
+      dados: { nome: 'Fulano', hora_inicio: '08:00' },
+      estrutura: estruturaHora,
+      edicaoInline: true,
+    });
+
+    const variavel = container.querySelector<HTMLElement>('[data-vars="hora_inicio"]');
+    if (!variavel) throw new Error('Variável de horário não renderizada');
+
+    fireEvent.doubleClick(variavel);
+
+    const input = container.querySelector<HTMLInputElement>('input[type="time"]');
+    expect(input).not.toBeNull();
+    expect(input?.value).toBe('08:00');
   });
 });
