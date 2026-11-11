@@ -129,7 +129,8 @@ interface PdfTabela {
  */
 interface PdfMakeGlobal {
   createPdf: (definicao: unknown) => {
-    download: (nome: string, aoConcluir?: () => void) => void;
+    // pdfmake >= 0.3 devolve Promise; a 0.2 devolvia undefined e só aceitava callback.
+    download: (nome: string) => Promise<unknown> | void;
   };
 }
 
@@ -657,22 +658,21 @@ export async function exportarParaPdf(
     },
   };
 
-  return new Promise((resolve, reject) => {
-    try {
-      const pdfMakeInst = getPdfMake();
-      if (!pdfMakeInst) {
-        reject(new Error('pdfmake não carregado (CDN).'));
-        return;
-      }
-      const pdfDocGenerator = pdfMakeInst.createPdf(docDefinition);
-      pdfDocGenerator.download(nomeFinal, () => {
-        resolve();
-      });
-      setTimeout(resolve, 800);
-    } catch (err) {
-      console.error('Erro no pdfMake ao exportar PDF do HTML:', err);
-      reject(err);
-    }
-  });
+  const pdfMakeInst = getPdfMake();
+  if (!pdfMakeInst) {
+    throw new Error('pdfmake não carregado (CDN).');
+  }
+
+  const pdfDocGenerator = pdfMakeInst.createPdf(docDefinition);
+  try {
+    // `Promise.resolve` aceita as duas gerações da API: a 0.3 devolve a Promise do
+    // download e ignora callback; a 0.2 era callback-only e devolvia undefined.
+    // Antes havia um `resolve` fixo em 800 ms — a exportação era dada como concluída
+    // mesmo quando nenhum arquivo saía, escondendo falha de geração ou de CDN.
+    await Promise.resolve(pdfDocGenerator.download(nomeFinal));
+  } catch (err) {
+    console.error('Erro no pdfMake ao exportar PDF do HTML:', err);
+    throw err;
+  }
 }
 

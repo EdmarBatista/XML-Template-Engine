@@ -666,7 +666,7 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 | **Framework & UI** | React 19, TypeScript 7, Vite 8, Tailwind CSS v4 |
 | **Ícones** | Lucide React |
 | **Editor de Código** | CodeMirror 6 (`@uiw/react-codemirror`, `@codemirror/lang-xml`, `@codemirror/lang-json`) |
-| **Geração e Conversão de Documentos** | `docx` 9.8.1 (Word), `pdfmake` 0.3.11 (PDF), `jszip` 3.10.2 (leitura Nativa DOCX -> XML e pacotes ZIP) — mesmas versões fixadas nas tags de CDN do `index.html` |
+| **Geração e Conversão de Documentos** | `docx` 9.15.3 (Word), `pdfmake` 0.3.14 (PDF), `jszip` 3.10.2 (leitura Nativa DOCX -> XML e pacotes ZIP) — mesmas versões fixadas nas tags de CDN do `index.html` |
 | **Parsing & AST** | Parser XML customizado para árvore sintática intermediária (AST) |
 | **Testes** | Vitest 5 + Testing Library (jsdom) na suíte unitária; Puppeteer 25 e `pdfjs-dist` na bancada de aceitação |
 
@@ -894,8 +894,8 @@ Três bibliotecas de exportação são carregadas por **CDN** no `index.html`, e
 
 | Biblioteca | Papel | CDN |
 |---|---|---|
-| `pdfmake` 0.3.11 + `vfs_fonts` | exportar PDF | jsdelivr |
-| `docx` 9.8.1 | exportar e importar Word | unpkg |
+| `pdfmake` 0.3.14 + `vfs_fonts` | exportar PDF | jsdelivr |
+| `docx` 9.15.3 | exportar e importar Word | unpkg |
 | `jszip` 3.10.2 | pacotes `.zip` e leitura de `.docx` | cdnjs |
 
 No `vite.config.ts` elas são marcadas como externas (`external: ['docx', 'jszip']` + `rollup-plugin-external-globals`; o `pdfmake` é lido de `window.pdfMake`). Isso mantém o arquivo único em ~1,1 MB — com elas embutidas no bundle, ele passaria de 3 MB.

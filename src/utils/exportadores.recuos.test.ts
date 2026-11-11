@@ -161,7 +161,7 @@ async function capturarDefinicaoPdf(
   (window as unknown as { pdfMake: unknown }).pdfMake = {
     createPdf: (definicaoRecebida: { content: { text?: unknown }[] }) => {
       definicao = definicaoRecebida;
-      return { download: (_nome: string, aoConcluir?: () => void) => aoConcluir?.() };
+      return { download: () => Promise.resolve() };
     },
   };
 
@@ -238,6 +238,28 @@ function montarComRenderer(): { documento: HTMLElement; unmount: () => void } {
   if (!documento) throw new Error('#documento-visualizado não renderizado');
   return { documento, unmount };
 }
+
+describe('falha na exportação PDF', () => {
+  it('propaga o erro do pdfmake em vez de concluir em silêncio', async () => {
+    // Regressão do `setTimeout(resolve, 800)`: a exportação era dada como concluída
+    // mesmo quando o pdfmake falhava e nenhum arquivo saía.
+    const erro = new Error('falha simulada do pdfMake');
+    (window as unknown as { pdfMake: unknown }).pdfMake = {
+      createPdf: () => ({ download: () => Promise.reject(erro) }),
+    };
+    document.body.innerHTML = '<div id="documento-visualizado"><div data-word-type="paragrafo">Texto</div></div>';
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+
+    await expect(exportarParaPdf(documento, 'falha.pdf')).rejects.toThrow('falha simulada do pdfMake');
+  });
+
+  it('rejeita quando o pdfmake não foi carregado pelo CDN', async () => {
+    document.body.innerHTML = '<div id="documento-visualizado"><div data-word-type="paragrafo">Texto</div></div>';
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+
+    await expect(exportarParaPdf(documento, 'sem-cdn.pdf')).rejects.toThrow('pdfmake não carregado');
+  });
+});
 
 describe('recuo hierárquico dos exportadores', () => {
   it('Word: aplica o recuo do nível do parágrafo, sem herdá-lo da seção', async () => {
