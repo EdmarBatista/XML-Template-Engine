@@ -341,3 +341,35 @@ describe('DocumentViewer — <secao> sem título continua a numeração', () => 
     expect(numeroDoParagrafo('n3')).toBe('1.1.1.1.');
   });
 });
+
+describe('DocumentViewer — alinhamento normalizado', () => {
+  it('aceita a grafia documentada e a inglesa na prévia', () => {
+    const conteudo: AstNode = {
+      tipo: 'conteudo',
+      filhos: [
+        {
+          tipo: 'p',
+          atributos: { alinhamento: 'center' },
+          filhos: [{ tipo: 'texto', texto: 'Centro EN' }],
+        },
+        {
+          tipo: 'subtitulo',
+          atributos: { alinhamento: 'justificar' },
+          filhos: [{ tipo: 'texto', texto: 'Sub Justificado' }],
+        },
+      ],
+    };
+
+    const { container } = montar({ conteudo });
+
+    const paragrafoCentro = [...container.querySelectorAll<HTMLElement>('[data-word-type="paragrafo"]')].find(
+      el => (el.textContent || '').includes('Centro EN')
+    );
+    expect(paragrafoCentro?.className).toContain('text-center');
+    expect(paragrafoCentro?.getAttribute('data-word-align')).toBe('centro');
+
+    const subtitulo = container.querySelector<HTMLElement>('[data-word-type="subtitulo"]');
+    expect(subtitulo?.className).toContain('text-justify');
+    expect(subtitulo?.getAttribute('data-word-align')).toBe('justificado');
+  });
+});

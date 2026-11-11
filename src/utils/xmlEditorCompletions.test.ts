@@ -352,3 +352,30 @@ describe('verificarAtributosProibidosEmP — diagnóstico de <p> sujo', () => {
     expect(verificarAtributosProibidosEmP(xml).total).toBe(0);
   });
 });
+
+describe('verificarVariaveisXml — var implícito e caminho profundo', () => {
+  it('assume var="item" quando o foreach omite o atributo', () => {
+    const xml = `<documento>
+      <formulario><tabela id="itens"><coluna id="nome" /></tabela></formulario>
+      <conteudo><foreach lista="itens"><p>{{item.nome}}</p></foreach></conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(xml)).toEqual({
+      usadasNaoDeclaradas: [],
+      declaradasNaoUsadas: [],
+    });
+  });
+
+  it('valida o primeiro segmento de um caminho profundo', () => {
+    const valido = `<documento>
+      <formulario><tabela id="itens"><coluna id="detalhe" /></tabela></formulario>
+      <conteudo><p>{{itens.detalhe.cidade}}</p></conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(valido).usadasNaoDeclaradas).toEqual([]);
+
+    const invalido = `<documento>
+      <formulario><tabela id="itens"><coluna id="detalhe" /></tabela></formulario>
+      <conteudo><p>{{itens.desconhecida.cidade}}</p></conteudo>
+    </documento>`;
+    expect(verificarVariaveisXml(invalido).usadasNaoDeclaradas).toEqual(['itens.desconhecida.cidade']);
+  });
+});

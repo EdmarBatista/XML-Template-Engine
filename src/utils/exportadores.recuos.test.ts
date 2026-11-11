@@ -513,3 +513,43 @@ describe('recuo hierárquico dos exportadores', () => {
     expect(JSON.stringify(definicao.content)).toContain('Célula da tabela');
   });
 });
+
+describe('alinhamento publicado nos exportadores', () => {
+  it('Word: título respeita o alinhamento documentado', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <h1 data-word-type="titulo" data-word-align="esquerda">Título esquerda</h1>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const xml = await abrirDocumentoWord(await exportarParaWord(documento, 'titulo.docx'));
+
+    expect(paragrafoComTexto(xml, 'Título esquerda')).toContain('<w:jc w:val="left"/>');
+  });
+
+  it('PDF: título e parágrafos respeitam o alinhamento publicado', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <h1 data-word-type="titulo" data-word-align="esquerda">Título PDF</h1>
+        <p data-word-type="paragrafo" data-word-align="centro">Centro</p>
+        <p data-word-type="paragrafo" data-word-align="direita">Direita</p>
+        <p data-word-type="paragrafo" data-word-align="esquerda">Esquerda</p>
+        <p data-word-type="paragrafo" data-word-align="justificar">Justificar</p>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const definicao = await capturarDefinicaoPdf(documento);
+
+    const alinhamento = (texto: string): string | undefined => {
+      const no = definicao.content.find(item => textoPdf(item).includes(texto)) as
+        | { alignment?: string }
+        | undefined;
+      if (!no) throw new Error(`Parágrafo "${texto}" não encontrado no PDF`);
+      return no.alignment;
+    };
+
+    expect(alinhamento('Título PDF')).toBe('left');
+    expect(alinhamento('Centro')).toBe('center');
+    expect(alinhamento('Direita')).toBe('right');
+    expect(alinhamento('Esquerda')).toBe('left');
+    expect(alinhamento('Justificar')).toBe('justify');
+  });
+});

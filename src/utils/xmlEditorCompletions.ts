@@ -377,8 +377,9 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
   // Identifica variáveis de iteração de loops (<foreach var="it">, <linhas var="linha">)
   const loopVars = new Set<string>();
   for (const tag of iterarTagsDeAbertura(xmlString, TAGS_COM_VAR_DE_LOOP)) {
-    const varLoop = (tag.atributos.var ?? '').trim();
-    if (varLoop) loopVars.add(varLoop);
+    // O renderizador usa 'item' quando o foreach/linhas omite o atributo var.
+    const varLoop = (tag.atributos.var || 'item').trim() || 'item';
+    loopVars.add(varLoop);
   }
 
   // 1. Extrai todas as variáveis interpoladas em {{ ... }}
@@ -422,12 +423,13 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
     if (variaveisReservadas.has(varName)) return;
 
     if (varName.includes('.')) {
-      const [raiz, sub] = varName.split('.');
+      const [raiz, ...resto] = varName.split('.');
+      const sub = resto[0] ?? '';
       if (loopVars.has(raiz)) return; // Ex.: item.nome onde item é var do foreach
       if (idsDeclarados.has(raiz)) {
-        // É uma tabela declarada
+        // É uma tabela declarada; valida o primeiro segmento após a raiz.
         const cols = colunasPorTabela[raiz];
-        if (cols && !cols.has(sub) && sub !== '_indice' && sub !== 'index') {
+        if (cols && sub && !cols.has(sub) && sub !== '_indice' && sub !== 'index') {
           usadasNaoDeclaradasSet.add(varName);
         }
         return;
@@ -737,7 +739,7 @@ export function xmlTemplateCompletions(context: CompletionContext): CompletionRe
   }
 
   // 2. COMPLETION DE VARIÁVEIS: dentro de {{ ...
-  const matchVar = textBeforePos.match(/\{\{\s*([a-zA-Z0-9_\.]*)$/);
+  const matchVar = textBeforePos.match(/\{\{\s*([a-zA-Z0-9_\.\[\]]*)$/);
   if (matchVar) {
     const query = matchVar[1];
     const from = pos - query.length;
@@ -778,7 +780,7 @@ export function xmlTemplateCompletions(context: CompletionContext): CompletionRe
     return {
       from,
       options: opcoesVariaveis,
-      validFor: /^[a-zA-Z0-9_\.]*$/,
+      validFor: /^[a-zA-Z0-9_\.\[\]]*$/,
     };
   }
 

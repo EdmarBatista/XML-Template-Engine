@@ -5,6 +5,7 @@
  */
 
 import { DOCUMENT_THEME, PdfExportOptions } from '../constants/documentTheme';
+import { normalizarAlinhamento } from './alinhamento';
 import {
   ehNivelRaiz,
   lerNivelDeNumeracao,
@@ -74,10 +75,10 @@ const PDF_PADROES: Required<PdfExportOptions> = {
 
 /** Converte o alinhamento publicado no DOM (`esquerda`, `centro`, ...) para o pdfmake. */
 function alinhamentoPdf(valor?: string | null): 'left' | 'center' | 'right' | 'justify' {
-  const nome = String(valor || '').trim().toLowerCase();
-  if (nome === 'centro' || nome === 'center') return 'center';
-  if (nome === 'direita' || nome === 'right') return 'right';
-  if (nome === 'justificar' || nome === 'justificado' || nome === 'justify') return 'justify';
+  const alinhamento = normalizarAlinhamento(valor, 'esquerda');
+  if (alinhamento === 'centro') return 'center';
+  if (alinhamento === 'direita') return 'right';
+  if (alinhamento === 'justificado') return 'justify';
   return 'left';
 }
 
@@ -325,7 +326,7 @@ function converterElementosBlocoDomPdf(
         text: textRuns.length > 0 ? textRuns : (el.textContent?.trim() || ''),
         fontSize: DOCUMENT_THEME.typography.sizes.titlePt,
         bold: true,
-        alignment: 'center',
+        alignment: alinhamentoPdf(el.getAttribute(WORD_ATTR_ALIGN) || 'centro'),
         margin: [0, DOCUMENT_THEME.spacing.title.beforePt, 0, DOCUMENT_THEME.spacing.title.afterPt],
         color: DOCUMENT_THEME.colors.text,
       });
@@ -466,7 +467,9 @@ function converterElementosBlocoDomPdf(
             resultado.push({
               text: segmentosParaPdfText(normalizados),
               fontSize: opcoes.tamanhoFonte,
-              alignment: opcoes.alinhamento || 'justify',
+              alignment: alinhamentoPdf(
+              el.getAttribute(WORD_ATTR_ALIGN) || el.style.textAlign || opcoes.alinhamento || 'justificar'
+            ),
               margin: [recuoFinalPt, DOCUMENT_THEME.spacing.paragraph.beforePt, 0, DOCUMENT_THEME.spacing.paragraph.afterPt],
               lineHeight: DOCUMENT_THEME.typography.lineHeights.body,
               color: opcoes.corTexto,
@@ -507,7 +510,9 @@ function converterElementosBlocoDomPdf(
         resultado.push({
           text: segmentosParaPdfText(normalizados),
           fontSize: opcoes.tamanhoFonte,
-          alignment: opcoes.alinhamento || 'justify',
+          alignment: alinhamentoPdf(
+              el.getAttribute(WORD_ATTR_ALIGN) || el.style.textAlign || opcoes.alinhamento || 'justificar'
+            ),
           margin: [recuoFinalPt, DOCUMENT_THEME.spacing.paragraph.beforePt, 0, DOCUMENT_THEME.spacing.paragraph.afterPt],
           lineHeight: DOCUMENT_THEME.typography.lineHeights.body,
           color: opcoes.corTexto,
@@ -603,7 +608,9 @@ function converterElementosBlocoDomPdf(
         resultado.push({
           text: segmentosParaPdfText(normalizados),
           fontSize: opcoes.tamanhoFonte,
-          alignment: opcoes.alinhamento || 'justify',
+          alignment: alinhamentoPdf(
+              el.getAttribute(WORD_ATTR_ALIGN) || el.style.textAlign || opcoes.alinhamento || 'justificar'
+            ),
           margin: [recuoPt, 0, 0, DOCUMENT_THEME.spacing.paragraph.afterPt],
           lineHeight: DOCUMENT_THEME.typography.lineHeights.body,
           color: opcoes.corTexto,

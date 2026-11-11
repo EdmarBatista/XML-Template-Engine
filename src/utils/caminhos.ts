@@ -26,59 +26,97 @@ export function obterTipoEfetivoColuna(tipo?: string): ColumnType {
   return 'input';
 }
 
+/**
+ * Gramática de caminho aceita nas expressões e na interpolação:
+ * `campo`, `tabela.coluna`, `tabela.coluna[0]`, `tabela[0].coluna`, `a.b.c`.
+ * Aceita hífen no nome do campo (ex.: `valor-total`).
+ */
+export const GRAMATICA_CAMINHO = String.raw`[A-Za-z_][\w-]*(?:(?:\.[A-Za-z_][\w-]*)|(?:\[\d+\]))*`;
+
+interface SegmentoCaminho {
+  nome: string;
+  indices: number[];
+}
+
+function dividirCaminho(caminho: string): SegmentoCaminho[] | null {
+  if (!caminho) return null;
+  const segmentos: SegmentoCaminho[] = [];
+  for (const parte of caminho.split('.')) {
+    const m = parte.match(/^([^\[\]]+)((?:\[\d+\])*)$/);
+    if (!m) return null;
+    segmentos.push({
+      nome: m[1],
+      indices: Array.from(m[2].matchAll(/\[(\d+)\]/g), achado => Number(achado[1])),
+    });
+  }
+  return segmentos;
+}
+
+function valorDeCelula(linha: unknown, coluna: string): ValorCampo {
+  if (!linha || typeof linha !== 'object') return '';
+  const valor = (linha as Record<string, unknown>)[coluna];
+  return valor === undefined || valor === null ? '' : (valor as ValorCampo);
+}
+
+function aplicarIndices(valor: unknown, indices: number[]): unknown {
+  let atual = valor;
+  for (const indice of indices) {
+    if (!Array.isArray(atual)) return undefined;
+    atual = atual[indice];
+  }
+  return atual;
+}
+
 export function obterValorPorCaminho(dados: DadosDocumento, caminho: string): ValorCampo {
   if (!caminho) return '';
   if (Object.prototype.hasOwnProperty.call(dados, caminho)) {
-    return dados[caminho];
+    return dados[caminho] as ValorCampo;
   }
 
-  // 1. Suporte prioritário para o formato tabela.coluna[0] ou tabela.coluna[1]
-  const matchColunaIndexada = caminho.match(/^([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)\[(\d+)\]$/);
-  if (matchColunaIndexada) {
-    const [, nomeTabela, nomeColuna, strIdx] = matchColunaIndexada;
-    const arrayTabela = dados[nomeTabela];
-    if (Array.isArray(arrayTabela)) {
-      const idx = Number(strIdx);
-      const linha = arrayTabela[idx] !== undefined ? arrayTabela[idx] : (idx >= 1 ? arrayTabela[idx - 1] : undefined);
-      if (linha && typeof linha === 'object') {
-        const val = linha[nomeColuna];
-        return val !== undefined && val !== null ? val : '';
+  const segmentos = dividirCaminho(caminho);
+  if (!segmentos) return '';
+
+  let atual: unknown = dados;
+
+  for (let i = 0; i < segmentos.length; i++) {
+    const { nome, indices } = segmentos[i];
+    const ultimo = i === segmentos.length - 1;
+
+    if (Array.isArray(atual)) {
+      if (indices.length > 0) {
+        // `tabela.coluna[0]`: o índice escolhe a linha e `nome` é a coluna.
+        const elemento = aplicarIndices(atual, indices);
+        if (
+          elemento &&
+          typeof elemento === 'object' &&
+          Object.prototype.hasOwnProperty.call(elemento, nome)
+        ) {
+          atual = (elemento as Record<string, unknown>)[nome];
+        } else {
+          atual = elemento;
+        }
+      } else if (ultimo) {
+        // Compatibilidade: `tabela.coluna` lista os valores de todas as linhas.
+        const valores = atual
+          .map(linha => valorDeCelula(linha, nome))
+          .filter(valor => valor !== '' && valor !== undefined && valor !== null);
+        return valores.join(', ');
+      } else {
+        return '';
       }
+      continue;
     }
+
+    if (atual && typeof atual === 'object') {
+      atual = (atual as Record<string, unknown>)[nome];
+      if (indices.length > 0) {
+        atual = aplicarIndices(atual, indices);
+      }
+      continue;
+    }
+
     return '';
   }
 
-  // 2. Suporte para o formato tabela[0].coluna
-  const matchTabelaIndexada = caminho.match(/^([a-zA-Z0-9_]+)\[(\d+)\]\.([a-zA-Z0-9_]+)$/);
-  if (matchTabelaIndexada) {
-    const [, nomeTabela, strIdx, nomeColuna] = matchTabelaIndexada;
-    const arrayTabela = dados[nomeTabela];
-    if (Array.isArray(arrayTabela)) {
-      const idx = Number(strIdx);
-      const linha = arrayTabela[idx] !== undefined ? arrayTabela[idx] : (idx >= 1 ? arrayTabela[idx - 1] : undefined);
-      if (linha && typeof linha === 'object') {
-        const val = linha[nomeColuna];
-        return val !== undefined && val !== null ? val : '';
-      }
-    }
-    return '';
-  }
-
-  // 3. Suporte para acesso direto a todos os valores de uma coluna: tabela.coluna
-  const matchTabelaColuna = caminho.match(/^([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)$/);
-  if (matchTabelaColuna) {
-    const [, nomeTabela, nomeColuna] = matchTabelaColuna;
-    const objOuArray = dados[nomeTabela];
-    if (Array.isArray(objOuArray)) {
-      const valoresColuna = objOuArray
-        .map(linha => (linha && typeof linha === 'object' ? linha[nomeColuna] : ''))
-        .filter(v => v !== '' && v !== undefined && v !== null);
-      return valoresColuna.join(', ');
-    } else if (objOuArray && typeof objOuArray === 'object') {
-      const val = objOuArray[nomeColuna];
-      return val !== undefined && val !== null ? val : '';
-    }
-  }
-
-  return '';
+  return atual === undefined || atual === null ? '' : (atual as ValorCampo);
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { calcularProximoNumero } from '../../../utils/numbering';
 import { obterValorPorCaminho } from '../../../utils/documentUtils';
+import { normalizarAlinhamento } from '../../../utils/alinhamento';
 
 
 
@@ -55,12 +56,13 @@ export function renderDocumentParagraphNodes({
 }: DocumentParagraphNodeProps): React.ReactNode[] {
   const linhas = dividirEmLinhas(nos);
   const paragrafos: React.ReactNode[] = [];
+  const alinhamento = normalizarAlinhamento(alinhamentoPadrao);
   const alignClass =
-    alinhamentoPadrao === 'centro'
+    alinhamento === 'centro'
       ? 'text-center'
-      : alinhamentoPadrao === 'direita'
+      : alinhamento === 'direita'
       ? 'text-right'
-      : alinhamentoPadrao === 'esquerda'
+      : alinhamento === 'esquerda'
       ? 'text-left'
       : 'text-justify';
 
@@ -138,7 +140,7 @@ export function renderDocumentParagraphNodes({
         key={`${pPath}_p_${li}`}
         data-word-type="paragrafo"
         data-word-level={effectiveNivel}
-        data-word-align={alinhamentoPadrao}
+        data-word-align={alinhamento}
         data-word-numerado={prefixoNum ? 'true' : 'false'}
         data-word-indent-cm={recuoParagrafoCm}
         className={`text-slate-800 dark:text-slate-200 my-2 leading-relaxed select-text ${alignClass} relative group`}

@@ -2,7 +2,7 @@
  * Avaliador de expressões lógicas e de comparação para tags <if expr="...">
  */
 import type { DadosDocumento, ValorCampo } from '../types';
-import { obterValorPorCaminho } from './caminhos';
+import { GRAMATICA_CAMINHO, obterValorPorCaminho } from './caminhos';
 
 /** Resolve identificador simples ou caminho pontuado (ex.: item.coluna). */
 function obterValorDaVariavel(dados: DadosDocumento, caminho: string): ValorCampo {
@@ -130,11 +130,13 @@ function compararValores(leftValue: ValorCampo, operator: string, rawValue: stri
 function avaliarComparacao(expr: string, dados: DadosDocumento): boolean {
   expr = removerParentesesExternos(expr).trim();
 
-  // Identificador simples ou caminho pontuado (ex.: signatario.tipo_manifestacao).
-  const match = expr.match(/^([a-zA-Z_]\w*(?:\.\w+)*)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
+  // Identificador simples, caminho pontuado ou acesso indexado (ex.: itens[1].nome).
+  const match = expr.match(
+    new RegExp(`^(${GRAMATICA_CAMINHO})\\s*(==|!=|>=|<=|>|<)\\s*(.+)$`)
+  );
   if (!match) {
     // Caso de expressão booleana simples como "urgente", "!urgente" ou "item.ativo".
-    const singleVarMatch = expr.match(/^(!)?([a-zA-Z_]\w*(?:\.\w+)*)$/);
+    const singleVarMatch = expr.match(new RegExp(`^(!)?(${GRAMATICA_CAMINHO})$`));
     if (singleVarMatch) {
       const isNeg = singleVarMatch[1] === '!';
       const varName = singleVarMatch[2];
@@ -190,6 +192,8 @@ export function extrairVariaveisDaExpressao(expr: string): string[] {
   if (!expr) return [];
   const decodificado = decodificarEntidadesXml(expr);
   const limpo = decodificado
+    // Preserva a relação do caminho: itens[1].nome vira itens.nome (uma variável).
+    .replace(/\[\d+\]/g, '')
     .replace(/'[^']*'/g, '')
     .replace(/"[^"]*"/g, '')
     .replace(/[=!<>+&|()[\],]+/g, ' ')

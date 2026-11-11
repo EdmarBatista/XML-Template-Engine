@@ -19,6 +19,7 @@ import {
   WidthType,
 } from 'docx';
 import { DOCUMENT_THEME } from '../constants/documentTheme';
+import { normalizarAlinhamento } from './alinhamento';
 import { WordExportOptions } from '../types';
 import {
   ehNivelRaiz,
@@ -90,16 +91,14 @@ function segmentosParaRuns(segmentos: SegmentoDom[], opcoes: Required<WordExport
 }
 
 function alinhamentoWord(valor?: string): (typeof AlignmentType)[keyof typeof AlignmentType] {
-  const nome = String(valor || '').toLowerCase();
-  // Aceita a grafia documentada em português (centro/direita/esquerda/justificar)
-  // e também a grafia CSS/inglesa usada no DOM (center/right/left/justify).
-  if (nome === 'centro' || nome === 'center') {
+  const alinhamento = normalizarAlinhamento(valor);
+  if (alinhamento === 'centro') {
     return AlignmentType.CENTER;
   }
-  if (nome === 'direita' || nome === 'right' || nome === 'end') {
+  if (alinhamento === 'direita') {
     return AlignmentType.RIGHT;
   }
-  if (nome === 'esquerda' || nome === 'left' || nome === 'start') {
+  if (alinhamento === 'esquerda') {
     return AlignmentType.LEFT;
   }
   return AlignmentType.JUSTIFIED;
@@ -359,7 +358,7 @@ function converterElementosBlocoDom(
 
       resultado.push(
         criarParagrafo(runs, opcoesTitulo, {
-          alinhamento: 'centro',
+          alinhamento: el.getAttribute(WORD_ATTR_ALIGN) || 'centro',
           heading: HeadingLevel.TITLE,
           outlineLevel: 0,
           espacoAntes: DOCUMENT_THEME.spacing.title.beforePt,

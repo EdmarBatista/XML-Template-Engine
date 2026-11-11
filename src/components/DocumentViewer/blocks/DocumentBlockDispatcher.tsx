@@ -10,6 +10,7 @@ import { InlineRenderContext, renderInlineAstNodes } from '../inline/DocumentInl
 import { processarTextoComVariaveis } from '../inline/textVariableProcessor';
 import { DocumentInlineAutoTable } from '../inline/DocumentInlineAutoTable';
 import { avaliarExpressao } from '../../../utils/expressionEvaluator';
+import { normalizarAlinhamento } from '../../../utils/alinhamento';
 
 export interface BlockDispatcherContext extends InlineRenderContext {
   contextoNumeracao?: NumberingContext;
@@ -237,9 +238,16 @@ export function renderDocumentAstBlocks(
       const tag = node.tipo === 'titulo' ? 'h1' : 'h2';
       // Título do documento continua centralizado; subtítulo sem atributo fica
       // à esquerda, alinhado aos itens 1.1 do documento de referência.
-      const alinhamento = node.atributos?.alinhamento || (node.tipo === 'titulo' ? 'centro' : 'esquerda');
+      const padrao = node.tipo === 'titulo' ? 'centro' : 'esquerda';
+      const alinhamento = normalizarAlinhamento(node.atributos?.alinhamento, padrao);
       const alignClass =
-        alinhamento === 'centro' ? 'text-center' : alinhamento === 'direita' ? 'text-right' : 'text-left';
+        alinhamento === 'centro'
+          ? 'text-center'
+          : alinhamento === 'direita'
+          ? 'text-right'
+          : alinhamento === 'esquerda'
+          ? 'text-left'
+          : 'text-justify';
 
       const HeadingTag = tag as 'h1' | 'h2';
       const fontSize = tag === 'h1' ? 20 * fontScale : 16 * fontScale;

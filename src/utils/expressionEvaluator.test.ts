@@ -87,6 +87,27 @@ describe('avaliarExpressao — comparações', () => {
     expect(avaliarExpressao('item.valor > 10', { item: { valor: '15' } })).toBe(true);
   });
 
+  it('aceita acesso indexado nas comparações e na veracidade direta', () => {
+    expect(
+      avaliarExpressao("etapas.etapa[0] != ''", { etapas: { etapa: ['primeira'] } })
+    ).toBe(true);
+    expect(
+      avaliarExpressao("itens[1].nome == 'B'", {
+        itens: [{ nome: 'A' }, { nome: 'B' }],
+      })
+    ).toBe(true);
+    expect(avaliarExpressao('valores[0] > 10', { valores: ['15'] })).toBe(true);
+    expect(
+      avaliarExpressao('etapas.etapa[0]', { etapas: { etapa: ['primeira'] } })
+    ).toBe(true);
+    expect(avaliarExpressao('etapas.etapa[0]', { etapas: { etapa: [] } })).toBe(false);
+  });
+
+  it('preserva a relação do caminho ao extrair variáveis indexadas', () => {
+    expect(extrairVariaveisDaExpressao("itens[1].nome == 'x'")).toEqual(['itens.nome']);
+    expect(extrairVariaveisDaExpressao("tabela.coluna[0] != ''")).toEqual(['tabela.coluna']);
+  });
+
   it('respeita os literais booleanos true/false', () => {
     expect(avaliarExpressao('assinado == false', { assinado: false })).toBe(true);
     expect(avaliarExpressao('assinado == true', { assinado: false })).toBe(false);
