@@ -480,9 +480,6 @@ const FILTROS_COMPLETION: Completion[] = [
   { label: 'cnpj', type: 'function', detail: 'Filtro', info: 'Aplica máscara de CNPJ (00.000.000/0000-00)' },
   { label: 'cep', type: 'function', detail: 'Filtro', info: 'Aplica máscara de CEP (00000-000)' },
   { label: 'romano', type: 'function', detail: 'Filtro', info: 'Converte número inteiro para algarismos romanos (ex: XIV)' },
-  { label: 'maiusculo', type: 'function', detail: 'Filtro', info: 'Converte todo o texto para letras MAIÚSCULAS' },
-  { label: 'minusculo', type: 'function', detail: 'Filtro', info: 'Converte todo o texto para letras minúsculas' },
-  { label: 'capitalizado', type: 'function', detail: 'Filtro', info: 'Converte a primeira letra para maiúscula' },
 ];
 
 /**

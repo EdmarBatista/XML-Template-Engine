@@ -36,10 +36,7 @@ export type DocumentFilterType =
   | 'horaPorExtenso'
   | 'numeroPorExtenso'
   | 'moedaPorExtenso'
-  | 'romano'
-  | 'caixa_alta'
-  | 'caixa_baixa'
-  | 'primeira_maiuscula';
+  | 'romano';
 
 export type TipoFiltro = DocumentFilterType;
 
