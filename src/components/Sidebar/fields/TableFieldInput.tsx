@@ -2,7 +2,7 @@ import React from 'react';
 import type { ValorCampo } from '../../../types';
 import { FieldMetadata, DadosDocumento } from '../../../types';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { aplicarMascaraCampo, exibirValorComMascara, normalizarValorCampo, obterTipoEfetivoColuna } from '../../../utils/documentUtils';
+import { aplicarMascaraCampo, exibirValorComMascara, formatarHora, normalizarValorCampo, obterTipoEfetivoColuna } from '../../../utils/documentUtils';
 
 interface TableFieldInputProps {
   campo: FieldMetadata;
@@ -165,6 +165,14 @@ export const TableFieldInput: React.FC<TableFieldInputProps> = ({
                         <input
                           type="date"
                           value={valorCelula}
+                          onChange={e => handleCellChange(lIdx, col.id, e.target.value, colTipo)}
+                          className="w-full text-xs text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                        />
+                      ) : colTipo === 'hora' ? (
+                        <input
+                          type="time"
+                          step="60"
+                          value={formatarHora(valorCelula)}
                           onChange={e => handleCellChange(lIdx, col.id, e.target.value, colTipo)}
                           className="w-full text-xs text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
                         />

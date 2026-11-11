@@ -332,3 +332,51 @@ export function converterParaRomano(numeroInput: ValorCampo): string {
   return resultado;
 }
 
+export interface HoraNormalizada {
+  horas: number;
+  minutos: number;
+}
+
+/**
+ * Aceita 09:30, 9:30, 09h30, 9h30min, 09h, 0930 e 930.
+ * Devolve null quando o valor não representa uma hora válida (0–23 / 0–59).
+ */
+export function normalizarHora(valor: ValorCampo): HoraNormalizada | null {
+  if (valor === null || valor === undefined || valor === '') return null;
+  const texto = String(valor).trim().toLowerCase();
+
+  let match = texto.match(/^(\d{1,2}):(\d{1,2})(?::\d{1,2})?$/);
+  if (!match) match = texto.match(/^(\d{1,2})\s*h(?:\s*(\d{1,2}))?(?:\s*min)?$/);
+  if (!match) match = texto.match(/^(\d{1,2})(\d{2})$/);
+  if (!match) return null;
+
+  const horas = Number(match[1]);
+  const minutos = match[2] !== undefined ? Number(match[2]) : 0;
+  if (!Number.isFinite(horas) || !Number.isFinite(minutos)) return null;
+  if (horas < 0 || horas > 23 || minutos < 0 || minutos > 59) return null;
+  return { horas, minutos };
+}
+
+/** Normaliza a hora para HH:MM; devolve o valor original se não for uma hora válida. */
+export function formatarHora(valor: ValorCampo): string {
+  if (valor === null || valor === undefined || valor === '') return '';
+  const hora = normalizarHora(valor);
+  if (!hora) return String(valor);
+  return `${String(hora.horas).padStart(2, '0')}:${String(hora.minutos).padStart(2, '0')}`;
+}
+
+/** Ex.: 9:00 -> "9 horas"; 9:30 -> "9 horas e 30 minutos"; 0:30 -> "30 minutos". */
+export function horaPorExtenso(valor: ValorCampo): string {
+  const hora = normalizarHora(valor);
+  if (!hora) return '';
+
+  const partes: string[] = [];
+  if (hora.horas > 0) {
+    partes.push(`${hora.horas} ${hora.horas === 1 ? 'hora' : 'horas'}`);
+  }
+  if (hora.minutos > 0) {
+    partes.push(`${hora.minutos} ${hora.minutos === 1 ? 'minuto' : 'minutos'}`);
+  }
+  return partes.length > 0 ? partes.join(' e ') : '0 hora';
+}
+

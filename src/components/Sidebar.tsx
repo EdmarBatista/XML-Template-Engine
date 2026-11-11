@@ -39,6 +39,7 @@ import { SidebarGroupAccordion } from './Sidebar/SidebarGroupAccordion';
 import { TextFieldInput } from './Sidebar/fields/TextFieldInput';
 import { NumberFieldInput } from './Sidebar/fields/NumberFieldInput';
 import { DateFieldInput } from './Sidebar/fields/DateFieldInput';
+import { HoraFieldInput } from './Sidebar/fields/HoraFieldInput';
 import { TextAreaFieldInput } from './Sidebar/fields/TextAreaFieldInput';
 import { SelectFieldInput } from './Sidebar/fields/SelectFieldInput';
 import { ChoiceFieldInput } from './Sidebar/fields/ChoiceFieldInput';
@@ -265,6 +266,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {campo.tipo === 'date' && (
           <DateFieldInput
+            campo={campo}
+            valor={valor}
+            onChange={onChange}
+          />
+        )}
+
+        {campo.tipo === 'hora' && (
+          <HoraFieldInput
             campo={campo}
             valor={valor}
             onChange={onChange}

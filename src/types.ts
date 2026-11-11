@@ -1,8 +1,8 @@
-export type FieldType = 'input' | 'textarea' | 'number' | 'date' | 'checkbox' | 'radio' | 'select' | 'tabela';
+export type FieldType = 'input' | 'textarea' | 'number' | 'date' | 'hora' | 'checkbox' | 'radio' | 'select' | 'tabela';
 
 export type InputSubtype = 'texto' | 'email' | 'lista_csv';
 
-export type NumberSubtype = 'number' | 'moeda' | 'cpf' | 'cnpj' | 'cep' | 'telefone';
+export type NumberSubtype = 'number' | 'moeda' | 'cpf' | 'cnpj' | 'cep' | 'telefone' | 'hora';
 
 export type ListType =
   | 'bullet'
@@ -32,6 +32,8 @@ export type DocumentFilterType =
   | FieldType
   | 'data'
   | 'dataPorExtenso'
+  | 'hora'
+  | 'horaPorExtenso'
   | 'numeroPorExtenso'
   | 'moedaPorExtenso'
   | 'romano'
@@ -47,6 +49,7 @@ export type ColumnType =
   | 'number'     // numérico puro
   | 'moeda'      // valor monetário formatado
   | 'date'       // seletor nativo de data
+  | 'hora'       // seletor nativo de horário
   | 'select'     // dropdown
   | 'radio'      // seleção exclusiva
   | 'textarea'   // texto multilinha

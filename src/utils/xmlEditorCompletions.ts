@@ -473,6 +473,8 @@ const FILTROS_COMPLETION: Completion[] = [
   { label: 'numeroPorExtenso', type: 'function', detail: 'Filtro', info: 'Converte número cardinal por extenso (ex: cento e vinte e três)' },
   { label: 'data', type: 'function', detail: 'Filtro', info: 'Formata data para o padrão brasileiro DD/MM/AAAA' },
   { label: 'dataPorExtenso', type: 'function', detail: 'Filtro', info: 'Data completa por extenso (ex: 15 de agosto de 2026)' },
+  { label: 'hora', type: 'function', detail: 'Filtro', info: 'Normaliza horário para HH:MM (ex: 09:30)' },
+  { label: 'horaPorExtenso', type: 'function', detail: 'Filtro', info: 'Horário por extenso (ex: 9 horas e 30 minutos)' },
   { label: 'telefone', type: 'function', detail: 'Filtro', info: 'Máscara de telefone fixo ou celular (ex: (11) 98765-4321)' },
   { label: 'cpf', type: 'function', detail: 'Filtro', info: 'Aplica máscara de CPF (000.000.000-00)' },
   { label: 'cnpj', type: 'function', detail: 'Filtro', info: 'Aplica máscara de CNPJ (00.000.000/0000-00)' },
@@ -584,6 +586,13 @@ const TAGS_XML_COMPLETION: Completion[] = [
     detail: 'Campo Data',
     info: 'Seletor nativo de data',
     apply: snippet('<date id="${1:data_emissao}" label="${2:Data de Emissão}" />'),
+  },
+  {
+    label: 'number (hora)',
+    type: 'variable',
+    detail: 'Campo Horário',
+    info: 'Campo de horário com seletor nativo (HH:MM)',
+    apply: snippet('<number id="${1:hora_inicio}" label="${2:Horário de início}" tipo="hora" />'),
   },
   {
     label: 'textarea',

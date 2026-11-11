@@ -337,3 +337,18 @@ describe('extrairCampos — o <formulario> vira estrutura de campos e grupos', (
     expect(peloEditor).toEqual(peloFormulario);
   });
 });
+
+describe('extrairCampos — horário via <number tipo="hora">', () => {
+  it('reconhece o campo e a coluna de horário', () => {
+    const doc = parseXmlDocument(`<documento><formulario>
+      <number id="hora_inicio" label="Início" tipo="hora" />
+      <tabela id="turnos"><coluna id="hora" tipo="hora" /></tabela>
+    </formulario></documento>`);
+    const formulario = doc.querySelector('formulario');
+    if (!formulario) throw new Error('formulario não encontrado');
+
+    const campos = extrairCampos(formulario);
+    expect(campos.campos.hora_inicio).toMatchObject({ tipo: 'hora', tipoInput: 'hora' });
+    expect(campos.campos.turnos.colunas?.[0].tipo).toBe('hora');
+  });
+});

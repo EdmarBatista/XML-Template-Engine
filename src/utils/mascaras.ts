@@ -1,6 +1,6 @@
 
 
-import { converterFormatoData, dataPorExtenso, formatarMoeda, limparSimboloMoeda, numeroPorExtenso, moedaPorExtenso, converterParaRomano } from './formatacao';
+import { converterFormatoData, dataPorExtenso, formatarHora, horaPorExtenso, formatarMoeda, limparSimboloMoeda, numeroPorExtenso, moedaPorExtenso, converterParaRomano } from './formatacao';
 
 export function formatarCPF(valor: ValorCampo): string {
   if (valor === null || valor === undefined) return '';
@@ -160,6 +160,10 @@ export function aplicarFiltroDocumento(valor: ValorCampo, filtro: DocumentFilter
       return converterFormatoData(valor, 'BR');
     case 'dataPorExtenso':
       return dataPorExtenso(valor);
+    case 'hora':
+      return formatarHora(valor);
+    case 'horaPorExtenso':
+      return horaPorExtenso(valor);
     case 'numeroPorExtenso':
       return numeroPorExtenso(valor);
     case 'moedaPorExtenso':

@@ -214,10 +214,15 @@ export function extrairCampos(formularioNode: Element): FormStructure {
     const tipoInput = (campoEl.getAttribute('tipo') || (tag === 'number' ? 'number' : 'texto')).toLowerCase().trim();
     const placeholder = campoEl.getAttribute('placeholder') || '';
 
+    const tipoBase = (tag === 'number' ? 'number' : tag === 'date' ? 'date' : tag === 'textarea' ? 'textarea' : tag === 'checkbox' ? 'checkbox' : tag === 'radio' ? 'radio' : tag === 'select' ? 'select' : tag === 'tabela' ? 'tabela' : 'input') as import('../types').FieldType;
+    // `<number tipo="hora">` (ou `<input tipo="hora">`) é um campo de horário
+    // com seletor nativo, sem criar uma tag nova no vocabulário do XML.
+    const tipoCampo = tipoInput === 'hora' ? 'hora' : tipoBase;
+
     const campo: FieldMetadata = {
       id,
       label,
-      tipo: (tag === 'number' ? 'number' : tag === 'date' ? 'date' : tag === 'textarea' ? 'textarea' : tag === 'checkbox' ? 'checkbox' : tag === 'radio' ? 'radio' : tag === 'select' ? 'select' : tag === 'tabela' ? 'tabela' : 'input') as import('../types').FieldType,
+      tipo: tipoCampo,
       tipoInput,
       descricao,
       placeholder,
@@ -242,6 +247,8 @@ export function extrairCampos(formularioNode: Element): FormStructure {
             colTipo = 'moeda';
           } else if (rawTipo === 'date') {
             colTipo = 'date';
+          } else if (rawTipo === 'hora') {
+            colTipo = 'hora';
           } else if (rawTipo === 'select') {
             colTipo = 'select';
           } else if (rawTipo === 'radio') {
@@ -284,7 +291,7 @@ export function extrairCampos(formularioNode: Element): FormStructure {
           colunas.push({
             id: colId,
             label: colLabel,
-            tipo: ['input', 'texto', 'number', 'moeda', 'date', 'select', 'radio', 'textarea', 'checkbox', 'cpf', 'cnpj', 'cep', 'telefone', 'email'].includes(colTipo) ? (colTipo as ColumnType) : 'input',
+            tipo: ['input', 'texto', 'number', 'moeda', 'date', 'hora', 'select', 'radio', 'textarea', 'checkbox', 'cpf', 'cnpj', 'cep', 'telefone', 'email'].includes(colTipo) ? (colTipo as ColumnType) : 'input',
             placeholder: colPlaceholder,
             min: colMin,
             max: colMax,

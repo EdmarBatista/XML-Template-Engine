@@ -310,9 +310,10 @@ Campos são organizados dentro de `<grupo titulo="...">`:
 | Tag | Atributos Principais | Descrição e Tipos Válidos |
 |---|---|---|
 | `<input>` | `id`, `label`, `tipo`, `placeholder`, `descricao` | Campo de texto de linha única. Atributos de `tipo`: `texto` (padrão), `email` (com validação de formato) e `lista_csv` (lista para loops `<foreach>`). |
-| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step`, `placeholder`, `descricao` | Campo numérico e de dados com máscara/dígitos. Atributos de `tipo`: `number` (numérico com setas), `moeda` (R$ com máscara monetária), `cpf` (máscara e validação de dígitos), `cnpj` (máscara, validação e consulta OpenCNPJ), `cep` (máscara, validação e consulta ViaCEP), `telefone` (máscara com DDD). |
+| `<number>` | `id`, `label`, `tipo`, `min`, `max`, `step`, `placeholder`, `descricao` | Campo numérico e de dados com máscara/dígitos. Atributos de `tipo`: `number` (numérico com setas), `moeda` (R$ com máscara monetária), `cpf` (máscara e validação de dígitos), `cnpj` (máscara, validação e consulta OpenCNPJ), `cep` (máscara, validação e consulta ViaCEP), `telefone` (máscara com DDD), `hora` (seletor nativo de horário, HH:MM). |
 | `<textarea>` | `id`, `label`, `rows`, `placeholder`, `descricao` | Campo de texto com múltiplas linhas (altura configurável via `rows="N"`, padrão: 4). |
 | `<date>` | `id`, `label`, `descricao` | Seletor nativo de data (formato ISO YYYY-MM-DD / exibição DD/MM/AAAA). |
+| `<number tipo="hora">` | `id`, `label`, `descricao` | Seletor nativo de horário. Armazena/exibe `HH:MM`; aceita os filtros `hora` e `horaPorExtenso`. Ex.: `<number id="hora_inicio_lances" label="Horário de início dos lances" tipo="hora" />`. |
 | `<select>` | `id`, `label`, `descricao` + filhos `<option>` | Caixa de seleção suspensa (dropdown). Cada `<option>` aceita texto e atributo opcional `valor="..."`. |
 | `<radio>` | `id`, `label`, `descricao` + filhos `<option>` | Grupo de botões de seleção exclusiva. Cada `<option>` aceita texto e atributo opcional `valor="..."`. |
 | `<checkbox>` | `id`, `label`, `descricao` | Caixa de seleção booleana (`true` / `false`). |
@@ -596,11 +597,23 @@ O motor conta com um algoritmo avançado de numeração hierárquica contínua q
 | `numeroPorExtenso` | `42` | `quarenta e dois` |
 | `data` | `2026-08-25` | `25/08/2026` |
 | `dataPorExtenso` | `2026-08-25` | `25 de agosto de 2026` |
+| `hora` | `9:30`, `9h30` ou `0930` | `09:30` |
+| `horaPorExtenso` | `9:30` | `9 horas e 30 minutos` |
 | `cpf` | `12345678900` | `123.456.789-00` |
 | `cnpj` | `12345678000195` | `12.345.678/0001-95` |
 | `cep` | `01001000` | `01001-000` |
 | `telefone` | `11987654321` | `(11) 98765-4321` |
 | `romano` | `14` | `XIV` |
+
+Exemplo de uso de horário (mesmo padrão do `dataPorExtenso`):
+
+```xml
+<number id="hora_inicio_lances" label="Horário de início dos lances" tipo="hora" />
+<number id="hora_termino_lances" label="Horário de término dos lances" tipo="hora" />
+
+HORÁRIO DA FASE DE LANCES
+Das {{hora_inicio_lances | horaPorExtenso}} até {{hora_termino_lances | horaPorExtenso}}
+```
 
 #### Tags Estruturais:
 
@@ -739,7 +752,7 @@ A aplicação conta com atalhos de teclado para agilizar o fluxo de preenchiment
 │   │   └── storageService.ts       # Gerenciamento unificado de LocalStorage (preferências e dados)
 │   ├── utils/                      # Motores de conversão e utilitários
 │   │   ├── documentUtils.ts        # Barrel de formatacao/mascaras/validacao/listas/caminhos
-│   │   ├── formatacao.ts           # Moeda, datas, números por extenso, romano
+│   │   ├── formatacao.ts           # Moeda, datas, horários, números por extenso, romano
 │   │   ├── mascaras.ts             # Máscaras de CPF/CNPJ/CEP/moeda e filtros de documento
 │   │   ├── validacao.ts            # Validações (email/CPF/CNPJ/CEP) e validarCampo
 │   │   ├── listas.ts               # CSV/foreach (formatarItemForeach, valoresDaLista)

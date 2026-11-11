@@ -3,6 +3,7 @@ import { TableColumnMetadata, ValorCampo, DadosDocumento } from '../../../types'
 import {
   aplicarMascaraCampo,
   exibirValorComMascara,
+  formatarHora,
   normalizarValorCampo,
   obterTipoEfetivoColuna,
   converterFormatoData,
@@ -85,6 +86,7 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
   const isRadio = colTipo === 'radio';
   const isCheckbox = colTipo === 'checkbox';
   const isDate = colTipo === 'date';
+  const isTime = colTipo === 'hora';
   const isTextArea = colTipo === 'textarea';
   const isCurrency = colTipo === 'moeda';
   const isMasked = ['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipo);
@@ -430,6 +432,31 @@ export const DocumentInlineTableAccess: React.FC<DocumentInlineTableAccessProps>
             type="date"
             autoFocus
             value={converterFormatoData(valorTemp, 'ISO')}
+            onChange={e => setValorTemp(e.target.value)}
+            onBlur={salvar}
+            onKeyDown={e => {
+              if (e.key === 'Enter') salvar();
+              if (e.key === 'Escape') cancelar();
+            }}
+            className="bg-white dark:bg-slate-900 dark:text-slate-100 border-2 border-blue-500 rounded px-2 py-1 text-xs text-slate-900 font-sans outline-none shadow-md font-medium cursor-pointer"
+            style={{ fontSize: `${12 * fontScale}px` }}
+          />
+        </span>
+      );
+    }
+
+    if (isTime) {
+      return (
+        <span
+          ref={containerRef}
+          onClick={e => e.stopPropagation()}
+          className="inline-block align-middle my-0.5 z-20 relative max-w-full"
+        >
+          <input
+            type="time"
+            step="60"
+            autoFocus
+            value={formatarHora(valorTemp)}
             onChange={e => setValorTemp(e.target.value)}
             onBlur={salvar}
             onKeyDown={e => {

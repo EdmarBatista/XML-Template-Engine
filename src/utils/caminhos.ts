@@ -15,7 +15,7 @@ export function obterTipoEfetivoColuna(tipo?: string): ColumnType {
   if (rawTipo === 'texto') return 'input';
   
   const validTypes = new Set<string>([
-    'input', 'texto', 'number', 'moeda', 'date', 'select', 
+    'input', 'texto', 'number', 'moeda', 'date', 'hora', 'select',
     'radio', 'textarea', 'checkbox', 'cpf', 'cnpj', 'cep', 'telefone', 'email'
   ]);
   

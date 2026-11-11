@@ -3,7 +3,9 @@ import {
   converterFormatoData,
   converterParaRomano,
   dataPorExtenso,
+  formatarHora,
   formatarMoeda,
+  horaPorExtenso,
   moedaPorExtenso,
   numeroPorExtenso,
   parseNumeroMoeda,
@@ -321,5 +323,33 @@ describe('converterParaRomano', () => {
     expect(converterParaRomano(-3)).toBe('');
     expect(converterParaRomano('abc')).toBe('');
     expect(converterParaRomano(null)).toBe('');
+  });
+});
+
+describe('formatarHora', () => {
+  it('normaliza as grafias aceitas para HH:MM', () => {
+    expect(formatarHora('9:30')).toBe('09:30');
+    expect(formatarHora('9h30')).toBe('09:30');
+    expect(formatarHora('0930')).toBe('09:30');
+    expect(formatarHora('930')).toBe('09:30');
+    expect(formatarHora('9h')).toBe('09:00');
+    expect(formatarHora('09:30:00')).toBe('09:30');
+    expect(formatarHora('')).toBe('');
+  });
+
+  it('devolve o valor original quando não é uma hora válida', () => {
+    expect(formatarHora('25:00')).toBe('25:00');
+    expect(formatarHora('9h75')).toBe('9h75');
+  });
+});
+
+describe('horaPorExtenso', () => {
+  it('escreve horas e minutos por extenso', () => {
+    expect(horaPorExtenso('9:00')).toBe('9 horas');
+    expect(horaPorExtenso('9:30')).toBe('9 horas e 30 minutos');
+    expect(horaPorExtenso('1:00')).toBe('1 hora');
+    expect(horaPorExtenso('0:30')).toBe('30 minutos');
+    expect(horaPorExtenso('0:00')).toBe('0 hora');
+    expect(horaPorExtenso('')).toBe('');
   });
 });

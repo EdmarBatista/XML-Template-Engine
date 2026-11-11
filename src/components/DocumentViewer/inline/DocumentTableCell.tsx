@@ -4,6 +4,7 @@ import {
   aplicarMascaraCampo,
   converterFormatoData,
   exibirValorComMascara,
+  formatarHora,
   normalizarValorCampo,
   obterTipoEfetivoColuna,
 } from '../../../utils/documentUtils';
@@ -92,6 +93,7 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
   const isSelect = tipoColuna === 'select';
   const isRadio = tipoColuna === 'radio';
   const isDate = tipoColuna === 'date';
+  const isTime = tipoColuna === 'hora';
   const isCheckbox = tipoColuna === 'checkbox';
   const isTextArea = tipoColuna === 'textarea';
   const isNumber = tipoColuna === 'number';
@@ -370,6 +372,23 @@ export const DocumentTableCell: React.FC<DocumentTableCellProps> = ({
               type="date"
               autoFocus
               value={converterFormatoData(valorTemp, 'ISO')}
+              onChange={e => {
+                const val = e.target.value;
+                setValorTemp(val);
+                salvarValorDireto(val);
+              }}
+              onBlur={salvar}
+              onKeyDown={handleKeyDown}
+              className="w-full bg-white dark:bg-slate-900 dark:text-slate-100 px-1.5 py-1 border border-blue-400 rounded text-slate-900 shadow-inner outline-none focus:ring-1 focus:ring-blue-500 text-xs font-normal cursor-pointer"
+              style={{ fontSize: `${12 * fontScale}px` }}
+            />
+          ) : isTime ? (
+            <input
+              ref={inputRef as React.Ref<HTMLInputElement>}
+              type="time"
+              step="60"
+              autoFocus
+              value={formatarHora(valorTemp)}
               onChange={e => {
                 const val = e.target.value;
                 setValorTemp(val);

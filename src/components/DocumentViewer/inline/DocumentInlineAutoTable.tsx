@@ -113,7 +113,7 @@ export const DocumentInlineAutoTable: React.FC<DocumentInlineAutoTableProps> = (
 
                   let formattedVal = '';
                   if (val !== null && val !== undefined && val !== '') {
-                    if (['moeda', 'cpf', 'cnpj', 'cep', 'telefone'].includes(colTipoEfetivo)) {
+                    if (['moeda', 'cpf', 'cnpj', 'cep', 'telefone', 'hora'].includes(colTipoEfetivo)) {
                       formattedVal = aplicarFiltroDocumento(val, colTipoEfetivo);
                     } else if (colTipoEfetivo === 'number') {
                       formattedVal = typeof val === 'number' ? String(val) : String(val);
