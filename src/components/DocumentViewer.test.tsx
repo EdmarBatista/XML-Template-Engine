@@ -429,8 +429,10 @@ describe('DocumentViewer — alinhamento do bloco condicional', () => {
     const bloco = container.querySelector<HTMLElement>('[data-word-conditional="true"]');
     if (!bloco) throw new Error('Bloco condicional não renderizado');
 
-    expect(bloco.className).toContain('border-l-2');
-    expect(bloco.className).toContain('-ml-0.5');
-    expect(bloco.className).not.toContain('pl-3');
+    expect(bloco.className).not.toMatch(/(^|\s)-?[mp]l-/);
+    expect(bloco.className).toContain('py-1');
+    // O bloco pode ter cor de fundo, mas nada que desloque o texto: margem negativa
+    // acumulava 2 px por nível de <if> aninhado e o texto saía fora da coluna do nível.
+    expect(bloco.className).not.toContain('border-l');
   });
 });

@@ -110,10 +110,10 @@ export const DocumentBlockConditionalNode: React.FC<DocumentBlockConditionalNode
       data-vars={variaveisUsadas.join(' ')}
       data-word-conditional="true"
       onClick={primeiroId ? (e) => { e.stopPropagation(); onFocusField(primeiroId); } : undefined}
-      className={`transition-all rounded select-text ${
+      className={`transition-all rounded select-text py-1 my-1 pr-3 ${
         estaDestacado
-          ? '-ml-1 bg-emerald-50 dark:bg-emerald-950/40 border-l-4 border-emerald-500 pr-3 py-1 my-1'
-          : '-ml-0.5 border-l-2 border-blue-400 dark:border-blue-500 pr-3 py-1 my-1 bg-blue-50/30 dark:bg-slate-800/50'
+          ? 'bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400 dark:ring-emerald-600'
+          : 'bg-blue-50/30 dark:bg-slate-800/50'
       } ${primeiroId ? 'cursor-pointer hover:bg-blue-50/60 dark:hover:bg-slate-800/80' : ''}`}
       title={primeiroId ? `Bloco Condicional IF: ${expr} (Clique para localizar no formulário)` : undefined}
     >
