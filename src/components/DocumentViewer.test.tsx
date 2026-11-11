@@ -408,3 +408,29 @@ describe('DocumentViewer — edição inline de horário', () => {
     expect(input?.value).toBe('08:00');
   });
 });
+
+describe('DocumentViewer — alinhamento do bloco condicional', () => {
+  // O texto de um <if> tem de começar na mesma coluna dos parágrafos irmãos: a barra
+  // indicadora vive na margem (margem negativa do tamanho da borda) e não como padding.
+  const comIf: AstNode = {
+    tipo: 'conteudo',
+    filhos: [
+      { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'Parágrafo fora do if' }] },
+      {
+        tipo: 'if',
+        atributos: { expr: "nome == 'Fulano'" },
+        filhos: [{ tipo: 'p', filhos: [{ tipo: 'texto', texto: 'Parágrafo dentro do if' }] }],
+      },
+    ],
+  };
+
+  it('não recua o conteúdo do <if> em relação aos irmãos', () => {
+    const { container } = montar({ conteudo: comIf });
+    const bloco = container.querySelector<HTMLElement>('[data-word-conditional="true"]');
+    if (!bloco) throw new Error('Bloco condicional não renderizado');
+
+    expect(bloco.className).toContain('border-l-2');
+    expect(bloco.className).toContain('-ml-0.5');
+    expect(bloco.className).not.toContain('pl-3');
+  });
+});
