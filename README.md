@@ -595,6 +595,7 @@ O motor conta com um algoritmo avançado de numeração hierárquica contínua q
 | `moeda` | `1500.5` ou `1500,50` | `1.500,50` |
 | `moedaPorExtenso` | `1500.50` | `mil e quinhentos reais e cinquenta centavos` |
 | `numeroPorExtenso` | `42` | `quarenta e dois` |
+| `numeroPorExtenso` | `0,33` | `zero vírgula trinta e três` |
 | `data` | `2026-08-25` | `25/08/2026` |
 | `dataPorExtenso` | `2026-08-25` | `25 de agosto de 2026` |
 | `hora` | `9:30`, `9h30` ou `0930` | `09:30` |

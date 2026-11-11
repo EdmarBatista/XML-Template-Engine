@@ -149,18 +149,69 @@ function extensoGrupoCentenas(n: number, numDois = true): string {
 }
 
 
-export function numeroPorExtenso(numeroInput: ValorCampo, numDois = true): string {
-  if (numeroInput === null || numeroInput === undefined || numeroInput === '') {
-    return '';
+interface NumeroDecompostoExtenso {
+  negativo: boolean;
+  inteiro: number;
+  decimalDigitos: string;
+}
+
+/**
+ * Decompõe a entrada preservando os dígitos decimais do texto (inclusive zeros à direita).
+ * Aceita `0,05`, `1.234,56`, `1234.56`, `1.000` e number.
+ */
+function decomporNumeroParaExtenso(valor: ValorCampo): NumeroDecompostoExtenso | null {
+  if (valor === null || valor === undefined || valor === '') return null;
+
+  if (typeof valor === 'number') {
+    if (!Number.isFinite(valor)) return null;
+    const negativo = valor < 0;
+    // Ruído de ponto flutuante (0,1 + 0,2 = 0,30000000000000004) não pode virar extenso
+    // dígito a dígito; 10 casas é bem mais do que qualquer valor de documento.
+    const [inteiroTexto, decimalTexto = ''] = String(Number(Math.abs(valor).toFixed(10))).split('.');
+    if (!/^\d+$/.test(inteiroTexto)) return null;
+    return { negativo, inteiro: Number(inteiroTexto), decimalDigitos: decimalTexto };
   }
 
-  let numero = Number(numeroInput);
-  if (!Number.isFinite(numero)) return '';
+  let texto = limparSimboloMoeda(valor).replace(/\s+/g, '');
+  if (!texto) return null;
 
-  numero = Math.trunc(numero);
+  let negativo = false;
+  if (texto.startsWith('-')) {
+    negativo = true;
+    texto = texto.slice(1);
+  } else if (texto.startsWith('+')) {
+    texto = texto.slice(1);
+  }
 
+  if (texto.includes(',')) {
+    // Formato brasileiro: ponto de milhar + vírgula decimal.
+    texto = texto.replace(/\./g, '').replace(',', '.');
+  } else if (texto.includes('.')) {
+    // Sem vírgula: ponto é decimal, exceto nos agrupamentos de milhar (1.000 / 1.000.000).
+    const pontos = (texto.match(/\./g) || []).length;
+    const pareceMilhar = /^\d{1,3}(?:\.\d{3})+$/.test(texto) && !texto.startsWith('0.');
+    if (pontos > 1 || pareceMilhar) {
+      texto = texto.replace(/\./g, '');
+    }
+  }
+
+  const match = texto.match(/^(\d+)(?:\.(\d+))?$/);
+  if (!match) return null;
+  return {
+    negativo,
+    inteiro: Number(match[1]),
+    decimalDigitos: match[2] ?? '',
+  };
+}
+
+function digitoPorExtenso(digito: string, numDois: boolean): string {
+  const unidades = ['zero', 'um', numDois ? 'dois' : 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+  return unidades[Number(digito)] || '';
+}
+
+function numeroInteiroPorExtenso(numero: number, numDois: boolean): string {
   if (numero === 0) return 'zero';
-  if (numero < 0) return 'menos ' + numeroPorExtenso(Math.abs(numero), numDois);
+  if (numero < 0) return 'menos ' + numeroInteiroPorExtenso(Math.abs(numero), numDois);
 
   const classes = [
     { valor: Math.floor(numero / 1000000000000), singular: 'trilhão', plural: 'trilhões' },
@@ -216,6 +267,26 @@ export function numeroPorExtenso(numeroInput: ValorCampo, numDois = true): strin
   }
 
   return resultado;
+}
+
+export function numeroPorExtenso(numeroInput: ValorCampo, numDois = true): string {
+  const decomposto = decomporNumeroParaExtenso(numeroInput);
+  if (!decomposto) return '';
+
+  const { negativo, inteiro, decimalDigitos } = decomposto;
+  const prefixo = negativo ? 'menos ' : '';
+  const extensoInteiro = numeroInteiroPorExtenso(inteiro, numDois);
+
+  if (!decimalDigitos || /^0+$/.test(decimalDigitos)) {
+    return prefixo + extensoInteiro;
+  }
+
+  // Primeiro dígito decimal zero: lê dígito a dígito (0,05 -> zero vírgula zero cinco).
+  const extensoDecimal = decimalDigitos.startsWith('0')
+    ? decimalDigitos.split('').map(d => digitoPorExtenso(d, numDois)).join(' ')
+    : numeroInteiroPorExtenso(Number(decimalDigitos), numDois);
+
+  return `${prefixo}${extensoInteiro} vírgula ${extensoDecimal}`;
 }
 
 

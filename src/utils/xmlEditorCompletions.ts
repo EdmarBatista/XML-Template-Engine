@@ -470,7 +470,7 @@ export function verificarVariaveisXml(xmlString: string): ResultadoValidacaoVari
 const FILTROS_COMPLETION: Completion[] = [
   { label: 'moeda', type: 'function', detail: 'Filtro', info: 'Formata valor numérico para Real brasileiro (ex: R$ 1.500,00)' },
   { label: 'moedaPorExtenso', type: 'function', detail: 'Filtro', info: 'Converte valor monetário por extenso (ex: um mil e quinhentos reais)' },
-  { label: 'numeroPorExtenso', type: 'function', detail: 'Filtro', info: 'Converte número cardinal por extenso (ex: cento e vinte e três)' },
+  { label: 'numeroPorExtenso', type: 'function', detail: 'Filtro', info: 'Converte número cardinal por extenso, inclusive decimais (ex: cento e vinte e três; 0,33 → zero vírgula trinta e três)' },
   { label: 'data', type: 'function', detail: 'Filtro', info: 'Formata data para o padrão brasileiro DD/MM/AAAA' },
   { label: 'dataPorExtenso', type: 'function', detail: 'Filtro', info: 'Data completa por extenso (ex: 15 de agosto de 2026)' },
   { label: 'hora', type: 'function', detail: 'Filtro', info: 'Normaliza horário para HH:MM (ex: 09:30)' },

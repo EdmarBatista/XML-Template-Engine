@@ -143,9 +143,54 @@ describe('numeroPorExtenso', () => {
     );
   });
 
-  it('trunca decimais e trata negativos', () => {
-    expect(numeroPorExtenso(1.9)).toBe('um');
+  it('trata negativos', () => {
     expect(numeroPorExtenso(-5)).toBe('menos cinco');
+  });
+
+  it('escreve decimais na tabela de aceite do brief', () => {
+    const casos: [string | number, string][] = [
+      ['0,05', 'zero vírgula zero cinco'],
+      ['0,5', 'zero vírgula cinco'],
+      ['0,10', 'zero vírgula dez'],
+      ['0,33', 'zero vírgula trinta e três'],
+      ['1,25', 'um vírgula vinte e cinco'],
+      ['12,5', 'doze vírgula cinco'],
+      ['1.234,56', 'mil duzentos e trinta e quatro vírgula cinquenta e seis'],
+      ['100,00', 'cem'],
+      [42, 'quarenta e dois'],
+      ['1.000.000', 'um milhão'],
+      [-5, 'menos cinco'],
+      ['', ''],
+      ['abc', ''],
+    ];
+    for (const [entrada, esperado] of casos) {
+      expect(numeroPorExtenso(entrada), `numeroPorExtenso(${JSON.stringify(entrada)})`).toBe(esperado);
+    }
+  });
+
+  it('lê dígito a dígito quando o primeiro decimal é zero', () => {
+    expect(numeroPorExtenso('0,005')).toBe('zero vírgula zero zero cinco');
+    expect(numeroPorExtenso(0.05)).toBe('zero vírgula zero cinco');
+  });
+
+  it('preserva zeros à direita do texto e ignora decimais zerados', () => {
+    expect(numeroPorExtenso('1,50')).toBe('um vírgula cinquenta');
+    expect(numeroPorExtenso(1.5)).toBe('um vírgula cinco');
+    // número 1.9 antes era truncado para "um"
+    expect(numeroPorExtenso(1.9)).toBe('um vírgula nove');
+    expect(numeroPorExtenso('0,00')).toBe('zero');
+    expect(numeroPorExtenso('1.000,00')).toBe('mil');
+  });
+
+  it('aceita ponto decimal e símbolo de moeda na entrada', () => {
+    expect(numeroPorExtenso('1234.56')).toBe('mil duzentos e trinta e quatro vírgula cinquenta e seis');
+    expect(numeroPorExtenso(0.5)).toBe('zero vírgula cinco');
+    expect(numeroPorExtenso('R$ 12,50')).toBe('doze vírgula cinquenta');
+    expect(numeroPorExtenso('-1,25')).toBe('menos um vírgula vinte e cinco');
+  });
+
+  it('não deixa ruído de ponto flutuante vazar para o extenso', () => {
+    expect(numeroPorExtenso(0.1 + 0.2)).toBe('zero vírgula três');
   });
 
   it('escreve trilhão e mantém números fora das tabelas', () => {
