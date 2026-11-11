@@ -2,6 +2,16 @@
  * Avaliador de expressões lógicas e de comparação para tags <if expr="...">
  */
 import type { DadosDocumento, ValorCampo } from '../types';
+import { obterValorPorCaminho } from './caminhos';
+
+/** Resolve identificador simples ou caminho pontuado (ex.: item.coluna). */
+function obterValorDaVariavel(dados: DadosDocumento, caminho: string): ValorCampo {
+  const valor = Object.prototype.hasOwnProperty.call(dados, caminho)
+    ? dados[caminho]
+    : obterValorPorCaminho(dados, caminho);
+  // Mantém o comportamento anterior para campo simples ausente/undefined.
+  return valor === undefined || valor === null ? '' : valor;
+}
 
 function dividirExpressao(expr: string, operador: string): [string, string] | null {
   let aspas: string | null = null;
@@ -120,21 +130,22 @@ function compararValores(leftValue: ValorCampo, operator: string, rawValue: stri
 function avaliarComparacao(expr: string, dados: DadosDocumento): boolean {
   expr = removerParentesesExternos(expr).trim();
 
-  const match = expr.match(/^([a-zA-Z_]\w*)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
+  // Identificador simples ou caminho pontuado (ex.: signatario.tipo_manifestacao).
+  const match = expr.match(/^([a-zA-Z_]\w*(?:\.\w+)*)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
   if (!match) {
-    // Caso de expressão booleana simples como "urgente" ou "!urgente"
-    const singleVarMatch = expr.match(/^(!)?([a-zA-Z_]\w*)$/);
+    // Caso de expressão booleana simples como "urgente", "!urgente" ou "item.ativo".
+    const singleVarMatch = expr.match(/^(!)?([a-zA-Z_]\w*(?:\.\w+)*)$/);
     if (singleVarMatch) {
       const isNeg = singleVarMatch[1] === '!';
       const varName = singleVarMatch[2];
-      const val = Boolean(dados[varName]);
+      const val = Boolean(obterValorDaVariavel(dados, varName));
       return isNeg ? !val : val;
     }
     return false;
   }
 
   const [, varName, operator, rawValue] = match;
-  const leftValue = dados[varName] !== undefined ? dados[varName] : '';
+  const leftValue = obterValorDaVariavel(dados, varName);
   return compararValores(leftValue, operator, rawValue);
 }
 

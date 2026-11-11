@@ -472,6 +472,23 @@ describe('recuo hierárquico dos exportadores', () => {
     expect(paragrafoComTexto(xml, 'Subtítulo nível três')).toContain('<w:outlineLvl w:val="2"/>');
   });
 
+  it('Word: parágrafo respeita a grafia documentada do alinhamento', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <p data-word-type="paragrafo" data-word-align="centro">Alinhado centro</p>
+        <p data-word-type="paragrafo" data-word-align="esquerda">Alinhado esquerda</p>
+        <p data-word-type="paragrafo" data-word-align="direita">Alinhado direita</p>
+        <p data-word-type="paragrafo" data-word-align="justificar">Alinhado justificar</p>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const xml = await abrirDocumentoWord(await exportarParaWord(documento, 'alinhamento.docx'));
+
+    expect(paragrafoComTexto(xml, 'Alinhado centro')).toContain('<w:jc w:val="center"/>');
+    expect(paragrafoComTexto(xml, 'Alinhado esquerda')).toContain('<w:jc w:val="left"/>');
+    expect(paragrafoComTexto(xml, 'Alinhado direita')).toContain('<w:jc w:val="right"/>');
+    expect(paragrafoComTexto(xml, 'Alinhado justificar')).toContain('<w:jc w:val="both"/>');
+  });
+
   it('PDF: mantém o recuo em seção aninhada, if/foreach e ao redor de tabela', async () => {
     const definicao = await capturarDefinicaoPdf(montarDocumento());
 

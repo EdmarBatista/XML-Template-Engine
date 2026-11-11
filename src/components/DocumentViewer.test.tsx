@@ -208,6 +208,40 @@ describe('DocumentViewer — render do documento', () => {
     expect(documento.className).toContain('select-text');
     expect(container.textContent?.length).toBeGreaterThan(0);
   });
+
+  it('renderiza <if> com caminho pontuado dentro de foreach', () => {
+    const conteudoIf: AstNode = {
+      tipo: 'conteudo',
+      filhos: [
+        {
+          tipo: 'foreach',
+          atributos: { lista: 'linhas', var: 'item' },
+          filhos: [
+            {
+              tipo: 'if',
+              atributos: { expr: "item.frase != ''" },
+              filhos: [
+                { tipo: 'p', filhos: [{ tipo: 'texto', texto: 'COM-GUARD:{{item.frase}}' }] },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const { container } = montar({
+      conteudo: conteudoIf,
+      dados: {
+        nome: 'Fulano',
+        linhas: [{ frase: '' }, { frase: 'De acordo com o Aviso.' }],
+      },
+    });
+
+    const texto = container.textContent || '';
+    // Só a linha preenchida passa pelo guard; a vazia não gera parágrafo.
+    expect(texto).toContain('COM-GUARD:De acordo com o Aviso.');
+    expect((texto.match(/COM-GUARD:/g) || []).length).toBe(1);
+  });
 });
 
 describe('DocumentViewer — <secao> sem título continua a numeração', () => {

@@ -91,13 +91,15 @@ function segmentosParaRuns(segmentos: SegmentoDom[], opcoes: Required<WordExport
 
 function alinhamentoWord(valor?: string): (typeof AlignmentType)[keyof typeof AlignmentType] {
   const nome = String(valor || '').toLowerCase();
-  if (nome === 'centro') {
+  // Aceita a grafia documentada em português (centro/direita/esquerda/justificar)
+  // e também a grafia CSS/inglesa usada no DOM (center/right/left/justify).
+  if (nome === 'centro' || nome === 'center') {
     return AlignmentType.CENTER;
   }
-  if (nome === 'direita') {
+  if (nome === 'direita' || nome === 'right' || nome === 'end') {
     return AlignmentType.RIGHT;
   }
-  if (nome === 'esquerda') {
+  if (nome === 'esquerda' || nome === 'left' || nome === 'start') {
     return AlignmentType.LEFT;
   }
   return AlignmentType.JUSTIFIED;
@@ -539,7 +541,9 @@ function converterElementosBlocoDom(
       const levelPara = lerNivelDeNumeracao(el, nivelSecao);
       const isNumerado = el.getAttribute(WORD_ATTR_NUMERADO) === 'true' || Boolean(el.querySelector(`[${WORD_ATTR_NUM}]`));
       const alignAttr = el.getAttribute(WORD_ATTR_ALIGN) || el.style.textAlign;
-      const alinhamentoFinal = alignAttr === 'center' ? 'centro' : alignAttr === 'right' ? 'direita' : alignAttr === 'left' ? 'esquerda' : opcoes.alinhamento || 'justificado';
+      // O renderizador publica centro/esquerda/direita/justificar; a conversão
+      // final (alinhamentoWord) aceita essa grafia e a inglesa.
+      const alinhamentoFinal = alignAttr || opcoes.alinhamento || 'justificado';
 
       const tableInside = el.querySelector(`table, [${WORD_ATTR_TIPO}="${WORD_TIPO_TABELA_CONTAINER}"]`);
       if (tableInside) {

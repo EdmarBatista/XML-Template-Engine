@@ -34,6 +34,20 @@ describe('avaliarExpressao — veracidade de variável isolada', () => {
     expect(avaliarExpressao('!urgente', { urgente: true })).toBe(false);
   });
 
+  it('resolve caminho pontuado na veracidade direta e com negação', () => {
+    expect(
+      avaliarExpressao('signatario.tipo_manifestacao', {
+        signatario: { tipo_manifestacao: 'De acordo com o Aviso.' },
+      })
+    ).toBe(true);
+    expect(
+      avaliarExpressao('signatario.tipo_manifestacao', { signatario: { tipo_manifestacao: '' } })
+    ).toBe(false);
+    expect(
+      avaliarExpressao('!signatario.tipo_manifestacao', { signatario: { tipo_manifestacao: '' } })
+    ).toBe(true);
+  });
+
   it('sem expressão, libera o conteúdo', () => {
     expect(avaliarExpressao('', {})).toBe(true);
   });
@@ -57,6 +71,20 @@ describe('avaliarExpressao — comparações', () => {
   it('respeita literais entre aspas simples e duplas', () => {
     expect(avaliarExpressao("situacao == 'em análise'", { situacao: 'em análise' })).toBe(true);
     expect(avaliarExpressao('situacao == "em análise"', { situacao: 'em análise' })).toBe(true);
+  });
+
+  it('resolve caminho pontuado no lado esquerdo da comparação', () => {
+    expect(
+      avaliarExpressao("signatario.tipo_manifestacao != ''", {
+        signatario: { tipo_manifestacao: 'De acordo com o Aviso.' },
+      })
+    ).toBe(true);
+    expect(
+      avaliarExpressao("signatario.tipo_manifestacao != ''", {
+        signatario: { tipo_manifestacao: '' },
+      })
+    ).toBe(false);
+    expect(avaliarExpressao('item.valor > 10', { item: { valor: '15' } })).toBe(true);
   });
 
   it('respeita os literais booleanos true/false', () => {
