@@ -23,10 +23,12 @@ export const catalogoCompletoTags: TemplateItem = {
             <number id="campo_valor_moeda" label="Valor Monetário (Número)" min="0" step="0.01" tipo="moeda" placeholder="2540,50" descricao="Tag number monetária com casas decimais (dados em number)"/>
         </grupo>
 
-        <grupo titulo="Campos Numéricos Padrão e Data">
+        <grupo titulo="Campos Numéricos Padrão, Data e Horário">
             <number id="campo_numero_simples" label="Número Inteiro" min="1" max="100" step="1" placeholder="10" descricao="Tag number com limites inteiros"/>
             <number id="campo_numero_decimal" label="Número Decimal" min="0" max="100" step="0.5" placeholder="15.5" descricao="Tag number decimal com step fracionado"/>
             <date id="campo_data_registro" label="Data de Registro" descricao="Tag date com calendário nativo"/>
+            <number id="campo_hora_inicio" label="Horário de Início" tipo="hora" placeholder="08:00" descricao="Horário não é tag nova: é number com tipo=&quot;hora&quot;, que abre seletor de horário"/>
+            <number id="campo_hora_fim" label="Horário de Fim" tipo="hora" placeholder="17:30" descricao="Aceita 9:30, 9h30, 0930 ou 09:30:00 e normaliza ao sair"/>
         </grupo>
 
         <grupo titulo="Campos de Opções (Checkbox, Select e Radio)">
@@ -311,6 +313,20 @@ export const catalogoCompletoTags: TemplateItem = {
                     <p>Texto de exemplo condicional: [Condições Aninhadas Múltiplas são Verdadeiras].</p>
                 </if>
             </if>
+            <p><b>4. Tabela com célula mesclada (&lt;celula colspan="..."&gt;):</b></p>
+            <tabela>
+                <linha>
+                    <celula colspan="3"><b>Título mesclado nas três colunas</b></celula>
+                </linha>
+                <linha>
+                    <celula>Coluna A</celula>
+                    <celula>Coluna B</celula>
+                    <celula>Coluna C</celula>
+                </linha>
+            </tabela>
+
+            <p><b>5. Caminho pontuado dentro de &lt;if&gt; (avaliado linha a linha pelo foreach):</b>
+            <foreach lista="tabela_itens" var="linha"><if expr="linha.col_prioridade == 'Alta'">{{linha.col_nome}} exige aprovação da autoridade competente. </if></foreach></p>
         </secao>
 
         <!-- ================================================================= -->
@@ -366,6 +382,10 @@ export const catalogoCompletoTags: TemplateItem = {
             <p>Filtro de data padrão (DD/MM/AAAA): {{campo_data_registro | data}}</p>
             <p>Filtro de data por extenso: {{campo_data_registro | dataPorExtenso}}</p>
             <p>Filtro de número por extenso: {{campo_numero_simples | numeroPorExtenso}}</p>
+            <p>Filtro de número por extenso com decimais: {{campo_numero_decimal | numeroPorExtenso}} (15,5 vira quinze vírgula cinco; 0,05 vira zero vírgula zero cinco)</p>
+            <p>Filtro de horário normalizado em HH:MM: {{campo_hora_inicio | hora}}</p>
+            <p>Filtro de horário por extenso: {{campo_hora_inicio | horaPorExtenso}}</p>
+            <p>Filtro de horário por extenso (com minutos): {{campo_hora_fim | horaPorExtenso}}</p>
             <p>Filtro de algarismos romanos: {{campo_numero_simples | romano}}</p>
             <p>Filtro de máscara de CPF: {{campo_cpf | cpf}}</p>
             <p>Filtro de máscara de CNPJ: {{campo_cnpj | cnpj}}</p>
@@ -528,6 +548,8 @@ export const catalogoCompletoTags: TemplateItem = {
   "campo_numero_decimal": 15.5,
   "campo_valor_moeda": 2540.50,
   "campo_data_registro": "2026-08-29",
+  "campo_hora_inicio": "08:00",
+  "campo_hora_fim": "17:30",
   "campo_textarea_pequeno": "Texto descritivo curto para validação de área de texto.",
   "campo_textarea_grande": "Texto detalhado com múltiplas linhas para testar renderização e exportação contínua de parágrafos.",
   "opt_ativo": true,

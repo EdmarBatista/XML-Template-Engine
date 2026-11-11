@@ -4,7 +4,7 @@ export const bateriaTestes: TemplateItem =
   {
     id: 'teste-funcionalidades',
     nome: 'Bateria de Testes do Motor XML',
-    descricao: 'Template abrangente contendo todas as tags suportadas: tipos de input, máscaras, formatação monetária, datas por extenso, números romanos, filtros, foreach, tabelas, e condições booleanas.',
+    descricao: 'Template abrangente contendo as principais tags do motor: tipos de input, máscaras, formatação monetária, datas e horários por extenso, números romanos, extenso com decimais, filtros, foreach, tabelas e condições booleanas.',
     categoria: 'Testes',
     xml: `<documento>
     <formulario>
@@ -16,6 +16,7 @@ export const bateriaTestes: TemplateItem =
 
         <grupo titulo="Data e documentos">
             <date id="data" label="Data" descricao="Campo de data"/>
+            <number id="horario" label="Horário [tipo=&quot;hora&quot;]" tipo="hora" placeholder="08:30" descricao="Horário: number com tipo=&quot;hora&quot;"/>
             <number id="cnpj" label="CNPJ [tipo=&quot;cnpj&quot;]" tipo="cnpj" placeholder="00.000.000/0000-00" descricao="Campo com máscara de CNPJ"/>
             <number id="cep" label="CEP [tipo=&quot;cep&quot;]" tipo="cep" placeholder="00000-000" descricao="Campo com máscara de CEP"/>
         </grupo>
@@ -23,6 +24,7 @@ export const bateriaTestes: TemplateItem =
         <grupo titulo="Números">
             <number id="numero" label="Número [sem tipo]" min="0" step="1" placeholder="0" descricao="Número sem tipo especial"/>
             <number id="inteiro" label="Número inteiro" min="0" step="1" placeholder="0" descricao="Número inteiro"/>
+            <number id="decimal" label="Número decimal" min="0" step="0.5" placeholder="10.5" descricao="Número com casas decimais"/>
             <number id="moeda" label="Valor [tipo=&quot;moeda&quot;]" min="0" step="0.01" tipo="moeda" placeholder="0,00" descricao="Campo monetário"/>
         </grupo>
 
@@ -73,13 +75,15 @@ export const bateriaTestes: TemplateItem =
             Data por extenso: <i>{{data | dataPorExtenso}}</i>.
             CNPJ: <b>{{cnpj | cnpj}}</b>.
             CEP: <b>{{cep | cep}}</b>.
+            Horário: <b>{{horario | hora}}</b>.
+            Horário por extenso: <i>{{horario | horaPorExtenso}}</i>.
         </secao>
 
         <secao titulo="Números e moeda">
             Número: {{numero}}.
             Número inteiro: {{inteiro}}.
             Número inteiro por extenso: {{inteiro | numeroPorExtenso}}.
-            Número inteiro com extenso: {{inteiro | numeroPorExtenso}}.
+            Número decimal por extenso: {{decimal | numeroPorExtenso}}.
             Número inteiro em romano: {{inteiro | romano}}.
             Valor monetário: <b>R$ {{moeda | moeda}}</b>.
             Valor por extenso: <i>{{moeda | moedaPorExtenso}}</i>.
@@ -252,6 +256,8 @@ export const bateriaTestes: TemplateItem =
   "cep": "30123456",
   "numero": "42",
   "inteiro": "10",
+  "decimal": 10.5,
+  "horario": "08:30",
   "moeda": "15450.75",
   "selecao": "Opção B",
   "radio": "Sim",
