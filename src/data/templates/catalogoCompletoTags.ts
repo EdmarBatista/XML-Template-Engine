@@ -3,15 +3,17 @@ import type { TemplateItem } from "../defaultTemplates";
 export const catalogoCompletoTags: TemplateItem = {
   id: 'catalogo-completo-tags',
   nome: 'Catálogo Completo de Tags e Variações',
-  descricao: 'Template de referência exaustivo que demonstra todas as tags, atributos, variações e filtros suportados pelo motor XML, estruturados em sequência comparativa imediata com repetição de texto idêntico.',
+  descricao: 'Template de referência que demonstra as tags, atributos, variações e filtros do motor XML, em sequência comparativa com repetição de texto idêntico: formulário (com lista_csv e colunas mascaradas cpf/cnpj/cep/telefone/e-mail/hora), seções com numeração, reinício e até 8 níveis, listas com 9 marcadores, tabelas (colspan, rowspan, if por linha, foreach na célula), condicionais com operadores e parênteses, filtros de formatação e estilos inline.',
   categoria: 'Referência e Testes',
   xml: `<documento>
     <formulario>
         <grupo titulo="Campos de Texto (Curtos e Longos)">
-            <input id="campo_texto_simples" label="Texto Curto (Padrão)" placeholder="Texto de demonstração" descricao="Tag input sem tipo ou tipo texto padrão"/>
+            <!-- label, rotulo e titulo são sinônimos: aqui o rótulo vem de rotulo= -->
+            <input id="campo_texto_simples" rotulo="Texto Curto (Padrão)" placeholder="Texto de demonstração" descricao="Tag input sem tipo ou tipo texto padrão"/>
             <input id="campo_email" label="E-mail" tipo="email" placeholder="usuario@dominio.com.br" descricao="Tag input de e-mail"/>
             <textarea id="campo_textarea_pequeno" label="Área de Texto (3 Linhas)" rows="3" placeholder="Texto de demonstração para área de texto longo..." descricao="Tag textarea com altura compacta"/>
             <textarea id="campo_textarea_grande" label="Área de Texto (6 Linhas)" rows="6" placeholder="Texto de demonstração para área de texto longo..." descricao="Tag textarea expandida"/>
+            <input id="campo_lista_csv" label="Lista de Itens (CSV)" tipo="lista_csv" placeholder="Item A, Item B, Item C" descricao="tipo=&quot;lista_csv&quot;: cada item separado por vírgula ou quebra de linha vira uma iteração do foreach"/>
         </grupo>
 
         <grupo titulo="Campos Numéricos e Especiais (Com Máscara)">
@@ -81,14 +83,27 @@ export const catalogoCompletoTags: TemplateItem = {
                 <coluna id="col_valor" label="Valor Unitário" tipo="moeda" placeholder="0,00"/>
                 <coluna id="col_data" label="Data Limite" tipo="date"/>
                 <coluna id="col_status" label="Concluído" tipo="checkbox"/>
-                <coluna id="col_observacao" label="Observação" tipo="textarea"/>
+                <!-- id aceita name=, e label aceita titulo= (sinônimos) -->
+                <coluna name="col_observacao" titulo="Observação" tipo="textarea"/>
+            </tabela>
+
+            <tabela id="contatos" label="Contatos com máscara (tipos de coluna)">
+                <coluna id="col_cpf" label="CPF" tipo="cpf" placeholder="000.000.000-00"/>
+                <coluna id="col_cep" label="CEP" tipo="cep" placeholder="00000-000"/>
+                <coluna id="col_email" label="E-mail" tipo="email" placeholder="usuario@dominio.com.br"/>
+                <coluna id="col_hora" label="Horário" tipo="hora" placeholder="09:30"/>
+                <coluna id="col_texto" label="Observação" tipo="texto"/>
+                <coluna id="col_uf" label="UF" tipo="select">
+                    <option valor="DF">Distrito Federal</option>
+                    <option valor="MG">Minas Gerais</option>
+                </coluna>
             </tabela>
         </grupo>
     </formulario>
 
     <conteudo>
         <!-- ================================================================= -->
-        <!-- 1. SEÇÕES E HIERARQUIA (<secao>, <section>)                      -->
+        <!-- 1. SEÇÕES E HIERARQUIA (<secao>)                               -->
         <!-- ================================================================= -->
         <secao titulo="ESTRUTURA DE SEÇÕES E NUMERAÇÃO HIERÁRQUICA" numerar="true">
             <p>Demonstração da tag <b>&lt;secao&gt;</b> com numeração hierárquica automática sequencial.</p>
@@ -123,6 +138,13 @@ export const catalogoCompletoTags: TemplateItem = {
             <subtitulo alinhamento="centro">Texto de exemplo para comparação de subtítulo</subtitulo>
             <subtitulo alinhamento="esquerda">Texto de exemplo para comparação de subtítulo</subtitulo>
             <subtitulo alinhamento="direita">Texto de exemplo para comparação de subtítulo</subtitulo>
+
+            <!-- nivel = nível de sumário (outline) que vai para o Word; não muda o rank visual -->
+            <titulo nivel="2" alinhamento="centro">Texto de exemplo com nível de sumário explícito (nivel="2")</titulo>
+        </secao>
+
+        <secao titulo="SEÇÃO QUE REINICIA A NUMERAÇÃO" numerar="true" reiniciar="true">
+            <p>O atributo <b>reiniciar="true"</b> zera os contadores hierárquicos neste ponto — útil em anexos e apensos.</p>
         </secao>
 
         <!-- ================================================================= -->
@@ -163,6 +185,37 @@ export const catalogoCompletoTags: TemplateItem = {
                 <item>Segundo item de exemplo da lista numerada</item>
                 <item>Terceiro item de exemplo da lista numerada</item>
             </lista_numerada>
+
+            <!-- Variações de marcador via atributo tipo (aceita também formato= e estilo=) -->
+            <p><b>Listas com marcador escolhido pelo atributo (&lt;lista tipo="..."&gt;):</b></p>
+            <lista tipo="romano">
+                <item>Item em algarismo romano maiúsculo</item>
+                <item>Segundo item em romano</item>
+            </lista>
+            <lista tipo="romano_minusculo">
+                <item>Item em algarismo romano minúsculo</item>
+            </lista>
+            <lista tipo="letra">
+                <item>Item em alínea minúscula</item>
+            </lista>
+            <lista tipo="letra_maiuscula">
+                <item>Item em alínea maiúscula</item>
+            </lista>
+            <lista tipo="decimal">
+                <item>Item numerado por tipo decimal</item>
+            </lista>
+            <lista tipo="circulo">
+                <item>Item com marcador de círculo</item>
+            </lista>
+            <lista tipo="quadrado">
+                <item>Item com marcador de quadrado</item>
+            </lista>
+            <lista tipo="bullet">
+                <item>Item com marcador de bolinha (padrão)</item>
+            </lista>
+            <lista formato="romano" numerada="true">
+                <item>Sinônimos: formato="romano" com numerada="true"</item>
+            </lista>
 
             <!-- Lista dinâmica com iteração <foreach> -->
             <p><b>Lista dinâmica com repetição de itens (&lt;foreach&gt;):</b></p>
@@ -241,6 +294,75 @@ export const catalogoCompletoTags: TemplateItem = {
                     </linha>
                 </foreach>
             </tabela>
+
+            <p><b>4. Tabela com célula mesclada na horizontal (&lt;celula colspan="..."&gt;):</b></p>
+            <tabela>
+                <linha>
+                    <celula colspan="3"><b>Título mesclado nas três colunas</b></celula>
+                </linha>
+                <linha>
+                    <celula>Coluna A</celula>
+                    <celula>Coluna B</celula>
+                    <celula>Coluna C</celula>
+                </linha>
+            </tabela>
+
+            <p><b>5. Tabela com célula mesclada na vertical (&lt;celula rowspan="..."&gt;):</b></p>
+            <tabela>
+                <linha>
+                    <celula rowspan="2">Mesclada em duas linhas</celula>
+                    <celula>Linha 1, coluna B</celula>
+                </linha>
+                <linha>
+                    <celula>Linha 2, coluna B</celula>
+                </linha>
+            </tabela>
+
+            <p><b>6. Repetição dentro da célula e condicional em volta da linha:</b></p>
+            <tabela>
+                <foreach lista="tabela_itens" var="linha_tb">
+                    <if expr="linha_tb.col_status == true">
+                        <linha>
+                            <celula>{{linha_tb.col_nome}}</celula>
+                            <celula>Concluído</celula>
+                        </linha>
+                    </if>
+                </foreach>
+            </tabela>
+
+            <p><b>8. Tabela com colunas mascaradas (cpf/cep/e-mail/horário) e coluna com &lt;option&gt;:</b></p>
+            <tabela id="contatos">
+                <cabecalho>
+                    <linha>
+                        <celula>CPF</celula>
+                        <celula>CEP</celula>
+                        <celula>E-mail</celula>
+                        <celula>Horário</celula>
+                        <celula>Observação</celula>
+                        <celula>UF</celula>
+                    </linha>
+                </cabecalho>
+                <foreach lista="contatos" var="contato">
+                    <linha>
+                        <celula>{{contato.col_cpf | cpf}}</celula>
+                        <celula>{{contato.col_cep | cep}}</celula>
+                        <celula>{{contato.col_email}}</celula>
+                        <celula>{{contato.col_hora | hora}}</celula>
+                        <celula>{{contato.col_texto}}</celula>
+                        <celula>{{contato.col_uf}}</celula>
+                    </linha>
+                </foreach>
+            </tabela>
+
+            <p><b>9. Repetição de campo lista_csv (cada item vira uma linha):</b></p>
+            <lista>
+                <foreach lista="campo_lista_csv" var="item_csv">
+                    <item>{{item_csv}}</item>
+                </foreach>
+            </lista>
+
+            <p><b>7. Caminho pontuado dentro de &lt;if&gt; (avaliado linha a linha pelo foreach):</b>
+            <foreach lista="tabela_itens" var="linha"><if expr="linha.col_prioridade == 'Alta'">{{linha.col_nome}} exige aprovação da autoridade competente. </if></foreach></p>
         </secao>
 
         <!-- ================================================================= -->
@@ -313,20 +435,21 @@ export const catalogoCompletoTags: TemplateItem = {
                     <p>Texto de exemplo condicional: [Condições Aninhadas Múltiplas são Verdadeiras].</p>
                 </if>
             </if>
-            <p><b>4. Tabela com célula mesclada (&lt;celula colspan="..."&gt;):</b></p>
-            <tabela>
-                <linha>
-                    <celula colspan="3"><b>Título mesclado nas três colunas</b></celula>
-                </linha>
-                <linha>
-                    <celula>Coluna A</celula>
-                    <celula>Coluna B</celula>
-                    <celula>Coluna C</celula>
-                </linha>
-            </tabela>
 
-            <p><b>5. Caminho pontuado dentro de &lt;if&gt; (avaliado linha a linha pelo foreach):</b>
-            <foreach lista="tabela_itens" var="linha"><if expr="linha.col_prioridade == 'Alta'">{{linha.col_nome}} exige aprovação da autoridade competente. </if></foreach></p>
+            <!-- Agrupamento por parênteses (precedência) -->
+            <if expr="(opt_ativo == true || opt_urgente == true) &amp;&amp; campo_numero_simples &gt;= 1">
+                <p>Condição agrupada por parênteses é verdadeira.</p>
+            </if>
+
+            <!-- Operadores textuais AND / OR (equivalentes a &amp;&amp; e ||) -->
+            <if expr="opt_ativo AND campo_numero_simples OR opt_urgente">
+                <p>Operadores textuais AND / OR funcionam em expr.</p>
+            </if>
+
+            <!-- Literal de texto entre aspas duplas (o atributo usa aspas simples) -->
+            <if expr='campo_select_simples == "Opção Beta"'>
+                <p>Literal de texto entre aspas duplas é verdadeiro.</p>
+            </if>
         </secao>
 
         <!-- ================================================================= -->
@@ -434,17 +557,17 @@ export const catalogoCompletoTags: TemplateItem = {
                 </linha>
                 <linha>
                     <celula>campo_cpf</celula>
-                    <celula>input (cpf)</celula>
+                    <celula>number (cpf)</celula>
                     <celula>{{campo_cpf | cpf}}</celula>
                 </linha>
                 <linha>
                     <celula>campo_cnpj</celula>
-                    <celula>input (cnpj)</celula>
+                    <celula>number (cnpj)</celula>
                     <celula>{{campo_cnpj | cnpj}}</celula>
                 </linha>
                 <linha>
                     <celula>campo_cep</celula>
-                    <celula>input (cep)</celula>
+                    <celula>number (cep)</celula>
                     <celula>{{campo_cep | cep}}</celula>
                 </linha>
                 <linha>
@@ -454,12 +577,12 @@ export const catalogoCompletoTags: TemplateItem = {
                 </linha>
                 <linha>
                     <celula>campo_tel</celula>
-                    <celula>input (tel)</celula>
+                    <celula>number (telefone)</celula>
                     <celula>{{campo_tel | telefone}}</celula>
                 </linha>
                 <linha>
                     <celula>campo_moeda_input</celula>
-                    <celula>input (moeda)</celula>
+                    <celula>number (moeda)</celula>
                     <celula>R$ {{campo_moeda_input | moeda}}</celula>
                 </linha>
                 <linha>
@@ -550,6 +673,10 @@ export const catalogoCompletoTags: TemplateItem = {
   "campo_data_registro": "2026-08-29",
   "campo_hora_inicio": "08:00",
   "campo_hora_fim": "17:30",
+  "campo_lista_csv": "Item A, Item B, Item C",
+  "contatos": [
+    { "col_cpf": "12345678900", "col_cep": "70040010", "col_email": "contato@orgao.gov.br", "col_hora": "9h30", "col_texto": "Contato principal", "col_uf": "DF" }
+  ],
   "campo_textarea_pequeno": "Texto descritivo curto para validação de área de texto.",
   "campo_textarea_grande": "Texto detalhado com múltiplas linhas para testar renderização e exportação contínua de parágrafos.",
   "opt_ativo": true,
