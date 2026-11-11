@@ -32,7 +32,12 @@ describe('DocumentTableCell — texto longo em tabela', () => {
 
     const celula = container.querySelector('td');
     expect(celula?.className).toContain('align-top');
-    expect(celula?.className).toContain('[overflow-wrap:anywhere]');
+    // `break-word`, não `anywhere`: `overflow-wrap:anywhere` zera a largura mínima da célula e,
+    // no layout automático da tabela, esmaga as colunas curtas (cabeçalhos quebrando letra a
+    // letra: "CA / STE / R") enquanto a coluna de texto longo engole a largura restante.
+    // `break-word` continua quebrando palavras compridas que não cabem na linha.
+    expect(celula?.className).toContain('[overflow-wrap:break-word]');
+    expect(celula?.className).not.toContain('[overflow-wrap:anywhere]');
     expect(celula?.className).toContain('whitespace-normal');
     // Em células, a caixa de destaque da variável não pode ter extensão vertical:
     // com line-height compacto ela invade a linha seguinte em alguns zooms do preview HTML.
