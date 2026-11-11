@@ -16,6 +16,8 @@ export interface SegmentoDom {
   fonte?: string;
   isParagraphBreak?: boolean;
   customNum?: string;
+  /** Segmento vindo de uma variável interpolada; a fronteira com o texto seguinte não ganha espaço. */
+  origem?: 'variavel';
 }
 
 export interface OpcoesBaseDocumento {
@@ -296,6 +298,12 @@ export function extrairSegmentosDeDom(
   if (isVariavel && opcoes.variaveisVermelhas) {
     novoEstilo.cor = opcoes.corVariavel || '#dc2626';
   }
+  // O conteúdo de uma variável interpolada é um segmento próprio; o XML é a fonte
+  // da verdade do espaçamento ({{hora}}h deve sair "08:00h", não "08:00 h").
+  // Wrappers condicionais também têm data-vars, mas não são a variável em si.
+  if (isVariavel && el.getAttribute('data-word-conditional') !== 'true') {
+    novoEstilo.origem = 'variavel';
+  }
 
   Array.from(el.childNodes).forEach(filho => {
     segmentos.push(...extrairSegmentosDeDom(filho, novoEstilo, opcoes, ignorarSpanNumeracao));
@@ -322,7 +330,9 @@ export function normalizarSegmentos(segmentos: SegmentoDom[]): SegmentoDom[] {
     let texto = limparTexto(segmento.texto);
     if (!texto || texto === 'undefined' || texto === 'null') return;
 
-    if (precisaEspaco(ultimoTexto, texto)) {
+    // Fronteira variável -> texto literal: o XML manda no espaçamento.
+    const anterior = resultado[resultado.length - 1];
+    if (anterior?.origem !== 'variavel' && precisaEspaco(ultimoTexto, texto)) {
       texto = ' ' + texto;
     }
 

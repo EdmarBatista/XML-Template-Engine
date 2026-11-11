@@ -515,6 +515,19 @@ describe('recuo hierárquico dos exportadores', () => {
 });
 
 describe('alinhamento publicado nos exportadores', () => {
+  it('Word: não injeta espaço depois de variável interpolada', async () => {
+    document.body.innerHTML = `
+      <div id="documento-visualizado">
+        <p data-word-type="paragrafo">Das <span data-vars="hora_inicio">08:00</span>h até <span data-vars="hora_fim">16:30</span>h.</p>
+      </div>`;
+    const documento = document.getElementById('documento-visualizado') as HTMLElement;
+    const xml = await abrirDocumentoWord(await exportarParaWord(documento, 'horas.docx'));
+    const paragrafo = paragrafoComTexto(xml, 'Das ');
+    const texto = [...paragrafo.matchAll(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g)].map(m => m[1]).join('');
+
+    expect(texto).toBe('Das 08:00h até 16:30h.');
+  });
+
   it('Word: título respeita o alinhamento documentado', async () => {
     document.body.innerHTML = `
       <div id="documento-visualizado">

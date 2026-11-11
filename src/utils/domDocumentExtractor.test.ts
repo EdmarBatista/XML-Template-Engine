@@ -3,6 +3,7 @@
 // funções do módulo são puras mas compartilham o arquivo.
 
 import { describe, expect, it } from 'vitest';
+import type { SegmentoDom } from './domDocumentExtractor';
 import {
   calcularRecuoHierarquicoCm,
   cmParaPt,
@@ -228,8 +229,14 @@ describe('extrairSegmentosDeDom — texto e formatação inline', () => {
 
     const variavel = el('<p><span data-vars="true">x</span></p>').firstChild!;
     expect(extrairSegmentosDeDom(variavel, estilo, { variaveisVermelhas: true, corVariavel: '#ff0000' })).toEqual([
-      { texto: 'x', cor: '#ff0000' },
+      { texto: 'x', cor: '#ff0000', origem: 'variavel' },
     ]);
+  });
+
+  it('marca o segmento da variável interpolada', () => {
+    const raiz = el('<p>Das <span data-vars="hora">08:00</span>h</p>').firstChild!;
+    const segmentos = extrairSegmentosDeDom(raiz, {}, {});
+    expect(segmentos.find(s => s.texto === '08:00')?.origem).toBe('variavel');
   });
 });
 
@@ -270,5 +277,21 @@ describe('normalizarSegmentos — espaçamento entre palavras', () => {
 
   it('limpa caracteres de controle do texto', () => {
     expect(normalizarSegmentos([{ texto: 'a\u0000b' }])).toEqual([{ texto: 'ab' }]);
+  });
+
+  it('não insere espaço depois de variável interpolada', () => {
+    const segmentos: SegmentoDom[] = [
+      { texto: 'Das ' },
+      { texto: '08:00', origem: 'variavel' },
+      { texto: 'h até ' },
+      { texto: '16:30', origem: 'variavel' },
+      { texto: 'h.' },
+    ];
+    expect(normalizarSegmentos(segmentos).map(s => s.texto).join('')).toBe('Das 08:00h até 16:30h.');
+  });
+
+  it('mantém o espaço na fronteira de marcação inline', () => {
+    const segmentos: SegmentoDom[] = [{ texto: 'palavra', bold: true }, { texto: 'outra' }];
+    expect(normalizarSegmentos(segmentos).map(s => s.texto).join('')).toBe('palavra outra');
   });
 });
