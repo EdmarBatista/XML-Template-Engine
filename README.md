@@ -414,6 +414,7 @@ Basta inserir as variáveis diretamente no texto do Word. O sistema compilará a
 
 **Regras de Extração e Inferência:**
 - **Variáveis Básicas**: Se você digitar `{{ Nome do Fornecedor }}`, o sistema criará um campo de texto no formulário lateral. O nome da variável será normalizado (`nome_do_fornecedor`) para uso interno, mas o rótulo legível é preservado.
+  > O espaço só é aceito **no documento do Word**. O importador troca acentos e caracteres inválidos por `_` (`normalizarIdentificadorValido`), então o `id` gerado no XML fica `nome_do_fornecedor`. Ao escrever XML à mão, use sempre o id com `_` — `{{nome_do_fornecedor}}` — e nunca `{{ Nome do Fornecedor }}`.
 - **Tipos e Filtros**:
   - `{{ Valor do Contrato | moeda }}` → Cria um campo tipo Moeda no formulário, que já inclui formatação R$.
   - `{{ Data de Assinatura | data }}` → Cria um seletor de data (*date picker*).
